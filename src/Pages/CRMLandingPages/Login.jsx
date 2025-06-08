@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { Link } from 'react-router-dom';
+import usePageTitle from '../../hooks/usecrmPageTitle';
 
 const FloatingInput = ({ label, type, value, onChange, name, showToggle, onToggle, isVisible }) => {
   const inputRef = useRef(null);
@@ -50,6 +51,7 @@ const FloatingInput = ({ label, type, value, onChange, name, showToggle, onToggl
 };
 
 const Login = () => {
+  usePageTitle();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);

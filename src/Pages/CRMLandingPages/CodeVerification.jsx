@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import usePageTitle from '../../hooks/usecrmPageTitle';
 
 const FloatingInput = ({ label, type, value, onChange, name }) => {
   return (
@@ -19,6 +20,7 @@ const FloatingInput = ({ label, type, value, onChange, name }) => {
 };
 
 const CodeVerification = () => {
+  usePageTitle();
   const [code, setCode] = useState('');
 
   const handleSubmit = (e) => {

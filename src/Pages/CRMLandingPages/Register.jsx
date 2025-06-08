@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { Link, useNavigate } from 'react-router-dom';
+import usePageTitle from '../../hooks/usecrmPageTitle';
 
 const FloatingInput = ({ label, type, value, onChange, name, showToggle, onToggle, isVisible }) => {
   return (
@@ -31,6 +32,7 @@ const FloatingInput = ({ label, type, value, onChange, name, showToggle, onToggl
 };
 
 const Register = () => {
+  usePageTitle();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({

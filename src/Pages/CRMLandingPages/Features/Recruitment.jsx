@@ -1,9 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import usePageTitle from '../../../hooks/usecrmPageTitle';
 
 
 
 const Recruitment = () => {
+    usePageTitle();
 
   return (
     <div className='feat-MM-sec'>

@@ -1,3 +1,4 @@
+import usePageTitle from '../../hooks/usecrmPageTitle';
 import { useState, useEffect } from 'react';
 import './RequestDemo.css';
 import DemoCalendar from './DemoCalendar';
@@ -58,6 +59,7 @@ const features = [
 ];
 
 function RequestDemo() {
+  usePageTitle();
   const [activeStep, setActiveStep] = useState('calendar');
   const [activeBoxes, setActiveBoxes] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState(null);
