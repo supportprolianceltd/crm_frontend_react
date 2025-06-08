@@ -1,0 +1,222 @@
+@font-face {
+  font-family: 'Poppins';
+  src: url('./assets/fonts/Poppins/Poppins-Thin.ttf') format('truetype');
+  font-weight: 100;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  src: url('./assets/fonts/Poppins/Poppins-ExtraLight.ttf') format('truetype');
+  font-weight: 200;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  src: url('./assets/fonts/Poppins/Poppins-Light.ttf') format('truetype');
+  font-weight: 300;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  src: url('./assets/fonts/Poppins/Poppins-Regular.ttf') format('truetype');
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  src: url('./assets/fonts/Poppins/Poppins-Medium.ttf') format('truetype');
+  font-weight: 500;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  src: url('./assets/fonts/Poppins/Poppins-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  src: url('./assets/fonts/Poppins/Poppins-Bold.ttf') format('truetype');
+  font-weight: 700;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  src: url('./assets/fonts/Poppins/Poppins-ExtraBold.ttf') format('truetype');
+  font-weight: 800;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  src: url('./assets/fonts/Poppins/Poppins-Black.ttf') format('truetype');
+  font-weight: 900;
+}
+
+
+
+
+
+* {
+  box-sizing: border-box;
+}
+*, :after, :before {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+html {
+  font-family: 'Poppins', sans-serif;
+  line-height: 1.15;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+  padding: 0;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.5;
+  width: 100%;
+  background-color: #fff;
+  color: #372580;
+  overflow-x: hidden;
+}
+
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+
+li{
+  list-style: none;
+}
+a:hover,
+a:focus,
+a{
+  text-decoration: none;
+  color: inherit;
+}
+a,button{
+  outline: none;
+}
+p,h1,h2,h3,h4,h5,h6,ul,ol,li,a,button,input,span,textarea, select{
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-decoration: none;
+  outline: none;
+  border: none;
+  color: inherit;
+  font-family: inherit;
+}
+.large-container{
+  width: 90%;
+  margin-left: 5%;
+}
+
+.site-container{
+  position: relative;
+  width: 80%;
+  margin-left: 10%;
+  height: auto;
+}
+
+@media screen and (max-width:1300px){
+  .large-container,
+  .site-container{
+      width: 95% !important;
+      margin-left: 2.5% !important;
+  }
+}
+
+
+@media screen and (max-width:1000px){
+  .big-text{
+    font-size: 40px !important;
+    line-height: 130% !important;
+  }
+}
+@media screen and (max-width:700px){
+  .big-text{
+    font-size: 30px !important;
+  }
+  .mid-text{
+    font-size: 20px !important;
+  }
+}
+@media screen and (max-width:450px){
+  .p{
+    font-size: 14px !important;
+  }
+}
+.big-text{
+  font-size: 60px;
+  line-height: 70px;
+  font-weight: 600;
+  /* color: #000032; */
+}
+
+.mid-text{
+   font-size: 35px;
+  line-height: 45px;
+  font-weight: 500;
+}
+
+
+
+.dd-none{
+  display: none !important;
+}
+
+.btn-primary-bg{
+  background-color:  #7226FF !important;
+  color: #fff !important;
+  transition: all 0.3s ease-in-out;
+}
+.btn-primary-bg:hover{
+  background-color:  #450CD5 !important;
+  color: #fff !important;
+}
+
+
+
+@media screen and (min-width:1200px) {
+  .custom-scroll-bar {
+    overflow-y: overlay;
+    overflow-x: hidden;
+    scrollbar-color: #787777 #fff !important;
+    scrollbar-width: thin; /* for Firefox */
+  }
+
+  .custom-scroll-bar::-webkit-scrollbar {
+    width: 3px; /* thinner vertical scrollbar */
+    height: 8px; /* horizontal scrollbar height */
+  }
+
+  /* Thumb styling */
+  .custom-scroll-bar::-webkit-scrollbar-thumb {
+    background-color: #787777;
+    border-radius: 10px;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+.Gen-Boxshadow{
+   box-shadow: 0 0 #0000, 0 0 #0000, 0 .25rem .5rem 0 rgb(74 45 197 / .1);
+    -webkit-box-shadow: 0 0 #0000, 0 0 #0000, 0 .25rem .5rem 0 rgb(74 45 197 / .1);
+    -moz-box-shadow: 0 0 #0000, 0 0 #0000, 0 .25rem .5rem 0 rgb(74 45 197 / .1);
+    background-color: #fff;
+}
