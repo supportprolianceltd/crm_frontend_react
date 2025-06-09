@@ -1,20 +1,19 @@
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
-import usePageTitle from '../../hooks/usePageTitle';
-import Home from '../CRMLandingPages/Home';
+import RecruitmentHome from './RecruitmentHome';
+import './Recruitment.css';
 
-const LandingPage = () => {
-  usePageTitle(); 
+const Recruitment = () => {
 
   return (
     <div className='AdminPage'>
       <div className='Main_Company_Page'>
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<RecruitmentHome />} />
         </Routes>
       </div>
     </div>
   );
 };
 
-export default LandingPage;
+export default Recruitment;
