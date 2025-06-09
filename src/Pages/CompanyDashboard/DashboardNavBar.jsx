@@ -16,13 +16,6 @@ import {
   BellIcon as BellIconOutline,
   Cog6ToothIcon as SettingsIconOutline,
 } from '@heroicons/react/24/outline';
-import {
-  HomeIcon as HomeIconSolid,
-  ChatBubbleLeftRightIcon as ChatIconSolid,
-  CalendarDaysIcon as CalendarIconSolid,
-  BellIcon as BellIconSolid,
-  Cog6ToothIcon as SettingsIconSolid,
-} from '@heroicons/react/24/solid';
 
 import RecruitmentIcon from '../../assets/Img/CRMPack/Recruitment.svg';
 import ComplianceIcon from '../../assets/Img/CRMPack/Compliance.svg';
@@ -33,14 +26,16 @@ import HRIcon from '../../assets/Img/CRMPack/HR.svg';
 import PayrollIcon from '../../assets/Img/CRMPack/Payroll.svg';
 
 const DashboardNavBar = () => {
-  const [activeIcon, setActiveIcon] = useState('home');
   const [showFeaturesDropdown, setShowFeaturesDropdown] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [activeButton, setActiveButton] = useState(null); // 'chat', 'calendar', or null
+
   const dropdownRef = useRef(null);
   const buttonRef = useRef(null);
   const profileRef = useRef(null);
+  const chatRef = useRef(null);
+  const calendarRef = useRef(null);
 
-  // Handle click outside dropdowns
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -49,11 +44,17 @@ const DashboardNavBar = () => {
       ) {
         setShowFeaturesDropdown(false);
       }
-
       if (
         profileRef.current && !profileRef.current.contains(event.target)
       ) {
         setShowProfileDropdown(false);
+      }
+      // Hide activeButton if clicked outside chat or calendar buttons
+      if (
+        chatRef.current && !chatRef.current.contains(event.target) &&
+        calendarRef.current && !calendarRef.current.contains(event.target)
+      ) {
+        setActiveButton(null);
       }
     };
 
@@ -67,50 +68,21 @@ const DashboardNavBar = () => {
   const handleProfileClick = () => setShowProfileDropdown(!showProfileDropdown);
   const closeProfileDropdown = () => setShowProfileDropdown(false);
 
-  const navItems = [
-    {
-      id: 'home',
-      name: 'Home',
-      outline: <HomeIconOutline className="h-6 w-6" />,
-      solid: <HomeIconSolid className="h-6 w-6" />,
-    },
-    {
-      id: 'chat',
-      name: 'Chat',
-      outline: <ChatIconOutline className="h-6 w-6" />,
-      solid: <ChatIconSolid className="h-6 w-6" />,
-    },
-    {
-      id: 'calendar',
-      name: 'Calendar',
-      outline: <CalendarIconOutline className="h-6 w-6" />,
-      solid: <CalendarIconSolid className="h-6 w-6" />,
-    },
-    {
-      id: 'bell',
-      name: 'Notifications',
-      outline: <BellIconOutline className="h-6 w-6" />,
-      solid: <BellIconSolid className="h-6 w-6" />,
-    },
-    {
-      id: 'settings',
-      name: 'Settings',
-      outline: <SettingsIconOutline className="h-6 w-6" />,
-      solid: <SettingsIconSolid className="h-6 w-6" />,
-    },
-  ];
+  const handleButtonClick = (button) => {
+    setActiveButton((prev) => (prev === button ? null : button));
+  };
 
   return (
     <div className='DashboardNavBar'>
       <nav className='Top-NaV'>
         <div className='NaV-1'>
           <button 
-          ref={buttonRef}
-          className={`genn-Drop-Togler ${showFeaturesDropdown ? 'active-Gent-Trangl' : ''}`}
-          title='Features Launcher'
-          onClick={() => setShowFeaturesDropdown(!showFeaturesDropdown)}
-        >
-            <svg viewBox="0 0 49 49" fill="none" xmlns="http://www.w3.org/2000/svg">
+            ref={buttonRef}
+            className={`genn-Drop-Togler ${showFeaturesDropdown ? 'active-Gent-Trangl' : ''}`}
+            title='Features Launcher'
+            onClick={() => setShowFeaturesDropdown(!showFeaturesDropdown)}
+          >
+           <svg viewBox="0 0 49 49" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path 
                 fillRule="evenodd" 
                 clipRule="evenodd" 
@@ -153,22 +125,42 @@ const DashboardNavBar = () => {
 
         <div className='NaV-2'>
           <div className='NaV-2-Icons'>
-            {navItems.map((item) => {
-              const isActive = activeIcon === item.id && !showProfileDropdown;
-              return (
-                <span
-                  key={item.id}
-                  onClick={() => {
-                    setActiveIcon(item.id);
-                    setShowProfileDropdown(false);
-                  }}
-                  className={`icon-wrapper ${isActive ? 'active' : ''}`}
-                  title={item.name}
-                >
-                  {isActive ? item.solid : item.outline}
-                </span>
-              );
-            })}
+
+            {/* Home */}
+            <Link to='/dashboard' title='Home'>
+              <HomeIconOutline className="h-6 w-6" />
+            </Link>
+
+            {/* Chat Button */}
+            <span
+              ref={chatRef}
+              title="Chat"
+              className={`cursor-pointer ${activeButton === 'chat' ? 'active' : ''}`}
+              onClick={() => handleButtonClick('chat')}
+            >
+              <ChatIconOutline className="h-6 w-6" />
+            </span>
+
+            {/* Calendar Button */}
+            <span
+              ref={calendarRef}
+              title="Calendar"
+              className={`cursor-pointer ${activeButton === 'calendar' ? 'active' : ''}`}
+              onClick={() => handleButtonClick('calendar')}
+            >
+              <CalendarIconOutline className="h-6 w-6" />
+            </span>
+
+            {/* Notifications */}
+            <Link to='/notifications' title='Notifications'>
+              <BellIconOutline className="h-6 w-6" />
+            </Link>
+
+            {/* Settings */}
+            <Link to='/settings' title='Settings'>
+              <SettingsIconOutline className="h-6 w-6" />
+            </Link>
+
           </div>
 
           <div
