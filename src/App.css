@@ -319,3 +319,25 @@ background: #f7f5ff;
 .terms-checkbox span{
   line-height: 23px !important;
 }
+.social-btn.microsoft {
+  background-color: #0078d4;
+  color: white;
+  border: none;
+  padding: 10px;
+  margin: 5px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.social-btn.microsoft:hover {
+  background-color: #005a9e;
+}
+
+.social-btn.microsoft .icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+}
