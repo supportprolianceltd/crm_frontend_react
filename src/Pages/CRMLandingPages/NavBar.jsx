@@ -96,6 +96,8 @@ function NavBar() {
             <li><Link to='/contact-sales'>Contact sales</Link></li>
             <li><Link to='/register' className='btn-primary-bg'>Create account</Link></li>
             <li><Link to='/login'>Sign in</Link></li>
+            <li><Link to='/company/'>Company</Link></li>
+          
           </ul>
         </div>
       </div>
