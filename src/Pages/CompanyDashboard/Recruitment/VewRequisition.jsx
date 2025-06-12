@@ -122,6 +122,7 @@ const VewRequisition = ({ job, onClose }) => {
   const [advertBanner, setAdvertBanner] = useState(null);
   const [isFormMutable, setIsFormMutable] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [responsibilities, setResponsibilities] = useState(['']); // Initialize with one empty responsibility
 
   // Form data
   const [formData, setFormData] = useState({
@@ -132,7 +133,6 @@ const VewRequisition = ({ job, onClose }) => {
     companyAddress: '',
     salaryRange: '',
     jobDescription: '',
-    howToApply: '',
     numberOfCandidates: '',
     qualificationRequirement: '',
     experienceRequirement: '',
@@ -157,6 +157,24 @@ const VewRequisition = ({ job, onClose }) => {
     }
   };
 
+  const handleResponsibilityChange = (index, value) => {
+    if (!isFormMutable) return;
+    const newResponsibilities = [...responsibilities];
+    newResponsibilities[index] = value;
+    setResponsibilities(newResponsibilities);
+    setErrors((prev) => ({ ...prev, responsibilities: '' }));
+  };
+
+  const handleAddResponsibility = () => {
+    if (!isFormMutable) return;
+    setResponsibilities([...responsibilities, '']);
+  };
+
+  const handleRemoveResponsibility = (index) => {
+    if (!isFormMutable || index === 0) return; // Prevent removing the first responsibility
+    setResponsibilities(responsibilities.filter((_, i) => i !== index));
+  };
+
   // Tab navigation
   const tabs = ['Job details', 'Document uploads', 'Compliance check'];
 
@@ -168,7 +186,9 @@ const VewRequisition = ({ job, onClose }) => {
       newErrors.companyAddress = 'Company Address is required for on-site jobs';
     }
     if (!formData.jobDescription.trim()) newErrors.jobDescription = 'Job Description is required';
-    if (!formData.howToApply.trim()) newErrors.howToApply = 'How to Apply is required';
+    if (responsibilities.length === 0 || responsibilities.every(resp => !resp.trim())) {
+      newErrors.responsibilities = 'At least one responsibility is required';
+    }
     if (!deadlineDate) newErrors.deadlineDate = 'Application Deadline is required';
     return newErrors;
   };
@@ -315,7 +335,6 @@ const VewRequisition = ({ job, onClose }) => {
       companyAddress: '',
       salaryRange: '',
       jobDescription: '',
-      howToApply: '',
       numberOfCandidates: '',
       qualificationRequirement: '',
       experienceRequirement: '',
@@ -329,6 +348,7 @@ const VewRequisition = ({ job, onClose }) => {
     setDocumentTitle('');
     setUserHasAdded(false);
     setCheckedItems([]);
+    setResponsibilities(['']); // Reset to one empty responsibility
     setActiveSection(0);
     setShowPreview(false);
     setShowJobAdvert(false);
@@ -386,7 +406,7 @@ const VewRequisition = ({ job, onClose }) => {
       formData.companyName.trim() &&
       (formData.locationType !== 'On-site' || formData.companyAddress.trim()) &&
       formData.jobDescription.trim() &&
-      formData.howToApply.trim() &&
+      responsibilities.length > 0 &&
       deadlineDate
     );
   };
@@ -681,59 +701,57 @@ const VewRequisition = ({ job, onClose }) => {
                         />
                       </div>
 
-                        <div className='GHuh-Form-Input'>
-                          <label>Number of Candidates (Needed for Interview) (optional)</label>
-                          <input 
-                            name="numberOfCandidates"
-                            type='text' 
-                            placeholder='e.g. 10' 
-                            value={formData.numberOfCandidates}
-                            onChange={handleInputChange}
-                            disabled={!isFormMutable}
-                          />
-                          {errors.numberOfCandidates && <p className='error'>{errors.numberOfCandidates}</p>}
-                        </div>
+                      <div className='GHuh-Form-Input'>
+                        <label>Number of Candidates (Needed for Interview) (optional)</label>
+                        <input 
+                          name="numberOfCandidates"
+                          type='text' 
+                          placeholder='e.g. 10' 
+                          value={formData.numberOfCandidates}
+                          onChange={handleInputChange}
+                          disabled={!isFormMutable}
+                        />
+                        {errors.numberOfCandidates && <p className='error'>{errors.numberOfCandidates}</p>}
+                      </div>
 
-                        <div className='GHuh-Form-Input'>
-                          <label>Qualification Requirement (optional)</label>
-                          <input 
-                            name="qualificationRequirement"
-                            type='text' 
-                            placeholder='e.g. Bachelor’s degree in Computer Science' 
-                            value={formData.qualificationRequirement}
-                            onChange={handleInputChange}
-                            disabled={!isFormMutable}
-                          />
-                          {errors.qualificationRequirement && <p className='error'>{errors.qualificationRequirement}</p>}
-                        </div>
+                      <div className='GHuh-Form-Input'>
+                        <label>Qualification Requirement (optional)</label>
+                        <input 
+                          name="qualificationRequirement"
+                          type='text' 
+                          placeholder='e.g. Bachelor’s degree in Computer Science' 
+                          value={formData.qualificationRequirement}
+                          onChange={handleInputChange}
+                          disabled={!isFormMutable}
+                        />
+                        {errors.qualificationRequirement && <p className='error'>{errors.qualificationRequirement}</p>}
+                      </div>
 
-                        <div className='GHuh-Form-Input'>
-                          <label>Experience Requirement (optional)</label>
-                          <input 
-                            name="experienceRequirement"
-                            type='text' 
-                            placeholder='e.g. 3+ years in web development' 
-                            value={formData.experienceRequirement}
-                            onChange={handleInputChange}
-                            disabled={!isFormMutable}
-                          />
-                          {errors.experienceRequirement && <p className='error'>{errors.experienceRequirement}</p>}
-                        </div>
+                      <div className='GHuh-Form-Input'>
+                        <label>Experience Requirement (optional)</label>
+                        <input 
+                          name="experienceRequirement"
+                          type='text' 
+                          placeholder='e.g. 3+ years in web development' 
+                          value={formData.experienceRequirement}
+                          onChange={handleInputChange}
+                          disabled={!isFormMutable}
+                        />
+                        {errors.experienceRequirement && <p className='error'>{errors.experienceRequirement}</p>}
+                      </div>
 
-                        <div className='GHuh-Form-Input'>
-                          <label>Knowledge/Skill Requirement (optional)</label>
-                          <input 
-                            name="knowledgeSkillRequirement"
-                            type='text' 
-                            placeholder='e.g. React, JavaScript, CSS' 
-                            value={formData.knowledgeSkillRequirement}
-                            onChange={handleInputChange}
-                            disabled={!isFormMutable}
-                          />
-                          {errors.knowledgeSkillRequirement && <p className='error'>{errors.knowledgeSkillRequirement}</p>}
-                        </div>
-
-                    
+                      <div className='GHuh-Form-Input'>
+                        <label>Knowledge/Skill Requirement (optional)</label>
+                        <input 
+                          name="knowledgeSkillRequirement"
+                          type='text' 
+                          placeholder='e.g. React, JavaScript, CSS' 
+                          value={formData.knowledgeSkillRequirement}
+                          onChange={handleInputChange}
+                          disabled={!isFormMutable}
+                        />
+                        {errors.knowledgeSkillRequirement && <p className='error'>{errors.knowledgeSkillRequirement}</p>}
+                      </div>
 
                       <h3>Job Description</h3>
                       <div className='GHuh-Form-Input'>
@@ -748,21 +766,40 @@ const VewRequisition = ({ job, onClose }) => {
                         {errors.jobDescription && <p className='error'>{errors.jobDescription}</p>}
                       </div>
 
-                      <h3>Application Details</h3>
+                      <h3>Key Responsibilities <span onClick={handleAddResponsibility} className={isFormMutable ? 'cursor-pointer' : 'cursor-not-allowed'}><PlusIcon /> Add</span></h3>
                       <div className='GHuh-Form-Input'>
-                        <label>How to Apply</label>
-                        <input 
-                          name="howToApply"
-                          type='text' 
-                          placeholder='e.g. Send your CV to hr@valueflow.com' 
-                          value={formData.howToApply}
-                          onChange={handleInputChange}
-                          required 
+                        <label>Responsibilities</label>
+                        <input
+                          type='text'
+                          placeholder='Add a responsibility'
+                          value={responsibilities[0] || ''}
+                          onChange={(e) => handleResponsibilityChange(0, e.target.value)}
                           disabled={!isFormMutable}
                         />
-                        {errors.howToApply && <p className='error'>{errors.howToApply}</p>}
+                        {responsibilities.slice(1).map((resp, index) => (
+                          <div key={index + 1} className='responsibility-Inn-Box' style={{ display: 'flex', alignItems: 'center', marginTop: '8px' }}>
+                            <input
+                              type='text'
+                              placeholder='Add a responsibility'
+                              value={resp}
+                              onChange={(e) => handleResponsibilityChange(index + 1, e.target.value)}
+                              disabled={!isFormMutable}
+                            />
+                            <span 
+                              onClick={() => handleRemoveResponsibility(index + 1)}
+                              style={{ 
+                                cursor: isFormMutable ? 'pointer' : 'not-allowed',
+                                marginLeft: '8px'
+                              }}
+                            >
+                              <XMarkIcon className='w-4 h-4' />
+                            </span>
+                          </div>
+                        ))}
+                        {errors.responsibilities && <p className='error'>{errors.responsibilities}</p>}
                       </div>
 
+                      <h3>Application Details</h3>
                       <div className='Gland-All-Grid'>
                         <div className='GHuh-Form-Input'>
                           <label>Deadline for Applications</label>
@@ -969,12 +1006,27 @@ const VewRequisition = ({ job, onClose }) => {
                     {formData.experienceRequirement && <p><span>Experience Requirement:</span> {formData.experienceRequirement}</p>}
                     {formData.knowledgeSkillRequirement && <p><span>Knowledge/Skill Requirement:</span> {formData.knowledgeSkillRequirement}</p>}
                     {formData.reasonForRequisition && <p><span>Reason for Requisition:</span> <div dangerouslySetInnerHTML={{ __html: formData.reasonForRequisition.replace(/\n/g, '<br/>') }} /></p>}
-                    <p><span>Job Description:</span> <div dangerouslySetInnerHTML={{ __html: formData.jobDescription.replace(/\n/g, '<br/>') }} /></p>
+
                   </div>
+
+                         <div className='preview-section aadda-poa'>
+                    <h3>Job Description</h3>
+                    <p><div dangerouslySetInnerHTML={{ __html: formData.jobDescription.replace(/\n/g, '<br/>') }} /></p>
+                   </div>
+
+                   <div className='preview-section'>
+                    <h3>Responsibilities</h3>
+                    {responsibilities.length > 0 && (
+                        <ul>
+                          {responsibilities.filter(resp => resp.trim()).map((resp, i) => (
+                            <li key={i}>{resp}</li>
+                          ))}
+                        </ul>
+                    )}
+                   </div>
                   
                   <div className='preview-section'>
                     <h3>Application Details</h3>
-                    <p><span>How to Apply:</span> {formData.howToApply}</p>
                     <p><span>Deadline for Applications:</span> {deadlineDate ? deadlineDate.toDateString() : 'Not specified'}</p>
                     <p><span>Start Date:</span> {startDate ? startDate.toDateString() : 'Not specified'}</p>
                   </div>

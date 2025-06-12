@@ -123,6 +123,12 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
   const [showSuccess, setShowSuccess] = useState(false);
   const [advertBanner, setAdvertBanner] = useState(null);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [responsibilities, setResponsibilities] = useState([
+    'Develop and maintain web applications using modern frameworks',
+    'Collaborate with cross-functional teams to define and implement features',
+    'Write clean, efficient, and well-documented code',
+    'Participate in code reviews and ensure code quality standards'
+  ]); // Initialize with multiple responsibilities
 
   // Form data with default values
   const [formData, setFormData] = useState({
@@ -133,7 +139,6 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
     companyAddress: '24 Marina Street, Lagos',
     salaryRange: '$50,000 - $70,000',
     jobDescription: 'Develop and maintain web applications using React, JavaScript, and CSS.',
-    howToApply: 'Send your CV to hr@valueflow.com',
     numberOfCandidates: '5',
     qualificationRequirement: 'Bachelor’s degree in Computer Science',
     experienceRequirement: '3+ years in web development',
@@ -157,6 +162,24 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
     }
   };
 
+  const handleResponsibilityChange = (index, value) => {
+    if (!isFormMutable) return;
+    const newResponsibilities = [...responsibilities];
+    newResponsibilities[index] = value;
+    setResponsibilities(newResponsibilities);
+    setErrors((prev) => ({ ...prev, responsibilities: '' }));
+  };
+
+  const handleAddResponsibility = () => {
+    if (!isFormMutable) return;
+    setResponsibilities([...responsibilities, '']);
+  };
+
+  const handleRemoveResponsibility = (index) => {
+    if (!isFormMutable || index === 0) return; // Prevent removing the first responsibility
+    setResponsibilities(responsibilities.filter((_, i) => i !== index));
+  };
+
   // Tab navigation
   const tabs = ['Job details', 'Document uploads', 'Compliance check'];
 
@@ -168,7 +191,9 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
       newErrors.companyAddress = 'Company Address is required for on-site jobs';
     }
     if (!formData.jobDescription.trim()) newErrors.jobDescription = 'Job Description is required';
-    if (!formData.howToApply.trim()) newErrors.howToApply = 'How to Apply is required';
+    if (responsibilities.length === 0 || responsibilities.every(resp => !resp.trim())) {
+      newErrors.responsibilities = 'At least one responsibility is required';
+    }
     if (!deadlineDate) newErrors.deadlineDate = 'Application Deadline is required';
     if (formData.numberOfCandidates && isNaN(formData.numberOfCandidates)) {
       newErrors.numberOfCandidates = 'Number of Candidates must be a valid number';
@@ -284,7 +309,6 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
       companyAddress: '24 Marina Street, Lagos',
       salaryRange: '$50,000 - $70,000',
       jobDescription: 'Develop and maintain web applications using React, JavaScript, and CSS.',
-      howToApply: 'Send your CV to hr@valueflow.com',
       numberOfCandidates: '5',
       qualificationRequirement: 'Bachelor’s degree in Computer Science',
       experienceRequirement: '3+ years in web development',
@@ -297,6 +321,12 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
     setDocumentTitle('');
     setUserHasAdded(false);
     setCheckedItems(['Right to Work Check']);
+    setResponsibilities([
+      'Develop and maintain web applications using modern frameworks',
+      'Collaborate with cross-functional teams to define and implement features',
+      'Write clean, efficient, and well-documented code',
+      'Participate in code reviews and ensure code quality standards'
+    ]); // Reset to multiple responsibilities
     setActiveSection(0);
     setShowPreview(false);
     setShowJobAdvert(false);
@@ -354,7 +384,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
       formData.companyName.trim() &&
       (formData.locationType !== 'On-site' || formData.companyAddress.trim()) &&
       formData.jobDescription.trim() &&
-      formData.howToApply.trim() &&
+      responsibilities.length > 0 &&
       deadlineDate
     );
   };
@@ -432,7 +462,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
           </div>
 
           <div className='GHuh-Form-Sec'>
-            <div className='GHuh-Form-Sec-Top'>
+          <div className='GHuh-Form-Sec-Top'>
               <h3>{tabs[activeSection]}</h3>
               <div className='GHuh-Form-Sec-Top-Btns'>
                 <span 
@@ -460,6 +490,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
               </div>
             </div>
 
+
             <div className='GHuh-Form-Sec-Main custom-scroll-bar'>
               <AnimatePresence mode='wait'>
                 <motion.div
@@ -484,6 +515,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                             value={formData.jobTitle}
                             onChange={handleInputChange}
                             required 
+                            disabled={!isFormMutable}
                           />
                           {errors.jobTitle && <p className='error'>{errors.jobTitle}</p>}
                         </div>
@@ -494,6 +526,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                             type='file' 
                             accept="image/*"
                             onChange={handleInputChange}
+                            disabled={!isFormMutable}
                           />
                         </div>
                       </div>
@@ -507,6 +540,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                           value={formData.companyName}
                           onChange={handleInputChange}
                           required 
+                          disabled={!isFormMutable}
                         />
                         {errors.companyName && <p className='error'>{errors.companyName}</p>}
                       </div>
@@ -518,6 +552,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                             name="jobType"
                             value={formData.jobType}
                             onChange={handleInputChange}
+                            disabled={!isFormMutable}
                           >
                             <option>Full-time</option>
                             <option>Part-time</option>
@@ -532,6 +567,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                             name="locationType"
                             value={formData.locationType}
                             onChange={handleInputChange}
+                            disabled={!isFormMutable}
                           >
                             <option>On-site</option>
                             <option>Remote</option>
@@ -550,6 +586,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                             value={formData.companyAddress}
                             onChange={handleInputChange}
                             required 
+                            disabled={!isFormMutable}
                           />
                           {errors.companyAddress && <p className='error'>{errors.companyAddress}</p>}
                         </div>
@@ -563,6 +600,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                           placeholder='e.g. $0.00 - $0.00' 
                           value={formData.salaryRange}
                           onChange={handleInputChange}
+                          disabled={!isFormMutable}
                         />
                       </div>
 
@@ -626,30 +664,47 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                           value={formData.jobDescription}
                           onChange={handleInputChange}
                           required
+                          disabled={!isFormMutable}
                         ></textarea>
                         {errors.jobDescription && <p className='error'>{errors.jobDescription}</p>}
                       </div>
 
-                      <h3>Application Details</h3>
+                      <h3>Key Responsibilities <span onClick={handleAddResponsibility} className={isFormMutable ? 'cursor-pointer' : 'cursor-not-allowed'}><PlusIcon /> Add</span></h3>
                       <div className='GHuh-Form-Input'>
-                        <label>How to Apply</label>
-                        <input 
-                          name="howToApply"
-                          type='text' 
-                          placeholder='e.g. Send your CV to hr@valueflow.com' 
-                          value={formData.howToApply}
-                          onChange={handleInputChange}
-                          required 
-                        />
-                        {errors.howToApply && <p className='error'>{errors.howToApply}</p>}
+                        <label>Responsibilities</label>
+                        {responsibilities.map((resp, index) => (
+                          <div key={index} className='responsibility-Inn-Box' style={{ display: 'flex', alignItems: 'center', marginTop: '8px' }}>
+                            <input
+                              type='text'
+                              placeholder='Add a responsibility'
+                              value={resp}
+                              onChange={(e) => handleResponsibilityChange(index, e.target.value)}
+                              disabled={!isFormMutable}
+                            />
+                            {index > 0 && (
+                              <span 
+                                onClick={() => handleRemoveResponsibility(index)}
+                                style={{ 
+                                  cursor: isFormMutable ? 'pointer' : 'not-allowed',
+                                  marginLeft: '8px'
+                                }}
+                              >
+                                <XMarkIcon className='w-4 h-4' />
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                        {errors.responsibilities && <p className='error'>{errors.responsibilities}</p>}
                       </div>
 
+                      <h3>Application Details</h3>
                       <div className='Gland-All-Grid'>
                         <div className='GHuh-Form-Input'>
                           <label>Deadline for Applications</label>
                           <DatePicker
                             selected={deadlineDate}
                             onChange={(date) => {
+                              if (!isFormMutable) return;
                               setDeadlineDate(date);
                               setErrors((prev) => ({ ...prev, deadlineDate: '' }));
                             }}
@@ -657,6 +712,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                             dateFormat="yyyy-MM-dd"
                             className="custom-datepicker-input"
                             required
+                            disabled={!isFormMutable}
                           />
                           {errors.deadlineDate && <p className='error'>{errors.deadlineDate}</p>}
                         </div>
@@ -666,12 +722,14 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                           <DatePicker
                             selected={startDate}
                             onChange={(date) => {
+                              if (!isFormMutable) return;
                               setStartDate(date);
                               setErrors((prev) => ({ ...prev, startDate: '' }));
                             }}
                             placeholderText="yyyy-MM-dd"
                             dateFormat="yyyy-MM-dd"
                             className="custom-datepicker-input"
+                            disabled={!isFormMutable}
                           />
                         </div>
                       </div>
@@ -690,9 +748,14 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                             value={documentTitle}
                             onChange={(e) => setDocumentTitle(e.target.value)}
                             required
+                            disabled={!isFormMutable}
                           />
                           <span 
                             onClick={handleAddDocument}
+                            style={{ 
+                              cursor: isFormMutable ? 'pointer' : 'not-allowed', 
+                              opacity: isFormMutable ? 1 : 0.5 
+                            }}
                           >
                             <PlusIcon className='w-5 h-5' />
                             Add Document
@@ -706,6 +769,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                               <button 
                                 onClick={() => handleRemoveDocument(doc)}
                                 className='text-red-600 hover:text-red-800'
+                                disabled={!isFormMutable}
                               >
                                 <XMarkIcon className='w-4 h-4' />
                               </button>
@@ -726,6 +790,10 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                               key={index}
                               className={checkedItems.includes(item) ? 'active-Li-Check' : ''}
                               onClick={() => toggleChecklistItem(item)}
+                              style={{ 
+                                cursor: isFormMutable ? 'pointer' : 'not-allowed', 
+                                opacity: isFormMutable ? 1 : 0.5 
+                              }}
                             >
                               <p>{item}</p>
                               <span></span>
@@ -778,7 +846,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                 <button 
                   className='publish-btn btn-primary-bg' 
                   onClick={handlePublish}
-                  disabled={isPublishing}
+                  disabled={isPublishing || !isFormMutable}
                 >
                   {isPublishing ? (
                     <>
@@ -802,7 +870,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                     'Save Changes'
                   )}
                 </button>
-                <button className='delete-btn' onClick={handleDeleteAdvert}>
+                <button className='delete-btn' onClick={handleDeleteAdvert} disabled={!isFormMutable}>
                   <TrashIcon className='w-5 h-5' /> Delete
                 </button>
               </div>
@@ -832,12 +900,29 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                     {formData.qualificationRequirement && <p><span>Qualification Requirement:</span> {formData.qualificationRequirement}</p>}
                     {formData.experienceRequirement && <p><span>Experience Requirement:</span> {formData.experienceRequirement}</p>}
                     {formData.knowledgeSkillRequirement && <p><span>Knowledge/Skill Requirement:</span> {formData.knowledgeSkillRequirement}</p>}
-                    <p><span>Job Description:</span> <div dangerouslySetInnerHTML={{ __html: formData.jobDescription.replace(/\n/g, '<br/>') }} /></p>
+                   
                   </div>
+
+                      <div className='preview-section aadda-poa'>
+                    <h3>Job Description</h3>
+                    <p><div dangerouslySetInnerHTML={{ __html: formData.jobDescription.replace(/\n/g, '<br/>') }} /></p>
+                   </div>
+
+                   <div className='preview-section'>
+                    <h3>Responsibilities</h3>
+                     {responsibilities.length > 0 && (
+                        <ul>
+                          {responsibilities.filter(resp => resp.trim()).map((resp, i) => (
+                            <li key={i}>{resp}</li>
+                          ))}
+                        </ul>
+                    )}
+                   </div>
+
+
                   
                   <div className='preview-section'>
                     <h3>Application Details</h3>
-                    <p><span>How to Apply:</span> {formData.howToApply}</p>
                     <p><span>Deadline for Applications:</span> {deadlineDate ? deadlineDate.toDateString() : 'Not specified'}</p>
                     <p><span>Start Date:</span> {startDate ? startDate.toDateString() : 'Not specified'}</p>
                   </div>

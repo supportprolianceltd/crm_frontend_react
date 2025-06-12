@@ -9,6 +9,7 @@ import RegisterPage from './Register';
 import CodeVerificationPage from './CodeVerification';
 import ForgotPasswordPage from './ForgotPassword';
 import NewPasswordPage from './NewPassword';
+import JobApplicationPage from './JobApplication';
 
 
 // Features
@@ -35,6 +36,7 @@ const CRMLandingpage = () => {
          <Route path="/code-verification" element={<CodeVerificationPage />} />
          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
          <Route path="/new-password" element={<NewPasswordPage />} />
+         <Route path="/job-application" element={<JobApplicationPage />} />
 
          {/* Features */}
 

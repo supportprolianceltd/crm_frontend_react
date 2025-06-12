@@ -60,9 +60,21 @@ const JobDetails = ({ job, onClose, onShowEditRequisition}) => {
                   <p><span>Reason for Requisition:</span> Not Specified</p>
                   <p><span>Job Description:</span> Not Specified</p>
                 </div>
+
+                          <div className='preview-section aadda-poa'>
+                    <h3>Job Description</h3>
+                    <p>Not Specified</p>
+                   </div>
+
+                   <div className='preview-section'>
+                    <h3>Responsibilities</h3>
+                    <ul>
+                    <li>No documents specified</li>
+                  </ul>
+                   </div>
+
                 <div className="preview-section">
                   <h3>Application Details</h3>
-                  <p><span>How to Apply:</span> How to Apply</p>
                   <p><span>Deadline for Applications:</span> Deadline <b className='bB-status status open'>Open</b></p>
                   <p><span>Start Date:</span> Start Date</p>
                 </div>

@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MagnifyingGlassIcon, AdjustmentsHorizontalIcon, CheckCircleIcon, TrashIcon, ChevronLeftIcon, ChevronRightIcon, EyeIcon } from '@heroicons/react/24/outline';
+import { Link } from 'react-router-dom';
+import { MagnifyingGlassIcon, AdjustmentsHorizontalIcon, CheckCircleIcon, TrashIcon,
+  InformationCircleIcon,
+  GlobeAltIcon,
+  ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
 import JobDetails from './JobDetails';
 import EditRequisition from './EditRequisition';
-
 
 const generateMockJobs = () => {
   const titles = ['Frontend Developer', 'Backend Developer', 'UI/UX Designer', 'QA Engineer', 'DevOps Engineer'];
@@ -109,7 +112,6 @@ const JobAdvert = () => {
   const [showNoSelectionAlert, setShowNoSelectionAlert] = useState(false);
   const [showViewRequisition, setShowViewRequisition] = useState(false);
   const [selectedJob, setSelectedJob] = useState(null);
-
   const [showEditRequisition, setShowEditRequisition] = useState(false);
 
   const handleShowEditRequisition = () => {
@@ -119,8 +121,6 @@ const JobAdvert = () => {
   const handleHideEditRequisition = () => {
     setShowEditRequisition(false);
   };
-
-
 
   const statuses = ['All', ...new Set(jobData.map(job => job.status))];
 
@@ -310,8 +310,15 @@ const JobAdvert = () => {
                           className="view-btn"
                           onClick={() => handleViewClick(job)}
                         >
-                          <EyeIcon className="w-4 h-4" /> View
+                          Details
                         </button>
+                        <Link
+                          to='/job-application'
+                          className='link-btn btn-primary-bg'
+                        >
+                          <GlobeAltIcon />
+                          Site
+                        </Link>
                       </div>
                     </td>
                   </tr>

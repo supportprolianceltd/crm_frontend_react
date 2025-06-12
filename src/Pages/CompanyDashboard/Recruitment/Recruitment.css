@@ -334,24 +334,25 @@
     align-items: center;
     gap: 5px;
 }
-
+.gen-td-btns a,
 .gen-td-btns button{
-    font-size: 9px;
+    font-size: 10px;
     font-weight: 500;
     width: auto;
     padding: 5px 10px;
     border-radius: 30px;
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 3px;
     user-select: none;
     cursor: pointer;
     border:1px solid transparent;
     transition: all 0.3s ease-in-out;
 }
 
+.gen-td-btns a svg,
 .gen-td-btns button svg{
-    width: 12px;
+    width: 11px;
 }
 
 .gen-td-btns button.view-btn{
@@ -1489,6 +1490,41 @@ background: #ebe6ff;
     text-transform: uppercase;
     font-weight: 600;
     margin: 23px 0px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.GHuh-Form-Sec-Main h3 span{
+    position: relative;
+    width: auto;
+    padding: 5px 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ebe6ff;
+    color: #7226FF;
+    border-radius: 5px;
+    font-size: 9px;
+    font-weight: 500;
+    text-transform: uppercase;
+    user-select: none;
+    cursor: pointer;
+    gap: 3px;
+    transition: all 0.3s ease-in-out;
+    border:1px solid transparent;
+    white-space: nowrap;
+}
+
+.GHuh-Form-Sec-Main h3 span:hover{
+    background-color: #fff;
+    border-color: #7226FF;
+}
+
+.GHuh-Form-Sec-Main h3 span svg{
+    width: 11px;
 }
 
 .GHuh-Form-Input{
@@ -1556,7 +1592,43 @@ background: #ebe6ff;
   font-size: 14px;
 }
 
+.responsibility-Inn-Box{
+       position: relative;
+    width: 100%;
+    display: inline-flex;
+    align-items: center; 
+}
 
+.responsibility-Inn-Box span{
+    position: absolute;
+    right: 5px;
+    width: 20px;
+    height: 20px;
+    border: 1px solid #e0dcef;
+    background-color: #f7f5ff;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    user-select: none;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    opacity: 0;
+}
+
+.responsibility-Inn-Box span svg{
+    width: 12px;
+}
+.responsibility-Inn-Box span:hover{
+    background-color: #ebe6ff;
+}
+.responsibility-Inn-Box input{
+    padding-right: 27px;
+}
+.responsibility-Inn-Box:hover span{
+    opacity: 1;
+}
 .agyha-oapl{
     position: relative;
     width: 100%;
@@ -2039,4 +2111,11 @@ background: #ebe6ff;
     font-size: 10px;
     font-weight: 600;
      color: #645e7c !important;
+}
+
+
+.aadda-poa p{
+    border-bottom: none !important;
+    padding: 0px 20px !important;
+    font-size: 12px !important;
 }

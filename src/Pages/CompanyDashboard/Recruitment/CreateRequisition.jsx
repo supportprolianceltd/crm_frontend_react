@@ -19,6 +19,7 @@ const CreateRequisition = ({ onClose }) => {
   const [errorMessage, setErrorMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [focusedInput, setFocusedInput] = useState(null); // Track focused input
 
   const textareaRef = useRef(null);
   const recognitionRef = useRef(null);
@@ -60,11 +61,11 @@ const CreateRequisition = ({ onClose }) => {
     }, 2000);
   };
 
-  const handleChange = (e) => {
+  const handleChange = (e, setter) => {
     const value = e.target.value;
     const words = value.trim().split(/\s+/);
     if (words.length > MAX_WORDS) return;
-    setText(value);
+    setter(value);
   };
 
   useEffect(() => {
@@ -104,11 +105,38 @@ const CreateRequisition = ({ onClose }) => {
 
       recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
-        setText((prev) => {
-          const newText = prev ? `${prev} ${transcript}` : transcript;
-          const words = newText.trim().split(/\s+/);
-          return words.length <= MAX_WORDS ? newText : prev;
-        });
+        if (focusedInput === 'title') {
+          setTitle((prev) => {
+            const newText = prev ? `${prev} ${transcript}` : transcript;
+            const words = newText.trim().split(/\s+/);
+            return words.length <= MAX_WORDS ? newText : prev;
+          });
+        } else if (focusedInput === 'qualification') {
+          setQualification((prev) => {
+            const newText = prev ? `${prev} ${transcript}` : transcript;
+            const words = newText.trim().split(/\s+/);
+            return words.length <= MAX_WORDS ? newText : prev;
+          });
+        } else if (focusedInput === 'experience') {
+          setExperience((prev) => {
+            const newText = prev ? `${prev} ${transcript}` : transcript;
+            const words = newText.trim().split(/\s+/);
+            return words.length <= MAX_WORDS ? newText : prev;
+          });
+        } else if (focusedInput === 'knowledge') {
+          setKnowledge((prev) => {
+            const newText = prev ? `${prev} ${transcript}` : transcript;
+            const words = newText.trim().split(/\s+/);
+            return words.length <= MAX_WORDS ? newText : prev;
+          });
+        } else {
+          // Default to textarea
+          setText((prev) => {
+            const newText = prev ? `${prev} ${transcript}` : transcript;
+            const words = newText.trim().split(/\s+/);
+            return words.length <= MAX_WORDS ? newText : prev;
+          });
+        }
       };
 
       recognition.onerror = (e) => {
@@ -155,7 +183,7 @@ const CreateRequisition = ({ onClose }) => {
         </div>
 
         <div className='CreateRequisition-box-SubTop'>
-          <p>Record your speech, <span><img src={MargicIcon} alt="AI" /> AI</span> will filter the details for you.</p>
+          <p>You can record your reason, <span><img src={MargicIcon} alt="AI" /> AI</span> will  transcribe it for you.</p>
         </div>
 
         <div className='CreateRequisition-box-Mid'>
@@ -163,35 +191,45 @@ const CreateRequisition = ({ onClose }) => {
             type='text'
             placeholder='Job Title'
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e) => handleChange(e, setTitle)}
+            onFocus={() => setFocusedInput('title')}
+            onBlur={() => setFocusedInput(null)}
             className={errorMessage.includes('title') ? 'input-error' : ''}
           />
           <input
             type='text'
             placeholder='Qualification requirement'
             value={qualification}
-            onChange={(e) => setQualification(e.target.value)}
+            onChange={(e) => handleChange(e, setQualification)}
+            onFocus={() => setFocusedInput('qualification')}
+            onBlur={() => setFocusedInput(null)}
             className={errorMessage.includes('Qualification') ? 'input-error' : ''}
           />
           <input
             type='text'
             placeholder='Experience requirement'
             value={experience}
-            onChange={(e) => setExperience(e.target.value)}
+            onChange={(e) => handleChange(e, setExperience)}
+            onFocus={() => setFocusedInput('experience')}
+            onBlur={() => setFocusedInput(null)}
             className={errorMessage.includes('Experience') ? 'input-error' : ''}
           />
           <input
             type='text'
             placeholder='Knowledge requirement'
             value={knowledge}
-            onChange={(e) => setKnowledge(e.target.value)}
+            onChange={(e) => handleChange(e, setKnowledge)}
+            onFocus={() => setFocusedInput('knowledge')}
+            onBlur={() => setFocusedInput(null)}
             className={errorMessage.includes('Knowledge') ? 'input-error' : ''}
           />
           <textarea
             ref={textareaRef}
             placeholder='Reason for request'
             value={text}
-            onChange={handleChange}
+            onChange={(e) => handleChange(e, setText)}
+            onFocus={() => setFocusedInput('text')}
+            onBlur={() => setFocusedInput(null)}
             style={{ maxHeight: MAX_HEIGHT, resize: 'none' }}
             className='custom-scroll-bar'
           />
