@@ -360,7 +360,7 @@ const RecruitmentHome = () => {
               <h3>
                 <ArrowTrendingUpIcon />
                 <CountUp key={trigger + `-${idx}`} end={item.value} duration={2} />{' '}
-                <span className='ai-check-span'>AI check - {formatTime(lastUpdateTime)}</span>
+                <span className='ai-check-span'>Last checked - {formatTime(lastUpdateTime)}</span>
               </h3>
               <h5>
                 Last Update <span>6/9/2025</span>
