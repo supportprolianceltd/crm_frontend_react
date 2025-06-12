@@ -570,6 +570,13 @@ button.logout-btn:hover{
     padding-left: 220px;
 }
 
+.DB-Envt-Container{
+    position: relative;
+    width: 100%;
+    height: auto;
+    padding: 0px 40px;
+}
+
 /* SideNavBar */
 
 .SideNavBar{

@@ -28,7 +28,7 @@ import PayrollIcon from '../../assets/Img/CRMPack/Payroll.svg';
 const DashboardNavBar = () => {
   const [showFeaturesDropdown, setShowFeaturesDropdown] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
-  const [activeButton, setActiveButton] = useState(null); // 'chat', 'calendar', or null
+  const [activeButton, setActiveButton] = useState(null);
 
   const dropdownRef = useRef(null);
   const buttonRef = useRef(null);
@@ -49,7 +49,6 @@ const DashboardNavBar = () => {
       ) {
         setShowProfileDropdown(false);
       }
-      // Hide activeButton if clicked outside chat or calendar buttons
       if (
         chatRef.current && !chatRef.current.contains(event.target) &&
         calendarRef.current && !calendarRef.current.contains(event.target)
@@ -72,24 +71,35 @@ const DashboardNavBar = () => {
     setActiveButton((prev) => (prev === button ? null : button));
   };
 
+  const featureLinks = [
+    { name: 'Recruitment', icon: RecruitmentIcon, path: '/company/recruitment' },
+    { name: 'Compliance', icon: ComplianceIcon, path: '/company/compliance' },
+    { name: 'Training', icon: TrainingIcon, path: '/company/training' },
+    { name: 'Assets management', icon: AssetmanagementIcon, path: '/company/assets' },
+    { name: 'Rostering', icon: RosteringIcon, path: '/company/rostering' },
+    { name: 'HR', icon: HRIcon, path: '/company/hr' },
+    { name: 'Payroll', icon: PayrollIcon, path: '/company/payroll' },
+  ];
+
   return (
     <div className='DashboardNavBar'>
       <nav className='Top-NaV'>
         <div className='NaV-1'>
-          <button 
+          <button
             ref={buttonRef}
             className={`genn-Drop-Togler ${showFeaturesDropdown ? 'active-Gent-Trangl' : ''}`}
             title='Features Launcher'
             onClick={() => setShowFeaturesDropdown(!showFeaturesDropdown)}
           >
-           <svg viewBox="0 0 49 49" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg viewBox="0 0 49 49" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path 
                 fillRule="evenodd" 
                 clipRule="evenodd" 
                 d="M8.61963 4.65527C10.8288 4.65527 12.6196 6.44613 12.6196 8.65527C12.6196 10.8644 10.8288 12.6553 8.61963 12.6553C6.41049 12.6553 4.61963 10.8644 4.61963 8.65527C4.61963 6.44613 6.41049 4.65527 8.61963 4.65527ZM24.6196 4.65527C26.8288 4.65527 28.6196 6.44613 28.6196 8.65527C28.6196 10.8644 26.8288 12.6553 24.6196 12.6553C22.4104 12.6553 20.6196 10.8644 20.6196 8.65527C20.6196 6.44613 22.4104 4.65527 24.6196 4.65527ZM44.6196 8.65527C44.6196 6.44613 42.8288 4.65527 40.6196 4.65527C38.4104 4.65527 36.6196 6.44613 36.6196 8.65527C36.6196 10.8644 38.4104 12.6553 40.6196 12.6553C42.8288 12.6553 44.6196 10.8644 44.6196 8.65527ZM8.61963 20.6553C10.8288 20.6553 12.6196 22.4461 12.6196 24.6553C12.6196 26.8645 10.8288 28.6553 8.61963 28.6553C6.41049 28.6553 4.61963 26.8645 4.61963 24.6553C4.61963 22.4461 6.41049 20.6553 8.61963 20.6553ZM28.6196 24.6553C28.6196 22.4461 26.8288 20.6553 24.6196 20.6553C22.4104 20.6553 20.6196 22.4461 20.6196 24.6553C20.6196 26.8645 22.4104 28.6553 24.6196 28.6553C26.8288 28.6553 28.6196 26.8645 28.6196 24.6553ZM40.6196 20.6553C42.8288 20.6553 44.6196 22.4461 44.6196 24.6553C44.6196 26.8645 42.8288 28.6553 40.6196 28.6553C38.4104 28.6553 36.6196 26.8645 36.6196 24.6553C36.6196 22.4461 38.4104 20.6553 40.6196 20.6553ZM12.6196 40.6553C12.6196 38.4461 10.8288 36.6553 8.61963 36.6553C6.41049 36.6553 4.61963 38.4461 4.61963 40.6553C4.61963 42.8645 6.41049 44.6553 8.61963 44.6553C10.8288 44.6553 12.6196 42.8645 12.6196 40.6553ZM24.6196 36.6553C26.8288 36.6553 28.6196 38.4461 28.6196 40.6553C28.6196 42.8645 26.8288 44.6553 24.6196 44.6553C22.4104 44.6553 20.6196 42.8645 20.6196 40.6553C20.6196 38.4461 22.4104 36.6553 24.6196 36.6553ZM44.6196 40.6553C44.6196 38.4461 42.8288 36.6553 40.6196 36.6553C38.4104 36.6553 36.6196 38.4461 36.6196 40.6553C36.6196 42.8645 38.4104 44.6553 40.6196 44.6553C42.8288 44.6553 44.6196 42.8645 44.6196 40.6553Z" 
               />
             </svg>
-          </button>
+
+            </button>
 
           <Link to='/' className='Nav-Brand'>
             <img src={LOGO} alt="logo" />
@@ -111,11 +121,11 @@ const DashboardNavBar = () => {
                   <input type='text' placeholder='Find CRM Features' />
                 </div>
                 <div className='feat-Main'>
-                  {[RecruitmentIcon, ComplianceIcon, TrainingIcon, AssetmanagementIcon, RosteringIcon, HRIcon, PayrollIcon].map((icon, idx) => (
-                    <a href='#' onClick={handleFeatureClick} key={idx}>
-                      <img src={icon} alt="feature" />
-                      <p>{['Recruitment','Compliance','Training','Assets management','Rostering','HR','Payroll'][idx]}</p>
-                    </a>
+                  {featureLinks.map(({ name, icon, path }, idx) => (
+                    <Link to={path} onClick={handleFeatureClick} key={idx}>
+                      <img src={icon} alt={name} />
+                      <p>{name}</p>
+                    </Link>
                   ))}
                 </div>
               </motion.div>
@@ -125,13 +135,10 @@ const DashboardNavBar = () => {
 
         <div className='NaV-2'>
           <div className='NaV-2-Icons'>
-
-            {/* Home */}
-            <Link to='/dashboard' title='Home'>
+            <Link to='/company' title='Home'>
               <HomeIconOutline className="h-6 w-6" />
             </Link>
 
-            {/* Chat Button */}
             <span
               ref={chatRef}
               title="Chat"
@@ -141,7 +148,6 @@ const DashboardNavBar = () => {
               <ChatIconOutline className="h-6 w-6" />
             </span>
 
-            {/* Calendar Button */}
             <span
               ref={calendarRef}
               title="Calendar"
@@ -151,16 +157,13 @@ const DashboardNavBar = () => {
               <CalendarIconOutline className="h-6 w-6" />
             </span>
 
-            {/* Notifications */}
             <Link to='/notifications' title='Notifications'>
               <BellIconOutline className="h-6 w-6" />
             </Link>
 
-            {/* Settings */}
             <Link to='/settings' title='Settings'>
               <SettingsIconOutline className="h-6 w-6" />
             </Link>
-
           </div>
 
           <div
