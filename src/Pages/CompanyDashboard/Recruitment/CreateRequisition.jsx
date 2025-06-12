@@ -183,7 +183,7 @@ const CreateRequisition = ({ onClose }) => {
         </div>
 
         <div className='CreateRequisition-box-SubTop'>
-          <p>You can record your reason, <span><img src={MargicIcon} alt="AI" /> AI</span> will  transcribe it for you.</p>
+          <p>Use the microphone icon to record your reason. Your voice will be transcribed into text automatically.</p>
         </div>
 
         <div className='CreateRequisition-box-Mid'>
