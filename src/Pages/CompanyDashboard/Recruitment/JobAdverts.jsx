@@ -1,12 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { MagnifyingGlassIcon, AdjustmentsHorizontalIcon, CheckCircleIcon, TrashIcon,
+  ClipboardDocumentListIcon,
+  FolderOpenIcon,
+  ArrowTrendingUpIcon,
   InformationCircleIcon,
   GlobeAltIcon,
+  BriefcaseIcon,
+  MegaphoneIcon,
+  LockClosedIcon,
   ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
 import JobDetails from './JobDetails';
 import EditRequisition from './EditRequisition';
+import CountUp from 'react-countup';
 
 const generateMockJobs = () => {
   const titles = ['Frontend Developer', 'Backend Developer', 'UI/UX Designer', 'QA Engineer', 'DevOps Engineer'];
@@ -114,6 +121,25 @@ const JobAdvert = () => {
   const [selectedJob, setSelectedJob] = useState(null);
   const [showEditRequisition, setShowEditRequisition] = useState(false);
 
+
+  const [trigger, setTrigger] = useState(0);
+  const [lastUpdateTime, setLastUpdateTime] = useState(new Date('2025-06-13T08:23:00+02:00')); // 08:23 AM CEST
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTrigger((prev) => prev + 1);
+      setLastUpdateTime(new Date());
+    }, 50000); // Update every 50 seconds
+    return () => clearInterval(interval);
+  }, []);
+
+  const formatTime = (date) => {
+    return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true });
+  };
+
+
+
+
   const handleShowEditRequisition = () => {
     setShowEditRequisition(true);
   };
@@ -214,7 +240,33 @@ const JobAdvert = () => {
 
   return (
     <div className="JobAdvert-sec">
+       <div className='Dash-OO-Boas TTTo-POkay'>
+        
+  <div className="glo-Top-Cards">
+      {[
+        { icon: BriefcaseIcon, label: 'Total Job Advertisements', value: 100 },
+        { icon: MegaphoneIcon, label: 'Open Advertisements', value: 25 },
+        { icon: LockClosedIcon, label: 'Closed Advertisements', value: 75 },
+      ].map((item, idx) => (
+        <div key={idx} className={`glo-Top-Card card-${idx + 1}`}>
+          <div className="ffl-TOp">
+            <span><item.icon /></span>
+            <p>{item.label}</p>
+          </div>
+          <h3>
+            <ArrowTrendingUpIcon />
+            <CountUp key={trigger + `-${idx}`} end={item.value} duration={2} />{' '}
+            <span className="ai-check-span">Last checked - {formatTime(lastUpdateTime)}</span>
+          </h3>
+     
+        </div>
+      ))}
+    </div>
+
+    </div>
+
       <div className='Dash-OO-Boas Gen-Boxshadow'>
+
         <div className='Dash-OO-Boas-Top'>
           <div className='Dash-OO-Boas-Top-1'>
             <span onClick={toggleSection}><AdjustmentsHorizontalIcon /></span>
@@ -232,6 +284,8 @@ const JobAdvert = () => {
             </div>
           </div>
         </div>
+
+
         <AnimatePresence>
           {isVisible && (
             <motion.div className="filter-dropdowns"

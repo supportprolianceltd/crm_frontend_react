@@ -19,6 +19,7 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   ExclamationCircleIcon,
+  LockClosedIcon,
 } from '@heroicons/react/24/outline';
 import CountUp from 'react-countup';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -350,7 +351,7 @@ const RecruitmentHome = () => {
             { icon: ClipboardDocumentListIcon, label: 'Total Job Requisitions', value: 120 },
             { icon: FolderOpenIcon, label: 'Open Requisitions', value: 45 },
             { icon: ClockIcon, label: 'Pending Approvals', value: 10 },
-            { icon: CheckCircleIcon, label: 'Closed Requisitions', value: 65 },
+            { icon: LockClosedIcon, label: 'Closed Requisitions', value: 65 },
           ].map((item, idx) => (
             <div key={idx} className={`glo-Top-Card card-${idx + 1} Gen-Boxshadow`}>
               <div className="ffl-TOp">

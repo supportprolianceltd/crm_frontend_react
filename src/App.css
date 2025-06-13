@@ -58,10 +58,11 @@ background: #f7f5ff;
   outline: none;
   background: transparent;
   transition: border-color 0.3s;
-  border-radius: 40px;
+  border-radius: 5px;
   height: 50px;
   padding: 0px 20px;
 }
+
 
 .input-group input:focus {
     border: 2px solid #cfb8fa !important;
@@ -115,7 +116,7 @@ background: #f7f5ff;
   outline: none;
   background: transparent;
   transition: border-color 0.3s;
-  border-radius: 40px;
+  border-radius: 30px;
   height: 50px;
   padding: 0px 20px;
   cursor: pointer;
@@ -205,29 +206,35 @@ background: #f7f5ff;
   gap: 10px;
   justify-content: center;
    width: 100%;
-  font-size: 14px;
+  font-size: 13px;
   border: 1.5px solid #dcdae3;
   outline: none;
   background: transparent;
   transition: all 0.3s ease-in-out;
-  border-radius: 40px;
-  height: 50px;
+  border-radius: 5px;
+  height: 43px;
   padding: 0px 20px;
   cursor: pointer;
   margin: 8px 0;
   font-size: 14px;
+  position: relative;
 }
-
+.nsm7Bb-HzV7m-LgbsSe .nsm7Bb-HzV7m-LgbsSe-BPrWId{
+  color: #372580 !important;
+}
 .social-btn .icon svg {
-  width: 20px;
+  width: 17px;
+  position: absolute;
+  left: 10px;
 }
 
 .social-btn .ggole-Pol svg{
   width: 15px !important;
 }
-
+.nsm7Bb-HzV7m-LgbsSe:hover, .nsm7Bb-HzV7m-LgbsSe:focus,
 .social-btn:hover{
-  background: #f7f5ff;
+  background: #f7f5ff !important;
+  border-color: #f7f5ff !important;
 }
 
 .login-divider {
@@ -318,26 +325,4 @@ background: #f7f5ff;
 
 .terms-checkbox span{
   line-height: 23px !important;
-}
-.social-btn.microsoft {
-  background-color: #0078d4;
-  color: white;
-  border: none;
-  padding: 10px;
-  margin: 5px 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.social-btn.microsoft:hover {
-  background-color: #005a9e;
-}
-
-.social-btn.microsoft .icon {
-  width: 20px;
-  height: 20px;
-  margin-right: 8px;
 }

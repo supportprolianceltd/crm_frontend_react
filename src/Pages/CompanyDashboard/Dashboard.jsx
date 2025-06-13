@@ -5,6 +5,7 @@ import usePageTitle from '../../hooks/usecrmPageTitle';
 
 // Components
 import DashboardNavBar from './DashboardNavBar';
+import DashFooter from './DashFooter';
 import DashboardHome from './Home/DashboardHome';
 import Recruitment from './Recruitment/Recruitment';
 import Compliance from './Compliance/Compliance';
@@ -32,6 +33,7 @@ const Dashboard = () => {
           <Route path="/payroll/*" element={<Payroll />} />
         </Routes>
       </div>
+      <DashFooter />
     </div>
   );
 };

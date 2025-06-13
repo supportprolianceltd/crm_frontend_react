@@ -4,6 +4,7 @@ import './Recruitment.css';
 import SideNavBar from './SideNavBar';
 import RecruitmentHome from './RecruitmentHome';
 import JobAdverts from './JobAdverts';
+import Applications from './Applications';
 
 
 const Recruitment = () => {
@@ -16,6 +17,7 @@ const Recruitment = () => {
         <Routes>
           <Route path="/" element={<RecruitmentHome />} />
           <Route path="/job-adverts" element={<JobAdverts />} />
+          <Route path="/applications" element={<Applications />} />
         </Routes>
       </div>
       </div>

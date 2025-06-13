@@ -2119,3 +2119,77 @@ background: #ebe6ff;
     padding: 0px 20px !important;
     font-size: 12px !important;
 }
+
+
+
+
+
+
+
+/* TTTo-POkay */
+
+.TTTo-POkay{
+    min-height: 0px !important;
+    padding: 0px !important;
+    background-color: transparent !important;
+    border:none !important;
+    border-radius: 0px !important;
+}
+
+.TTTo-POkay .glo-Top-Card.card-1{
+background: linear-gradient(135deg, #3D0D99 0%, #8B1FFF 50%, #E54BFF 100%) !important;
+}
+.TTTo-POkay .glo-Top-Card.card-2{
+background: linear-gradient(135deg, #FF6FD8 0%, #FF42A1 50%, #FF9770 100%) !important;
+}
+.TTTo-POkay .glo-Top-Card.card-3{
+ background: linear-gradient(135deg, #6A11CB 0%, #2575FC 50%, #6DD5FA 100%) !important;
+}
+
+.TTTo-POkay .glo-Top-Card{
+    color: #fff !important;
+    overflow: hidden !important;
+    z-index: 1;
+}
+.TTTo-POkay .glo-Top-Card::before{
+    content: '';
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background-color: rgba(255,255,255,0.4);
+    border-radius: 50%;
+    right: -20px;
+    top: -10px;
+    z-index: -10;
+}
+
+
+.TTTo-POkay .glo-Top-Card .ffl-TOp span{
+   width: auto !important;
+   height: auto !important;
+   margin-right: 5px !important;
+}
+
+.TTTo-POkay .glo-Top-Card .ffl-TOp span svg{
+    width: 14px !important;
+}
+
+
+.TTTo-POkay .glo-Top-Card  h3{
+    color: #fff !important;
+    margin-bottom: 5px !important;
+    margin-top: 0px !important;
+}
+
+.TTTo-POkay .glo-Top-Card h3 svg{
+    color:  #fff !important;
+}
+
+.TTTo-POkay .glo-Top-Card h3 .ai-check-span{
+    color: rgba(255,255,255,0.8) !important;
+}
+
+.glo-Top-Card h5 span{
+     background-color: transparent !important;
+     border: 1px solid rgba(255,255,255,0.4) !important;
+}

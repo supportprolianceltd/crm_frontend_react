@@ -702,3 +702,34 @@ button.logout-btn:hover{
 .submenu-list li a{
     font-size: 12px !important;
 }
+
+
+
+
+
+
+
+
+.dash-footer{
+    position: relative;
+    width: 100%;
+    height: auto;
+    padding: 20px 250px;
+    text-align: center;
+}
+.dash-footer p{
+    font-size: 12px;
+    opacity: 0.8;
+}
+.dash-footer p:hover{
+    opacity: 1;
+}
+
+.dash-footer p a{
+    font-weight: 500;
+    color: #7226FF;
+}
+
+.dash-footer p a:hover{
+    text-decoration: underline !important;
+}
