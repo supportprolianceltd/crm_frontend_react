@@ -536,7 +536,10 @@ const CreateRequisition = ({ onClose }) => {
           <p>Use the microphone icon to record your reason. Your voice will be transcribed into text automatically.</p>
         </div>
 
-        <div className='CreateRequisition-box-Mid'>
+
+        <div className='CreateRequisition-box-Mid custom-scroll-bar'>
+           <div className='GHuh-Form-Input'>
+               <label>Job Title</label>
           <input
             type='text'
             placeholder='Job Title'
@@ -546,6 +549,9 @@ const CreateRequisition = ({ onClose }) => {
             onBlur={() => setFocusedInput(null)}
             className={errorMessage.includes('title') ? 'input-error' : ''}
           />
+          </div>
+          <div className='GHuh-Form-Input'>
+               <label>Qualification requirement</label>
           <input
             type='text'
             placeholder='Qualification requirement'
@@ -555,6 +561,9 @@ const CreateRequisition = ({ onClose }) => {
             onBlur={() => setFocusedInput(null)}
             className={errorMessage.includes('Qualification') ? 'input-error' : ''}
           />
+          </div>
+          <div className='GHuh-Form-Input'>
+               <label>Experience requirement</label>
           <input
             type='text'
             placeholder='Experience requirement'
@@ -564,6 +573,9 @@ const CreateRequisition = ({ onClose }) => {
             onBlur={() => setFocusedInput(null)}
             className={errorMessage.includes('Experience') ? 'input-error' : ''}
           />
+          </div>
+          <div className='GHuh-Form-Input'>
+               <label>Knowledge requirement</label>
           <input
             type='text'
             placeholder='Knowledge requirement'
@@ -573,6 +585,9 @@ const CreateRequisition = ({ onClose }) => {
             onBlur={() => setFocusedInput(null)}
             className={errorMessage.includes('Knowledge') ? 'input-error' : ''}
           />
+          </div>
+          <div className='GHuh-Form-Input'>
+            <label>Reason for request</label>
           <textarea
             ref={textareaRef}
             placeholder='Reason for request'
@@ -586,6 +601,7 @@ const CreateRequisition = ({ onClose }) => {
           {errorMessage && (
             <p className='erro-message-Txt'>{errorMessage}</p>
           )}
+          </div>
         </div>
 
         <div className='CreateRequisition-box-Foot'>

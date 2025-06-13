@@ -1,10 +1,12 @@
+// src/components/RequestDemo.js
 import usePageTitle from '../../hooks/usecrmPageTitle';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import './RequestDemo.css';
 import DemoCalendar from './DemoCalendar';
 import SheduleDemo from './SheduleDemo';
 import { ArrowLongRightIcon, ArrowLongLeftIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import { Link } from 'react-router-dom';
+import { useSelectedFeatures } from '../../context/SelectedFeaturesContext';
 
 import {
   CalendarIcon as CalendarSolid,
@@ -61,22 +63,9 @@ const features = [
 function RequestDemo() {
   usePageTitle();
   const [activeStep, setActiveStep] = useState('calendar');
-  const [activeBoxes, setActiveBoxes] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [showAlert, setShowAlert] = useState(false);
-
-  useEffect(() => {
-    // Set all boxes active by default on mount
-    setActiveBoxes(features.map((item) => item.label));
-  }, []);
-
-  const toggleBox = (label) => {
-    setActiveBoxes((prev) =>
-      prev.includes(label)
-        ? prev.filter((item) => item !== label)
-        : [...prev, label]
-    );
-  };
+  const { selectedFeatures, toggleFeature } = useSelectedFeatures();
 
   const handleSlotSelect = (slot) => {
     setSelectedSlot(slot);
@@ -93,52 +82,51 @@ function RequestDemo() {
         <div className='RequestDemo-Main'>
           <div className='AllO-Ramp'>
             <div className='AllO-Ramp-Main'>
-
               {/* Steps */}
-           <div className='AllO-Ramp-Part-1 Gen-Boxshadow'>
-  <span
-    className={activeStep === 'calendar' ? 'active-All-RampSpan' : ''}
-    onClick={() => setActiveStep('calendar')}
-  >
-    {activeStep === 'calendar' ? (
-      <CalendarSolid className='h-5 w-5 mr-1' />
-    ) : (
-      <CalendarOutline className='h-5 w-5 mr-1' />
-    )}
-    Calendar
-  </span>
+              <div className='AllO-Ramp-Part-1 Gen-Boxshadow'>
+                <span
+                  className={activeStep === 'calendar' ? 'active-All-RampSpan' : ''}
+                  onClick={() => setActiveStep('calendar')}
+                >
+                  {activeStep === 'calendar' ? (
+                    <CalendarSolid className='h-5 w-5 mr-1' />
+                  ) : (
+                    <CalendarOutline className='h-5 w-5 mr-1' />
+                  )}
+                  Calendar
+                </span>
 
-<span
-  className={activeStep === 'schedule' ? 'active-All-RampSpan' : ''}
-onClick={() => {
-  if (selectedSlot) {
-    setActiveStep('schedule');
-  } else {
-    setShowAlert(true);
-    setTimeout(() => setShowAlert(false), 3000); // auto hide after 3 sec
-  }
-}}
->
-  {activeStep === 'schedule' ? (
-    <ClockSolid className='h-5 w-5 mr-1' />
-  ) : (
-    <ClockOutline className='h-5 w-5 mr-1' />
-  )}
-  Schedule
-</span>
+                <span
+                  className={activeStep === 'schedule' ? 'active-All-RampSpan' : ''}
+                  onClick={() => {
+                    if (selectedSlot) {
+                      setActiveStep('schedule');
+                    } else {
+                      setShowAlert(true);
+                      setTimeout(() => setShowAlert(false), 3000); // auto hide after 3 sec
+                    }
+                  }}
+                >
+                  {activeStep === 'schedule' ? (
+                    <ClockSolid className='h-5 w-5 mr-1' />
+                  ) : (
+                    <ClockOutline className='h-5 w-5 mr-1' />
+                  )}
+                  Schedule
+                </span>
 
-  <span
-    className={activeStep === 'done' ? 'active-All-RampSpan disabled' : 'disabled'}
-    style={{ pointerEvents: 'none' }} // Disable interaction and visually indicate
-  >
-    {activeStep === 'done' ? (
-      <CheckSolid className='h-5 w-5 mr-1' />
-    ) : (
-      <CheckOutline className='h-5 w-5 mr-1' />
-    )}
-    Done
-  </span>
-</div>
+                <span
+                  className={activeStep === 'done' ? 'active-All-RampSpan disabled' : 'disabled'}
+                  style={{ pointerEvents: 'none' }}
+                >
+                  {activeStep === 'done' ? (
+                    <CheckSolid className='h-5 w-5 mr-1' />
+                  ) : (
+                    <CheckOutline className='h-5 w-5 mr-1' />
+                  )}
+                  Done
+                </span>
+              </div>
 
               {/* Animated Feature List */}
               <motion.div
@@ -151,10 +139,10 @@ onClick={() => {
                   <motion.div
                     key={idx}
                     className={`YU-Box ${
-                      activeBoxes.includes(item.label) ? 'active-YU-Box' : ''
+                      selectedFeatures.includes(item.label) ? 'active-YU-Box' : ''
                     }`}
                     variants={itemVariant}
-                    onClick={() => toggleBox(item.label)}
+                    onClick={() => toggleFeature(item.label)}
                   >
                     <button>
                       <span>
@@ -188,7 +176,7 @@ onClick={() => {
               <div className='Cland-Sec'>
                 <div className='Gllas-Header'>
                   <h3>Demo Schedule</h3>
-                  <button 
+                  <button
                     className="back-to-calendar-btn"
                     onClick={() => setActiveStep('calendar')}
                   >
@@ -196,9 +184,9 @@ onClick={() => {
                   </button>
                 </div>
                 <div className='Gllas-body'>
-                  <SheduleDemo 
-                    selectedSlot={selectedSlot} 
-                    onSuccess={handleScheduleSuccess} 
+                  <SheduleDemo
+                    selectedSlot={selectedSlot}
+                    onSuccess={handleScheduleSuccess}
                   />
                 </div>
               </div>
@@ -210,7 +198,7 @@ onClick={() => {
                 <div className='Gllas-body'>
                   <div className='success-Secc'>
                     <div className='success-Secc-Box'>
-                   <motion.img
+                      <motion.img
                         src={MessageSentImg}
                         alt="Message sent"
                         initial={{ opacity: 0, x: -50 }}
@@ -218,15 +206,15 @@ onClick={() => {
                         transition={{ duration: 0.5 }}
                       />
                       <motion.div
-                       initial={{ opacity: 0, x: -20 }}
+                        initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.6 }}
                       >
-                      <h3 className='mid-text'>Demo Request Sent!</h3>
-                      <p>Thank you for your interest! We've received your demo request and will get back to you shortly to confirm the details via email. We look forward to showing you how our CRM can help you achieve your goals.</p>
-                      <h6>Have any question? <a href='#'>Contact sales</a></h6>
-                      <Link to='/' className='backhome-btn btn-primary-bg'>Back to Home</Link>
-                    </motion.div>
+                        <h3 className='mid-text'>Demo Request Sent!</h3>
+                        <p>Thank you for your interest! We've received your demo request and will get back to you shortly to confirm the details via email. We look forward to showing you how our CRM can help you achieve your goals.</p>
+                        <h6>Have any question? <a href='#'>Contact sales</a></h6>
+                        <Link to='/' className='backhome-btn btn-primary-bg'>Back to Home</Link>
+                      </motion.div>
                     </div>
                   </div>
                 </div>
@@ -235,17 +223,17 @@ onClick={() => {
           </div>
         </div>
 
-                {showAlert && (
-              <motion.div
-                className='custom-alert'
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-              >
-                <p>Please select a schedule date</p>
-              </motion.div>
-            )}
+        {showAlert && (
+          <motion.div
+            className='custom-alert'
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <p>Please select a schedule date</p>
+          </motion.div>
+        )}
 
         <footer className='ddde-Footer'>
           <p>© {new Date().getFullYear()} Kaefy CRM. All rights reserved.</p>

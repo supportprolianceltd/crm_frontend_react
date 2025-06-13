@@ -33,6 +33,13 @@ function JobApplication() {
   const [errorMessage, setErrorMessage] = useState('');
   const fileInputRef = useRef(null);
   const documentsInputRef = useRef(null);
+  const [selectedDocType, setSelectedDocType] = useState('');
+  const [availableDocTypes, setAvailableDocTypes] = useState([
+    'Birth certificate',
+    'Degree certificate',
+    'Training certificate',
+    'NYSC certificate',
+  ]);
 
   const handleFileDrop = (e) => {
     e.preventDefault();
@@ -65,6 +72,12 @@ function JobApplication() {
 
   const handleDocumentUpload = (e) => {
     const selectedFiles = Array.from(e.target.files);
+    if (selectedFiles.length === 0) {
+      setErrorMessage('No files selected. Please choose a file to upload.');
+      setSelectedDocType('');
+      return;
+    }
+
     const validFiles = selectedFiles.filter(file => file.type === 'application/pdf');
 
     if (validFiles.length !== selectedFiles.length) {
@@ -76,12 +89,19 @@ function JobApplication() {
     const newDocs = validFiles.map(file => ({
       name: file.name,
       size: (file.size / (1024 * 1024)).toFixed(1),
+      type: selectedDocType,
     }));
 
     setDocuments(prev => [...prev, ...newDocs]);
+    setAvailableDocTypes(prev => prev.filter(type => type !== selectedDocType));
+    setSelectedDocType('');
   };
 
   const removeDocument = (index) => {
+    const docToRemove = documents[index];
+    if (docToRemove.type) {
+      setAvailableDocTypes(prev => [...prev, docToRemove.type].sort());
+    }
     const newDocs = [...documents];
     newDocs.splice(index, 1);
     setDocuments(newDocs);
@@ -90,13 +110,24 @@ function JobApplication() {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    setErrorMessage(''); // Clear error on input change
+    setErrorMessage('');
+  };
+
+  const handleDocTypeChange = (e) => {
+    const selectedType = e.target.value;
+    if (selectedType !== '') {
+      setSelectedDocType(selectedType);
+      documentsInputRef.current.click();
+    } else {
+      setSelectedDocType('');
+    }
   };
 
   const handleSubmit = () => {
     const requiredFields = ['fullName', 'email', 'phone', 'qualification', 'experience'];
     const isFormValid = requiredFields.every(field => formData[field].trim() !== '');
     const isResumeUploaded = activeTab === 'noresume' || !!uploadedFile;
+    const areDocumentsUploaded = documents.length > 0;
 
     if (!isFormValid) {
       setErrorMessage('Please fill all required fields: Full Name, Email, Phone, Qualification, and Experience.');
@@ -108,6 +139,11 @@ function JobApplication() {
       return;
     }
 
+    if (!areDocumentsUploaded) {
+      setErrorMessage('Please upload at least one required document.');
+      return;
+    }
+
     setErrorMessage('');
     setIsSubmitting(true);
 
@@ -116,8 +152,8 @@ function JobApplication() {
       setShowSuccess(true);
       setTimeout(() => {
         setShowSuccess(false);
-        window.location.reload(); // Refresh the page after alert disappears
-      }, 3000); // Hide alert after 3 seconds
+        window.location.reload();
+      }, 3000);
     }, 2000);
   };
 
@@ -333,6 +369,45 @@ function JobApplication() {
                     ))}
 
                     <div className="GHuh-Form-Input">
+                      <label>Document Uploads (Required)</label>
+                      <select onChange={handleDocTypeChange} value={selectedDocType} required>
+                        <option value="">--Select document to upload--</option>
+                        {availableDocTypes.map((type, idx) => (
+                          <option key={idx} value={type}>{type}</option>
+                        ))}
+                      </select>
+                      <input 
+                        type="file" 
+                        accept=".pdf"
+                        ref={documentsInputRef}
+                        multiple
+                        style={{ display: 'none' }}
+                        onChange={handleDocumentUpload}
+                        required
+                      />
+                    </div>
+
+                    {documents.length > 0 && documents.map((doc, index) => (
+                      <div className="Gtahy-SSa" key={index}>
+                        <div className="Gtahy-SSa-1">
+                          <div className="Gtahy-SSa-11">
+                            <div>
+                              <h4>{doc.name} ({doc.type})</h4>
+                              <p>
+                                <span>{doc.size}MB</span>
+                                <i></i>
+                                <span><CheckCircleIcon /> File size</span>
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="Gtahy-SSa-2">
+                          <span onClick={() => removeDocument(index)}><XMarkIcon /></span>
+                        </div>
+                      </div>
+                    ))}
+
+                    <div className="GHuh-Form-Input">
                       <label>Cover Letter (Optional)</label>
                       <textarea
                         name="coverLetter"
@@ -340,47 +415,6 @@ function JobApplication() {
                         value={formData.coverLetter}
                         onChange={handleInputChange}
                       />
-                    </div>
-
-                    <div className="GHuh-Form-Input">
-                      <label>Document Uploads (Optional)</label>
-                      <input 
-                        type="file" 
-                        accept=".pdf"
-                        ref={documentsInputRef}
-                        multiple
-                        onChange={handleDocumentUpload}
-                      />
-
-                      {documents.length > 0 && documents.map((doc, index) => (
-                        <div className="Gtahy-SSa" key={index}>
-                          <div className="Gtahy-SSa-1">
-                            <div className="Gtahy-SSa-11">
-                              <div>
-                                <h4>{doc.name}</h4>
-                                <p>
-                                  <span>{doc.size}MB</span>
-                                  <i></i>
-                                  <span><CheckCircleIcon /> File size</span>
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="Gtahy-SSa-2">
-                            <span onClick={() => removeDocument(index)}><XMarkIcon /></span>
-                          </div>
-                        </div>
-                      ))}
-
-                      <div className="pol-ffols">
-                        <p>Recommended documents to upload:</p>
-                        <ul>
-                          <li>Birth certificate</li>
-                          <li>Degree certificate</li>
-                          <li>Training certificate</li>
-                          <li>NYSC certificate</li>
-                        </ul>
-                      </div>
                     </div>
 
                     <div className="GHuh-Form-Input">
