@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import config from '../../config';
 
+
 const SocialCallback = () => {
   const navigate = useNavigate();
   const location = useLocation();
