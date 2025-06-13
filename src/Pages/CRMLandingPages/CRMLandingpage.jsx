@@ -1,5 +1,6 @@
 import React from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
+import { SelectedFeaturesProvider } from '../../context/SelectedFeaturesContext';
 import './CRMLandingpage.css';
 import NavBar from './NavBar';
 import Home from './Home';
@@ -26,6 +27,7 @@ const CRMLandingpage = () => {
   const isRegPage = regPagePaths.includes(location.pathname);
 
   return (
+    <SelectedFeaturesProvider>
     <div className={`CRMLandingpagee ${isRegPage ? 'Reg_Page' : ''}`}>
       <NavBar />
       <Routes>
@@ -45,6 +47,7 @@ const CRMLandingpage = () => {
 
       </Routes>
     </div>
+    </SelectedFeaturesProvider>
   );
 };
 

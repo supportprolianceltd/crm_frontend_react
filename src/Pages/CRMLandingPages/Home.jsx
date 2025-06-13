@@ -1,5 +1,6 @@
+// src/components/Home.js
 import usePageTitle from '../../hooks/usecrmPageTitle';
-import { useState } from 'react';
+import { useSelectedFeatures } from '../../context/SelectedFeaturesContext';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
@@ -17,11 +18,7 @@ import { LightBulbIcon } from '@heroicons/react/24/outline';
 
 import GlobalBanner from '../../assets/Img/global-banner.png';
 import HHAbtBanner from '../../assets/Img/HhAbt-img.png';
-
-
 import FAQSlider from './FAQSlider';
-
-
 
 const features = [
   { name: 'Recruitment', icon: RecruitmentIcon },
@@ -57,17 +54,7 @@ const FeatureCard = ({ icon, name, to }) => {
 
 function Home() {
   usePageTitle();
-  const [selected, setSelected] = useState([]);
-
-  const toggleSelection = (name) => {
-    setSelected((prev) =>
-      prev.includes(name) ? prev.filter((n) => n !== name) : [...prev, name]
-    );
-  };
-
-  const removeSelection = (name) => {
-    setSelected((prev) => prev.filter((n) => n !== name));
-  };
+  const { selectedFeatures, toggleFeature, removeFeature } = useSelectedFeatures();
 
   return (
     <div className='crmhome-page'>
@@ -89,12 +76,12 @@ function Home() {
             </h3>
             <div className='product-Dsspl-Grid'>
               {features.map((feature) => {
-                const isSelected = selected.includes(feature.name);
+                const isSelected = selectedFeatures.includes(feature.name);
                 return (
                   <div
                     key={feature.name}
                     className={`prosu-Card Gen-Boxshadow ${isSelected ? 'selected selected-card' : ''}`}
-                    onClick={() => toggleSelection(feature.name)}
+                    onClick={() => toggleFeature(feature.name)}
                     style={{ cursor: 'pointer', position: 'relative' }}
                   >
                     <span className='check-icon-span'>
@@ -111,14 +98,14 @@ function Home() {
           <div className='regg-abhns'>
             <p>
               Request for ✦{' '}
-              {selected.length === 0 ? (
+              {selectedFeatures.length === 0 ? (
                 <span>All</span>
               ) : (
-                selected.map((name) => (
+                selectedFeatures.map((name) => (
                   <span key={name}>
                     {name}
                     <XMarkIcon
-                      onClick={() => removeSelection(name)}
+                      onClick={() => removeFeature(name)}
                       style={{
                         width: '13px',
                         height: '13px',
@@ -162,22 +149,22 @@ function Home() {
         </div>
       </div>
 
-    <section className='cloka-sec'>
-      <div className='large-container'>
-        <div className='ghka-Topa-sec'>
-          <div className='ghka-Topa'>
-            <h6>CRM Features</h6>
-            <h2 className='big-text'>Modern. Modular. Ready.</h2>
-            <p>A flexible, cloud-native CRM built to scale, adapt, and grow with your organization.</p>
-            <div className='huj-seca'>
-              {features.map((feature) => (
-                <FeatureCard key={feature.name} icon={feature.icon} name={feature.name} />
-              ))}
+      <section className='cloka-sec'>
+        <div className='large-container'>
+          <div className='ghka-Topa-sec'>
+            <div className='ghka-Topa'>
+              <h6>CRM Features</h6>
+              <h2 className='big-text'>Modern. Modular. Ready.</h2>
+              <p>A flexible, cloud-native CRM built to scale, adapt, and grow with your organization.</p>
+              <div className='huj-seca'>
+                {features.map((feature) => (
+                  <FeatureCard key={feature.name} icon={feature.icon} name={feature.name} />
+                ))}
+              </div>
             </div>
           </div>
+          <FAQSlider />
         </div>
-        <FAQSlider />
-      </div>
       </section>
     </div>
   );
