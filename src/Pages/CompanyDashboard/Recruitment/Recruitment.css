@@ -866,9 +866,9 @@ button:focus-visible {
 .CreateRequisition-box-Mid{
     position: relative;
     width: 100%;
-    height: auto;
-    margin-top: 10px;
-    padding: 20px 20px;
+    max-height: 400px;
+    padding: 10px 20px;
+    padding-bottom: 30px;
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -906,12 +906,12 @@ button:focus-visible {
     width: 100%;
     height: auto;
     padding:20px 20px;
-    padding-top:0px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
     gap:10px;
+    border-top: 1px solid #e3defc;
 }
 
 .CreateRequisition-box-Foot-1 p{

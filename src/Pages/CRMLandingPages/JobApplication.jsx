@@ -33,6 +33,13 @@ function JobApplication() {
   const [errorMessage, setErrorMessage] = useState('');
   const fileInputRef = useRef(null);
   const documentsInputRef = useRef(null);
+  const [selectedDocType, setSelectedDocType] = useState('');
+  const [availableDocTypes, setAvailableDocTypes] = useState([
+    'Birth certificate',
+    'Degree certificate',
+    'Training certificate',
+    'NYSC certificate',
+  ]);
 
   const handleFileDrop = (e) => {
     e.preventDefault();
@@ -76,12 +83,21 @@ function JobApplication() {
     const newDocs = validFiles.map(file => ({
       name: file.name,
       size: (file.size / (1024 * 1024)).toFixed(1),
+      type: selectedDocType,
     }));
 
     setDocuments(prev => [...prev, ...newDocs]);
+    // Remove the selected document type from available options
+    setAvailableDocTypes(prev => prev.filter(type => type !== selectedDocType));
+    setSelectedDocType(''); // Reset the select dropdown
   };
 
   const removeDocument = (index) => {
+    const docToRemove = documents[index];
+    // Restore the document type to available options
+    if (docToRemove.type) {
+      setAvailableDocTypes(prev => [...prev, docToRemove.type].sort());
+    }
     const newDocs = [...documents];
     newDocs.splice(index, 1);
     setDocuments(newDocs);
@@ -91,6 +107,16 @@ function JobApplication() {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     setErrorMessage(''); // Clear error on input change
+  };
+
+  const handleDocTypeChange = (e) => {
+    const selectedType = e.target.value;
+    if (selectedType !== '--Select document to upload--') {
+      setSelectedDocType(selectedType);
+      documentsInputRef.current.click(); // Trigger file input
+    } else {
+      setSelectedDocType('');
+    }
   };
 
   const handleSubmit = () => {
@@ -333,6 +359,54 @@ function JobApplication() {
                     ))}
 
                     <div className="GHuh-Form-Input">
+                      <label>Document Uploads (Optional)</label>
+                      <select onChange={handleDocTypeChange} value={selectedDocType}>
+                        <option>--Select document to upload--</option>
+                        {availableDocTypes.map((type, idx) => (
+                          <option key={idx} value={type}>{type}</option>
+                        ))}
+                      </select>
+                      <input 
+                        type="file" 
+                        accept=".pdf"
+                        ref={documentsInputRef}
+                        multiple
+                        style={{ display: 'none' }}
+                        onChange={handleDocumentUpload}
+                      />
+                    </div>
+
+                    {documents.length > 0 && documents.map((doc, index) => (
+                      <div className="Gtahy-SSa" key={index}>
+                        <div className="Gtahy-SSa-1">
+                          <div className="Gtahy-SSa-11">
+                            <div>
+                              <h4>{doc.name} ({doc.type})</h4>
+                              <p>
+                                <span>{doc.size}MB</span>
+                                <i></i>
+                                <span><CheckCircleIcon /> File size</span>
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="Gtahy-SSa-2">
+                          <span onClick={() => removeDocument(index)}><XMarkIcon /></span>
+                        </div>
+                      </div>
+                    ))}
+
+                    <div className="pol-ffols">
+                      <p>Recommended documents to upload:</p>
+                      <ul>
+                        <li>Birth certificate</li>
+                        <li>Degree certificate</li>
+                        <li>Training certificate</li>
+                        <li>NYSC certificate</li>
+                      </ul>
+                    </div>
+
+                    <div className="GHuh-Form-Input">
                       <label>Cover Letter (Optional)</label>
                       <textarea
                         name="coverLetter"
@@ -340,47 +414,6 @@ function JobApplication() {
                         value={formData.coverLetter}
                         onChange={handleInputChange}
                       />
-                    </div>
-
-                    <div className="GHuh-Form-Input">
-                      <label>Document Uploads (Optional)</label>
-                      <input 
-                        type="file" 
-                        accept=".pdf"
-                        ref={documentsInputRef}
-                        multiple
-                        onChange={handleDocumentUpload}
-                      />
-
-                      {documents.length > 0 && documents.map((doc, index) => (
-                        <div className="Gtahy-SSa" key={index}>
-                          <div className="Gtahy-SSa-1">
-                            <div className="Gtahy-SSa-11">
-                              <div>
-                                <h4>{doc.name}</h4>
-                                <p>
-                                  <span>{doc.size}MB</span>
-                                  <i></i>
-                                  <span><CheckCircleIcon /> File size</span>
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="Gtahy-SSa-2">
-                            <span onClick={() => removeDocument(index)}><XMarkIcon /></span>
-                          </div>
-                        </div>
-                      ))}
-
-                      <div className="pol-ffols">
-                        <p>Recommended documents to upload:</p>
-                        <ul>
-                          <li>Birth certificate</li>
-                          <li>Degree certificate</li>
-                          <li>Training certificate</li>
-                          <li>NYSC certificate</li>
-                        </ul>
-                      </div>
                     </div>
 
                     <div className="GHuh-Form-Input">

@@ -820,7 +820,7 @@ const VewRequisition = ({ job, onClose }) => {
                         </div>
 
                         <div className='GHuh-Form-Input'>
-                          <label>Start Date</label>
+                          <label>Start Date (Optional)</label>
                           <DatePicker
                             selected={startDate}
                             onChange={(date) => {
