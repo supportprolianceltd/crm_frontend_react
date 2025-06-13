@@ -4,6 +4,8 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import NoAdvertBanner from '../../../assets/Img/noAdvertBanner.png';
+import axios from 'axios';
+import config from '../../../config';
 import {
   InformationCircleIcon,
   EyeIcon,
@@ -107,7 +109,10 @@ const AlertModal = ({ title, message, onClose }) => (
 
 const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = true }) => {
   const navigate = useNavigate();
-  // Set default date to today for deadlineDate and one month from now for startDate
+  const token = localStorage.getItem('accessToken');
+  const API_BASE_URL = `${config.API_BASE_URL}/api/talent-engine/`;
+
+  // Set default dates
   const today = new Date();
   const defaultStartDate = new Date(today);
   defaultStartDate.setMonth(today.getMonth() + 1);
@@ -123,27 +128,70 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
   const [showSuccess, setShowSuccess] = useState(false);
   const [advertBanner, setAdvertBanner] = useState(null);
   const [isPublishing, setIsPublishing] = useState(false);
-  const [responsibilities, setResponsibilities] = useState([
-    'Develop and maintain web applications using modern frameworks',
-    'Collaborate with cross-functional teams to define and implement features',
-    'Write clean, efficient, and well-documented code',
-    'Participate in code reviews and ensure code quality standards'
-  ]); // Initialize with multiple responsibilities
+  const [responsibilities, setResponsibilities] = useState([]);
+  const [checkedItems, setCheckedItems] = useState(['Right to Work Check']);
+  const [documentTitle, setDocumentTitle] = useState('');
+  const [documents, setDocuments] = useState(['Resume']);
+  const [userHasAdded, setUserHasAdded] = useState(false);
 
-  // Form data with default values
+  // Form data with defaults
   const [formData, setFormData] = useState({
-    jobTitle: 'Frontend Developer',
-    companyName: 'ValueFlowTech Ltd',
+    jobTitle: '',
+    companyName: '',
     jobType: 'Full-time',
     locationType: 'On-site',
-    companyAddress: '24 Marina Street, Lagos',
-    salaryRange: '$50,000 - $70,000',
-    jobDescription: 'Develop and maintain web applications using React, JavaScript, and CSS.',
-    numberOfCandidates: '5',
-    qualificationRequirement: 'Bachelor’s degree in Computer Science',
-    experienceRequirement: '3+ years in web development',
-    knowledgeSkillRequirement: 'React, JavaScript, CSS',
+    companyAddress: '',
+    salaryRange: '',
+    jobDescription: '',
+    numberOfCandidates: '',
+    qualificationRequirement: '',
+    experienceRequirement: '',
+    knowledgeSkillRequirement: '',
   });
+
+  // Fetch requisition data if job.id exists
+  useEffect(() => {
+    if (job?.id) {
+      const fetchRequisition = async () => {
+        try {
+          const response = await axios.get(`${API_BASE_URL}requisitions/${job.id}/`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          });
+          const data = response.data;
+          setFormData({
+            jobTitle: data.title || '',
+            companyName: '', // Not in JobRequisition; requires JobAdvert model
+            jobType: 'Full-time', // Not in JobRequisition
+            locationType: 'On-site', // Not in JobRequisition
+            companyAddress: '', // Not in JobRequisition
+            salaryRange: '', // Not in JobRequisition
+            jobDescription: '', // Not in JobRequisition
+            numberOfCandidates: '', // Not in JobRequisition
+            qualificationRequirement: data.qualification_requirement || '',
+            experienceRequirement: data.experience_requirement || '',
+            knowledgeSkillRequirement: data.knowledge_requirement || '',
+          });
+          // Set other fields if JobAdvert model exists
+          setResponsibilities(data.responsibilities || []); // Requires JobAdvert
+          setDocuments(data.documents_required || ['Resume']); // Requires JobAdvert
+          setCheckedItems(data.compliance_checklist || ['Right to Work Check']); // Requires JobAdvert
+          setDeadlineDate(formatDate(data.deadline_date) || today); // Requires JobAdvert
+          setStartDate(formatDate(data.start_date) || defaultStartDate); // Requires JobAdvert
+          setAdvertBanner(data.advert_banner || null); // Requires JobAdvert
+        } catch (error) {
+          setAlertModal({
+            title: 'Error',
+            message: error.response?.data?.detail || 'Failed to fetch requisition data.',
+          });
+          console.error('Error fetching requisition:', error);
+        }
+      };
+      fetchRequisition();
+    }
+  }, [job?.id, token]);
 
   const handleInputChange = (e) => {
     const { name, type, value, files } = e.target;
@@ -176,28 +224,16 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
   };
 
   const handleRemoveResponsibility = (index) => {
-    if (!isFormMutable || index === 0) return; // Prevent removing the first responsibility
+    if (!isFormMutable || index === 0) return;
     setResponsibilities(responsibilities.filter((_, i) => i !== index));
   };
 
-  // Tab navigation
   const tabs = ['Job details', 'Document uploads', 'Compliance check'];
 
   const validateJobDetails = () => {
     const newErrors = {};
     if (!formData.jobTitle.trim()) newErrors.jobTitle = 'Job Title is required';
-    if (!formData.companyName.trim()) newErrors.companyName = 'Company Name is required';
-    if (formData.locationType === 'On-site' && !formData.companyAddress.trim()) {
-      newErrors.companyAddress = 'Company Address is required for on-site jobs';
-    }
-    if (!formData.jobDescription.trim()) newErrors.jobDescription = 'Job Description is required';
-    if (responsibilities.length === 0 || responsibilities.every(resp => !resp.trim())) {
-      newErrors.responsibilities = 'At least one responsibility is required';
-    }
-    if (!deadlineDate) newErrors.deadlineDate = 'Application Deadline is required';
-    if (formData.numberOfCandidates && isNaN(formData.numberOfCandidates)) {
-      newErrors.numberOfCandidates = 'Number of Candidates must be a valid number';
-    }
+    // Add validation for companyName, jobDescription, etc., if JobAdvert model is used
     return newErrors;
   };
 
@@ -209,22 +245,60 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
     setAlertModal(null);
   };
 
-  const handlePublish = () => {
+  const handlePublish = async () => {
+    const jobDetailsErrors = validateJobDetails();
+    if (Object.keys(jobDetailsErrors).length > 0) {
+      setErrors(jobDetailsErrors);
+      showAlert('Validation Error', 'Please fill in all required fields in Job Details');
+      return;
+    }
+
     setIsPublishing(true);
-    
-    setTimeout(() => {
+
+    const requisitionData = {
+      title: formData.jobTitle,
+      qualification_requirement: formData.qualificationRequirement,
+      experience_requirement: formData.experienceRequirement,
+      knowledge_requirement: formData.knowledgeSkillRequirement,
+      // Add other fields if JobAdvert model is implemented
+    };
+
+    try {
+      if (job?.id) {
+        // Update existing requisition
+        await axios.patch(`${API_BASE_URL}requisitions/${job.id}/`, requisitionData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+      } else {
+        // Create new requisition
+        await axios.post(`${API_BASE_URL}requisitions/`, requisitionData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+      }
       setIsPublishing(false);
       setShowSuccess(true);
-    }, 5000);
+    } catch (error) {
+      setIsPublishing(false);
+      showAlert(
+        'Error',
+        error.response?.data?.detail || 'Failed to save requisition. Please try again.'
+      );
+      console.error('Error saving requisition:', error);
+    }
   };
 
-  // Auto-navigate and hide after success alert
   useEffect(() => {
     if (showSuccess) {
       const timer = setTimeout(() => {
         setShowSuccess(false);
         navigate('/company/recruitment/job-adverts');
-        onHideEditRequisition(); // Hide the EditRequisition component
+        onHideEditRequisition();
       }, 1000);
       return () => clearTimeout(timer);
     }
@@ -300,38 +374,54 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
     setShowDeleteModal(true);
   };
 
-  const confirmDeleteAdvert = () => {
-    setFormData({
-      jobTitle: 'Frontend Developer',
-      companyName: 'ValueFlowTech Ltd',
-      jobType: 'Full-time',
-      locationType: 'On-site',
-      companyAddress: '24 Marina Street, Lagos',
-      salaryRange: '$50,000 - $70,000',
-      jobDescription: 'Develop and maintain web applications using React, JavaScript, and CSS.',
-      numberOfCandidates: '5',
-      qualificationRequirement: 'Bachelor’s degree in Computer Science',
-      experienceRequirement: '3+ years in web development',
-      knowledgeSkillRequirement: 'React, JavaScript, CSS',
-    });
-    setDeadlineDate(today);
-    setStartDate(defaultStartDate);
-    setAdvertBanner(null);
-    setDocuments(['Resume']);
-    setDocumentTitle('');
-    setUserHasAdded(false);
-    setCheckedItems(['Right to Work Check']);
-    setResponsibilities([
-      'Develop and maintain web applications using modern frameworks',
-      'Collaborate with cross-functional teams to define and implement features',
-      'Write clean, efficient, and well-documented code',
-      'Participate in code reviews and ensure code quality standards'
-    ]); // Reset to multiple responsibilities
-    setActiveSection(0);
-    setShowPreview(false);
-    setShowJobAdvert(false);
-    setErrors({});
-    setShowDeleteModal(false);
+  const confirmDeleteAdvert = async () => {
+    if (job?.id) {
+      try {
+        await axios.delete(`${API_BASE_URL}requisitions/${job.id}/`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        setShowDeleteModal(false);
+        setShowSuccess(true);
+      } catch (error) {
+        setShowDeleteModal(false);
+        showAlert(
+          'Error',
+          error.response?.data?.detail || 'Failed to delete requisition. Please try again.'
+        );
+        console.error('Error deleting requisition:', error);
+      }
+    } else {
+      // Reset form if no job.id (new requisition)
+      setFormData({
+        jobTitle: '',
+        companyName: '',
+        jobType: 'Full-time',
+        locationType: 'On-site',
+        companyAddress: '',
+        salaryRange: '',
+        jobDescription: '',
+        numberOfCandidates: '',
+        qualificationRequirement: '',
+        experienceRequirement: '',
+        knowledgeSkillRequirement: '',
+      });
+      setDeadlineDate(today);
+      setStartDate(defaultStartDate);
+      setAdvertBanner(null);
+      setDocuments(['Resume']);
+      setDocumentTitle('');
+      setUserHasAdded(false);
+      setCheckedItems(['Right to Work Check']);
+      setResponsibilities([]);
+      setActiveSection(0);
+      setShowPreview(false);
+      setShowJobAdvert(false);
+      setErrors({});
+      setShowDeleteModal(false);
+    }
   };
 
   const cancelDeleteAdvert = () => {
@@ -348,11 +438,6 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
     'References (Links to previous jobs/projects)',
   ];
 
-  const [checkedItems, setCheckedItems] = useState(['Right to Work Check']);
-  const [documentTitle, setDocumentTitle] = useState('');
-  const [documents, setDocuments] = useState(['Resume']);
-  const [userHasAdded, setUserHasAdded] = useState(false);
-
   const toggleChecklistItem = (item) => {
     setCheckedItems((prev) =>
       prev.includes(item) ? prev.filter((i) => i !== item) : [...prev, item]
@@ -365,7 +450,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
     if (trimmed && !documents.includes(trimmed)) {
       setDocuments((prev) => [...prev, trimmed]);
       setUserHasAdded(true);
-      setDocumentTitle(''); // Clear the input field
+      setDocumentTitle('');
       setErrors((prev) => ({ ...prev, documents: '' }));
     } else if (!trimmed) {
       setErrors((prev) => ({ ...prev, documents: 'Document title cannot be empty' }));
@@ -379,33 +464,27 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
   };
 
   const hasAdvertData = () => {
-    return (
-      formData.jobTitle.trim() &&
-      formData.companyName.trim() &&
-      (formData.locationType !== 'On-site' || formData.companyAddress.trim()) &&
-      formData.jobDescription.trim() &&
-      responsibilities.length > 0 &&
-      deadlineDate
-    );
+    return formData.jobTitle.trim();
   };
 
   const tabVariants = {
-    hidden: { 
-      opacity: 0, 
+    hidden: {
+      opacity: 0,
       x: -20,
-      transition: { duration: 0.2 }
+      transition: { duration: 0.2 },
     },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       x: 0,
-      transition: { duration: 0.3, ease: 'easeOut' }
+      transition: { duration: 0.3, ease: 'easeOut' },
     },
-    exit: { 
-      opacity: 0, 
+    exit: {
+      opacity: 0,
       x: 20,
-      transition: { duration: 0.2 }
-    }
+      transition: { duration: 0.2 },
+    },
   };
+
 
   return (
     <div className='VewRequisition'>

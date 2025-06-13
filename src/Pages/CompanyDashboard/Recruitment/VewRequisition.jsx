@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { motion, AnimatePresence } from 'framer-motion';
-import NoAdvertBanner from '../../../assets/Img/noAdvertBanner.png';
 import axios from 'axios';
 import config from '../../../config';
+import NoAdvertBanner from '../../../assets/Img/noAdvertBanner.png';
 import {
   InformationCircleIcon,
   PencilIcon,
@@ -18,6 +18,39 @@ import {
   MinusIcon,
   TrashIcon,
 } from '@heroicons/react/24/outline';
+
+// Date formatting function
+const formatDisplayDate = (dateString) => {
+  if (!dateString) return 'Not specified';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+};
+
+// Get initials from user data
+const getInitials = (data) => {
+  if (!data) return 'N/A';
+  if (data) {
+    return `${data[0]}`.toUpperCase();
+  }
+  if (data) {
+    return data.slice(0, 2).toUpperCase();
+  }
+  return 'N/A';
+};
+
+// Get full name from user data
+const getFullName = (data) => {
+    
+  if (!data) return 'Unknown';
+  if (data ) {
+    return `${data}`;
+  }
+  return data || 'Unknown';
+};
 
 // Backdrop component
 const Backdrop = ({ onClick }) => (
@@ -33,18 +66,18 @@ const Backdrop = ({ onClick }) => (
 // Modal animation variants
 const modalVariants = {
   hidden: { opacity: 0, y: 25, scale: 0.95 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
-    scale: 1, 
-    transition: { duration: 0.2, ease: 'easeOut' }
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.2, ease: 'easeOut' },
   },
-  exit: { 
-    opacity: 0, 
-    y: 25, 
-    scale: 0.95, 
-    transition: { duration: 0.2, ease: 'easeIn' }
-  }
+  exit: {
+    opacity: 0,
+    y: 25,
+    scale: 0.95,
+    transition: { duration: 0.2, ease: 'easeIn' },
+  },
 };
 
 // Modal component
@@ -122,7 +155,8 @@ const VewRequisition = ({ job, onClose }) => {
   const [alertModal, setAlertModal] = useState(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [advertBanner, setAdvertBanner] = useState(null);
-  const [isFormMutable, setIsFormMutable] = useState(status === 'open');
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [isFormMutable, setIsFormMutable] = useState(job?.status === 'open');
   const [responsibilities, setResponsibilities] = useState(['']);
   const [checkedItems, setCheckedItems] = useState([]);
   const [documentTitle, setDocumentTitle] = useState('');
@@ -131,10 +165,6 @@ const VewRequisition = ({ job, onClose }) => {
   const [requisitionData, setRequisitionData] = useState(job || {});
   const token = localStorage.getItem('accessToken');
   const API_BASE_URL = config.API_BASE_URL;
-
-  // console.log("job")
-  // console.log(job)
-  // console.log("job")
 
   // Form data initialized with requisition data
   const [formData, setFormData] = useState({
@@ -177,6 +207,7 @@ const VewRequisition = ({ job, onClose }) => {
             title: 'Error',
             message: error.response?.data?.detail || 'Failed to fetch requisition details.',
           });
+          console.error('Error fetching requisition:', error);
         });
     }
   }, [job?.id, token]);
@@ -221,6 +252,7 @@ const VewRequisition = ({ job, onClose }) => {
               title: 'Error',
               message: 'Failed to fetch job advert details.',
             });
+            console.error('Error fetching advert:', error);
           }
         });
     }
@@ -322,8 +354,8 @@ const VewRequisition = ({ job, onClose }) => {
     formDataToSend.append('company_address', formData.companyAddress);
     formDataToSend.append('salary_range', formData.salaryRange);
     formDataToSend.append('job_description', formData.jobDescription);
-    formDataToSend.append('number_of_candidates', formData.numberOfCandidates || null);
-    formDataToSend.append('deadline_date', deadlineDate.toISOString().split('T')[0]);
+    formDataToSend.append('number_of_candidates', formData.numberOfCandidates || '');
+    formDataToSend.append('deadline_date', deadlineDate ? deadlineDate.toISOString().split('T')[0] : '');
     if (startDate) formDataToSend.append('start_date', startDate.toISOString().split('T')[0]);
     formDataToSend.append('responsibilities', JSON.stringify(responsibilities.filter((r) => r.trim())));
     formDataToSend.append('documents_required', JSON.stringify(documents));
@@ -333,9 +365,9 @@ const VewRequisition = ({ job, onClose }) => {
     }
 
     try {
-      const response = await axios({
+      await axios({
         method: 'post',
-        url: `${API_BASE_URL}requisitions/${job.id}/advert/`,
+        url: `${API_BASE_URL}/api/talent-engine/requisitions/${job.id}/advert/`,
         data: formDataToSend,
         headers: {
           Authorization: `Bearer ${token}`,
@@ -454,8 +486,10 @@ const VewRequisition = ({ job, onClose }) => {
       );
       setStatus('open');
       setIsFormMutable(true);
+      setRequisitionData((prev) => ({ ...prev, status: 'open' }));
     } catch (error) {
       showAlert('Error', error.response?.data?.detail || 'Failed to accept requisition.');
+      console.error('Error accepting requisition:', error);
     }
   };
 
@@ -468,21 +502,23 @@ const VewRequisition = ({ job, onClose }) => {
       );
       setStatus('rejected');
       setIsFormMutable(false);
+      setRequisitionData((prev) => ({ ...prev, status: 'rejected' }));
     } catch (error) {
       showAlert('Error', error.response?.data?.detail || 'Failed to reject requisition.');
+      console.error('Error rejecting requisition:', error);
     }
   };
 
- const handleEditStatus = () => {
+  const handleEditStatus = () => {
     setStatus(null);
     setIsFormMutable(false);
   };
 
-  const handleDelete = () => {
+  const handleDeleteAdvert = () => {
     setShowDeleteModal(true);
   };
 
-  const confirmDelete = async () => {
+  const confirmDeleteAdvert = async () => {
     try {
       // Delete job advert if exists
       await axios.delete(`${API_BASE_URL}/api/talent-engine/requisitions/${job.id}/advert/`, {
@@ -500,10 +536,11 @@ const VewRequisition = ({ job, onClose }) => {
         'Error',
         error.response?.data?.detail || 'Failed to delete requisition and advert.'
       );
+      console.error('Error deleting requisition:', error);
     }
   };
 
-  const cancelDelete = () => {
+  const cancelDeleteAdvert = () => {
     setShowDeleteModal(false);
   };
 
@@ -558,7 +595,6 @@ const VewRequisition = ({ job, onClose }) => {
     exit: { opacity: 0, x: 20, transition: { duration: 0.2 } },
   };
 
-
   return (
     <div className='VewRequisition'>
       <AnimatePresence>
@@ -591,7 +627,7 @@ const VewRequisition = ({ job, onClose }) => {
       <button className='VewRequisition-btn' onClick={onClose}>
         <XMarkIcon />
       </button>
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, x: 50 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5 }}
@@ -604,11 +640,11 @@ const VewRequisition = ({ job, onClose }) => {
 
           <div className='ssen-regs'>
             <div className='ssen-regs-1'>
-              <span>DO</span>
+              <span>{getInitials(requisitionData.requested_by)}</span>
             </div>
             <div className='ssen-regs-2'>
               <div>
-                <h4>Daniel Okoro</h4>
+                <h4>{getFullName(requisitionData.requested_by)}</h4>
                 <p>Admin</p>
               </div>
             </div>
@@ -616,47 +652,62 @@ const VewRequisition = ({ job, onClose }) => {
           <motion.div
             initial={{ x: -10, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
           >
             <div className='oola-Toa'>
-              <h3>Request ID: REQ-001</h3>
-              <span>2025-06-02</span>
+              <h3>Request ID: {requisitionData.id || 'N/A'}</h3>
+              <span>{formatDisplayDate(requisitionData.requested_date)}</span>
             </div>
 
             <div className='oluj-Seccco'>
               <div className='oluj-Seccco-Main custom-scroll-bar'>
-         
                 {status && (
                   <div className='polau-se'>
-                     <div className='status-container' style={{ display: 'flex', alignItems: 'center' }}>
-                        <p className={status.toLowerCase()}><span>Status:</span> {status}</p>
-                        {status === 'Accepted' ? (
-                          <svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='#7226FF' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' style={{ marginLeft: '6px' }}>
-                            <path d='M20 6L9 17l-5-5' />
-                          </svg>
-                        ) : (
-                          <svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='#991b1b' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' style={{ marginLeft: '6px' }}>
-                            <line x1='18' y1='6' x2='6' y2='18' />
-                            <line x1='6' y1='6' x2='18' y2='18' />
-                          </svg>
-                        )}
-                        <button
-                          className='edit-status-btn'
-                          onClick={handleEditStatus}
+                    <div className='status-container' style={{ display: 'flex', alignItems: 'center' }}>
+                      <p className={status.toLowerCase()}>
+                        <span>Status:</span> {status}
+                      </p>
+                      {status === 'open' ? (
+                        <svg
+                          width='16'
+                          height='16'
+                          viewBox='0 0 24 24'
+                          fill='none'
+                          stroke='#7226FF'
+                          strokeWidth='2'
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          style={{ marginLeft: '6px' }}
                         >
-                          <PencilIcon className='w-4 h-4' />
-                          Edit
-                        </button>
-                      </div>
+                          <path d='M20 6L9 17l-5-5' />
+                        </svg>
+                      ) : (
+                        <svg
+                          width='16'
+                          height='16'
+                          viewBox='0 0 24 24'
+                          fill='none'
+                          stroke='#991b1b'
+                          strokeWidth='2'
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          style={{ marginLeft: '6px' }}
+                        >
+                          <line x1='18' y1='6' x2='6' y2='18' />
+                          <line x1='6' y1='6' x2='18' y2='18' />
+                        </svg>
+                      )}
+                      <button className='edit-status-btn' onClick={handleEditStatus}>
+                        <PencilIcon className='w-4 h-4' />
+                        Edit
+                      </button>
+                    </div>
                   </div>
-                
                 )}
-         <div className='polau-se'>
-          <h4>Reason</h4>
-          <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.</p>
-          
-         </div>
-
+                <div className='polau-se'>
+                  <h4>Reason</h4>
+                  <p>{requisitionData.reason || 'No reason provided.'}</p>
+                </div>
               </div>
 
               {!status && (
@@ -679,7 +730,7 @@ const VewRequisition = ({ job, onClose }) => {
           </div>
           <div className='ssol-Subam'>
             {tabs.map((tab, index) => (
-              <span 
+              <span
                 key={index}
                 className={index === activeSection ? 'active-ssol-Subam' : ''}
                 onClick={() => handleTabClick(index)}
@@ -693,26 +744,30 @@ const VewRequisition = ({ job, onClose }) => {
             <div className='GHuh-Form-Sec-Top'>
               <h3>{tabs[activeSection]}</h3>
               <div className='GHuh-Form-Sec-Top-Btns'>
-                <span 
-                  onClick={handlePrev} 
-                  style={{ 
-                    cursor: activeSection > 0 && isFormMutable ? 'pointer' : 'not-allowed', 
-                    opacity: activeSection > 0 && isFormMutable ? 1 : 0.5 
+                <span
+                  onClick={handlePrev}
+                  style={{
+                    cursor: activeSection > 0 && isFormMutable ? 'pointer' : 'not-allowed',
+                    opacity: activeSection > 0 && isFormMutable ? 1 : 0.5,
                   }}
                 >
                   <ArrowLeftIcon /> Prev
                 </span>
-                <span 
-                  onClick={handleNext} 
-                  style={{ 
-                    cursor: activeSection < tabs.length && isFormMutable ? 'pointer' : 'not-allowed', 
-                    opacity: activeSection < tabs.length && isFormMutable ? 1 : 0.5 
+                <span
+                  onClick={handleNext}
+                  style={{
+                    cursor: activeSection < tabs.length && isFormMutable ? 'pointer' : 'not-allowed',
+                    opacity: activeSection < tabs.length && isFormMutable ? 1 : 0.5,
                   }}
                 >
                   {activeSection === tabs.length - 1 ? (
-                    <>View Advert <EyeIcon /></>
+                    <>
+                      View Advert <EyeIcon />
+                    </>
                   ) : (
-                    <>Next <ArrowRightIcon /></>
+                    <>
+                      Next <ArrowRightIcon />
+                    </>
                   )}
                 </span>
               </div>
@@ -735,13 +790,13 @@ const VewRequisition = ({ job, onClose }) => {
                       <div className='Gland-All-Grid'>
                         <div className='GHuh-Form-Input'>
                           <label>Job Title</label>
-                          <input 
+                          <input
                             name="jobTitle"
-                            type='text' 
-                            placeholder='e.g. Frontend Developer' 
+                            type='text'
+                            placeholder='e.g. Frontend Developer'
                             value={formData.jobTitle}
                             onChange={handleInputChange}
-                            required 
+                            required
                             disabled={!isFormMutable}
                           />
                           {errors.jobTitle && <p className='error'>{errors.jobTitle}</p>}
@@ -749,8 +804,8 @@ const VewRequisition = ({ job, onClose }) => {
 
                         <div className='GHuh-Form-Input'>
                           <label>Advert Banner (optional)</label>
-                          <input 
-                            type='file' 
+                          <input
+                            type='file'
                             accept="image/*"
                             onChange={handleInputChange}
                             disabled={!isFormMutable}
@@ -760,13 +815,13 @@ const VewRequisition = ({ job, onClose }) => {
 
                       <div className='GHuh-Form-Input'>
                         <label>Company Name</label>
-                        <input 
+                        <input
                           name="companyName"
-                          type='text' 
-                          placeholder='e.g. ValueFlowTech Ltd' 
+                          type='text'
+                          placeholder='e.g. ValueFlowTech Ltd'
                           value={formData.companyName}
                           onChange={handleInputChange}
-                          required 
+                          required
                           disabled={!isFormMutable}
                         />
                         {errors.companyName && <p className='error'>{errors.companyName}</p>}
@@ -775,7 +830,7 @@ const VewRequisition = ({ job, onClose }) => {
                       <div className='Gland-All-Grid'>
                         <div className='GHuh-Form-Input'>
                           <label>Job Type</label>
-                          <select 
+                          <select
                             name="jobType"
                             value={formData.jobType}
                             onChange={handleInputChange}
@@ -790,7 +845,7 @@ const VewRequisition = ({ job, onClose }) => {
                         </div>
                         <div className='GHuh-Form-Input'>
                           <label>Location</label>
-                          <select 
+                          <select
                             name="locationType"
                             value={formData.locationType}
                             onChange={handleInputChange}
@@ -806,13 +861,13 @@ const VewRequisition = ({ job, onClose }) => {
                       {formData.locationType === 'On-site' && (
                         <div className='GHuh-Form-Input'>
                           <label>Company Address</label>
-                          <input 
+                          <input
                             name="companyAddress"
-                            type='text' 
-                            placeholder='e.g. 24 Marina Street, Lagos' 
+                            type='text'
+                            placeholder='e.g. 24 Marina Street, Lagos'
                             value={formData.companyAddress}
                             onChange={handleInputChange}
-                            required 
+                            required
                             disabled={!isFormMutable}
                           />
                           {errors.companyAddress && <p className='error'>{errors.companyAddress}</p>}
@@ -821,10 +876,10 @@ const VewRequisition = ({ job, onClose }) => {
 
                       <div className='GHuh-Form-Input'>
                         <label>Salary Range (optional)</label>
-                        <input 
+                        <input
                           name="salaryRange"
-                          type='text' 
-                          placeholder='eg. $0.00 - $0.00' 
+                          type='text'
+                          placeholder='e.g. $0.00 - $0.00'
                           value={formData.salaryRange}
                           onChange={handleInputChange}
                           disabled={!isFormMutable}
@@ -833,10 +888,10 @@ const VewRequisition = ({ job, onClose }) => {
 
                       <div className='GHuh-Form-Input'>
                         <label>Number of Candidates (Needed for Interview) (optional)</label>
-                        <input 
+                        <input
                           name="numberOfCandidates"
-                          type='text' 
-                          placeholder='e.g. 10' 
+                          type='text'
+                          placeholder='e.g. 10'
                           value={formData.numberOfCandidates}
                           onChange={handleInputChange}
                           disabled={!isFormMutable}
@@ -846,10 +901,10 @@ const VewRequisition = ({ job, onClose }) => {
 
                       <div className='GHuh-Form-Input'>
                         <label>Qualification Requirement (optional)</label>
-                        <input 
+                        <input
                           name="qualificationRequirement"
-                          type='text' 
-                          placeholder='e.g. Bachelor’s degree in Computer Science' 
+                          type='text'
+                          placeholder='e.g. Bachelor’s degree in Computer Science'
                           value={formData.qualificationRequirement}
                           onChange={handleInputChange}
                           disabled={!isFormMutable}
@@ -859,10 +914,10 @@ const VewRequisition = ({ job, onClose }) => {
 
                       <div className='GHuh-Form-Input'>
                         <label>Experience Requirement (optional)</label>
-                        <input 
+                        <input
                           name="experienceRequirement"
-                          type='text' 
-                          placeholder='e.g. 3+ years in web development' 
+                          type='text'
+                          placeholder='e.g. 3+ years in web development'
                           value={formData.experienceRequirement}
                           onChange={handleInputChange}
                           disabled={!isFormMutable}
@@ -872,10 +927,10 @@ const VewRequisition = ({ job, onClose }) => {
 
                       <div className='GHuh-Form-Input'>
                         <label>Knowledge/Skill Requirement (optional)</label>
-                        <input 
+                        <input
                           name="knowledgeSkillRequirement"
-                          type='text' 
-                          placeholder='e.g. React, JavaScript, CSS' 
+                          type='text'
+                          placeholder='e.g. React, JavaScript, CSS'
                           value={formData.knowledgeSkillRequirement}
                           onChange={handleInputChange}
                           disabled={!isFormMutable}
@@ -885,9 +940,9 @@ const VewRequisition = ({ job, onClose }) => {
 
                       <h3>Job Description</h3>
                       <div className='GHuh-Form-Input'>
-                        <textarea 
+                        <textarea
                           name="jobDescription"
-                          placeholder='Enter job responsibilities, requirements, etc.' 
+                          placeholder='Enter job responsibilities, requirements, etc.'
                           value={formData.jobDescription}
                           onChange={handleInputChange}
                           required
@@ -896,7 +951,15 @@ const VewRequisition = ({ job, onClose }) => {
                         {errors.jobDescription && <p className='error'>{errors.jobDescription}</p>}
                       </div>
 
-                      <h3>Key Responsibilities <span onClick={handleAddResponsibility} className={isFormMutable ? 'cursor-pointer' : 'cursor-not-allowed'}><PlusIcon /> Add</span></h3>
+                      <h3>
+                        Key Responsibilities{' '}
+                        <span
+                          onClick={handleAddResponsibility}
+                          className={isFormMutable ? 'cursor-pointer' : 'cursor-not-allowed'}
+                        >
+                          <PlusIcon /> Add
+                        </span>
+                      </h3>
                       <div className='GHuh-Form-Input'>
                         <label>Responsibilities</label>
                         <input
@@ -907,7 +970,11 @@ const VewRequisition = ({ job, onClose }) => {
                           disabled={!isFormMutable}
                         />
                         {responsibilities.slice(1).map((resp, index) => (
-                          <div key={index + 1} className='responsibility-Inn-Box' style={{ display: 'flex', alignItems: 'center', marginTop: '8px' }}>
+                          <div
+                            key={index + 1}
+                            className='responsibility-Inn-Box'
+                            style={{ display: 'flex', alignItems: 'center', marginTop: '8px' }}
+                          >
                             <input
                               type='text'
                               placeholder='Add a responsibility'
@@ -915,11 +982,11 @@ const VewRequisition = ({ job, onClose }) => {
                               onChange={(e) => handleResponsibilityChange(index + 1, e.target.value)}
                               disabled={!isFormMutable}
                             />
-                            <span 
+                            <span
                               onClick={() => handleRemoveResponsibility(index + 1)}
-                              style={{ 
+                              style={{
                                 cursor: isFormMutable ? 'pointer' : 'not-allowed',
-                                marginLeft: '8px'
+                                marginLeft: '8px',
                               }}
                             >
                               <XMarkIcon className='w-4 h-4' />
@@ -982,12 +1049,12 @@ const VewRequisition = ({ job, onClose }) => {
                             required
                             disabled={!isFormMutable}
                           />
-                          <span 
-                            className='cursor-pointer' 
+                          <span
+                            className='cursor-pointer'
                             onClick={handleAddDocument}
-                            style={{ 
-                              cursor: isFormMutable ? 'pointer' : 'not-allowed', 
-                              opacity: isFormMutable ? 1 : 0.5 
+                            style={{
+                              cursor: isFormMutable ? 'pointer' : 'not-allowed',
+                              opacity: isFormMutable ? 1 : 0.5,
                             }}
                           >
                             <PlusIcon className='w-5 h-5' />
@@ -998,12 +1065,14 @@ const VewRequisition = ({ job, onClose }) => {
                         <ul className='apooul-Ul'>
                           {documents.map((doc, index) => (
                             <li key={index}>
-                              <p><MinusIcon className='w-4 h-4' /> {doc}</p>
-                              <span 
+                              <p>
+                                <MinusIcon className='w-4 h-4' /> {doc}
+                              </p>
+                              <span
                                 onClick={() => handleRemoveDocument(doc)}
-                                style={{ 
-                                  cursor: isFormMutable ? 'pointer' : 'not-allowed', 
-                                  opacity: isFormMutable ? 1 : 0.5 
+                                style={{
+                                  cursor: isFormMutable ? 'pointer' : 'not-allowed',
+                                  opacity: isFormMutable ? 1 : 0.5,
                                 }}
                               >
                                 <XMarkIcon className='w-4 h-4 cursor-pointer' />
@@ -1025,9 +1094,9 @@ const VewRequisition = ({ job, onClose }) => {
                               key={index}
                               className={checkedItems.includes(item) ? 'active-Li-Check' : ''}
                               onClick={() => toggleChecklistItem(item)}
-                              style={{ 
-                                cursor: isFormMutable ? 'pointer' : 'not-allowed', 
-                                opacity: isFormMutable ? 1 : 0.5 
+                              style={{
+                                cursor: isFormMutable ? 'pointer' : 'not-allowed',
+                                opacity: isFormMutable ? 1 : 0.5,
                               }}
                             >
                               <p>{item}</p>
@@ -1049,21 +1118,18 @@ const VewRequisition = ({ job, onClose }) => {
           <div className='VewRequisition-Part-Top'>
             <h3>Job Advert</h3>
             {showPreview && (
-              <button 
-                className='close-preview-btn'
-                onClick={handleClosePreview}
-              >
+              <button className='close-preview-btn' onClick={handleClosePreview}>
                 <XMarkIcon className='w-4 h-4' />
               </button>
             )}
           </div>
-          
+
           {!showPreview ? (
             <div className='no-advert-message'>
               <motion.div
                 initial={{ x: -10, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
+                transition={{ duration: 0.3, ease: 'easeOut' }}
               >
                 <img src={NoAdvertBanner} alt="No Advert" />
                 <h4>No advert yet!</h4>
@@ -1071,15 +1137,15 @@ const VewRequisition = ({ job, onClose }) => {
               </motion.div>
             </div>
           ) : (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, x: -5 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3 }}
               className='job-preview-container'
             >
               <div className='preview-buttons'>
-                <button 
-                  className='publish-btn btn-primary-bg' 
+                <button
+                  className='publish-btn btn-primary-bg'
                   onClick={handlePublish}
                   disabled={isPublishing}
                 >
@@ -1088,7 +1154,7 @@ const VewRequisition = ({ job, onClose }) => {
                       <motion.div
                         initial={{ rotate: 0 }}
                         animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                         style={{
                           width: 15,
                           height: 15,
@@ -1113,74 +1179,125 @@ const VewRequisition = ({ job, onClose }) => {
               <div className='main-Prevs-Sec custom-scroll-bar'>
                 {advertBanner && (
                   <div className='advert-banner'>
-                    <img 
-                      src={advertBanner} 
-                      alt="Job Advert Banner" 
+                    <img
+                      src={advertBanner}
+                      alt="Job Advert Banner"
                       className='w-full h-auto object-cover rounded-md mb-4'
                     />
-                    <span><InformationCircleIcon /> Advert Banner</span>
+                    <span>
+                      <InformationCircleIcon /> Advert Banner
+                    </span>
                   </div>
                 )}
-                
+
                 <div className='preview-section-All'>
                   <div className='preview-section'>
                     <h3>Basic Job Information</h3>
-                    <p><span>Job Title:</span> {formData.jobTitle}</p>
-                    <p><span>Company Name:</span> {formData.companyName}</p>
-                    <p><span>Job Type:</span> {formData.jobType}</p>
-                    <p><span>Location:</span> {formData.locationType}</p>
-                    {formData.companyAddress && <p><span>Company Address:</span> {formData.companyAddress}</p>}
-                    {formData.salaryRange && <p><span>Salary Range:</span> {formData.salaryRange}</p>}
-                    {formData.numberOfCandidates && <p><span>Number of Candidates (Needed for Interview):</span> {formData.numberOfCandidates}</p>}
-                    {formData.qualificationRequirement && <p><span>Qualification Requirement:</span> {formData.qualificationRequirement}</p>}
-                    {formData.experienceRequirement && <p><span>Experience Requirement:</span> {formData.experienceRequirement}</p>}
-                    {formData.knowledgeSkillRequirement && <p><span>Knowledge/Skill Requirement:</span> {formData.knowledgeSkillRequirement}</p>}
-                    {formData.reasonForRequisition && <p><span>Reason for Requisition:</span> <div dangerouslySetInnerHTML={{ __html: formData.reasonForRequisition.replace(/\n/g, '<br/>') }} /></p>}
-
+                    <p>
+                      <span>Job Title:</span> {formData.jobTitle}
+                    </p>
+                    <p>
+                      <span>Company Name:</span> {formData.companyName}
+                    </p>
+                    <p>
+                      <span>Job Type:</span> {formData.jobType}
+                    </p>
+                    <p>
+                      <span>Location:</span> {formData.locationType}
+                    </p>
+                    {formData.companyAddress && (
+                      <p>
+                        <span>Company Address:</span> {formData.companyAddress}
+                      </p>
+                    )}
+                    {formData.salaryRange && (
+                      <p>
+                        <span>Salary Range:</span> {formData.salaryRange}
+                      </p>
+                    )}
+                    {formData.numberOfCandidates && (
+                      <p>
+                        <span>Number of Candidates (Needed for Interview):</span>{' '}
+                        {formData.numberOfCandidates}
+                      </p>
+                    )}
+                    {formData.qualificationRequirement && (
+                      <p>
+                        <span>Qualification Requirement:</span> {formData.qualificationRequirement}
+                      </p>
+                    )}
+                    {formData.experienceRequirement && (
+                      <p>
+                        <span>Experience Requirement:</span> {formData.experienceRequirement}
+                      </p>
+                    )}
+                    {formData.knowledgeSkillRequirement && (
+                      <p>
+                        <span>Knowledge/Skill Requirement:</span> {formData.knowledgeSkillRequirement}
+                      </p>
+                    )}
+                    {formData.reasonForRequisition && (
+                      <p>
+                        <span>Reason for Requisition:</span>{' '}
+                        <div
+                          dangerouslySetInnerHTML={{
+                            __html: formData.reasonForRequisition.replace(/\n/g, '<br/>'),
+                          }}
+                        />
+                      </p>
+                    )}
                   </div>
 
-                         <div className='preview-section aadda-poa'>
+                  <div className='preview-section aadda-poa'>
                     <h3>Job Description</h3>
-                    <p><div dangerouslySetInnerHTML={{ __html: formData.jobDescription.replace(/\n/g, '<br/>') }} /></p>
-                   </div>
+                    <p>
+                      <div
+                        dangerouslySetInnerHTML={{
+                          __html: formData.jobDescription.replace(/\n/g, '<br/>'),
+                        }}
+                      />
+                    </p>
+                  </div>
 
-                   <div className='preview-section'>
+                  <div className='preview-section'>
                     <h3>Responsibilities</h3>
                     {responsibilities.length > 0 && (
-                        <ul>
-                          {responsibilities.filter(resp => resp.trim()).map((resp, i) => (
-                            <li key={i}>{resp}</li>
-                          ))}
-                        </ul>
+                      <ul>
+                        {responsibilities.filter((resp) => resp.trim()).map((resp, i) => (
+                          <li key={i}>{resp}</li>
+                        ))}
+                      </ul>
                     )}
-                   </div>
-                  
+                  </div>
+
                   <div className='preview-section'>
                     <h3>Application Details</h3>
-                    <p><span>Deadline for Applications:</span> {deadlineDate ? deadlineDate.toDateString() : 'Not specified'}</p>
-                    <p><span>Start Date:</span> {startDate ? startDate.toDateString() : 'Not specified'}</p>
+                    <p>
+                      <span>Deadline for Applications:</span>{' '}
+                      {deadlineDate ? formatDisplayDate(deadlineDate) : 'Not specified'}
+                    </p>
+                    <p>
+                      <span>Start Date:</span>{' '}
+                      {startDate ? formatDisplayDate(startDate) : 'Not specified'}
+                    </p>
                   </div>
-                  
+
                   <div className='preview-section'>
                     <h3>Documents Required</h3>
                     <ul>
                       {documents.length > 0 ? (
-                        documents.map((doc, i) => (
-                          <li key={i}>{doc}</li>
-                        ))
+                        documents.map((doc, i) => <li key={i}>{doc}</li>)
                       ) : (
                         <li>No documents specified</li>
                       )}
                     </ul>
                   </div>
-                  
+
                   <div className='preview-section'>
                     <h3>Compliance Checklist</h3>
                     <ul>
                       {checkedItems.length > 0 ? (
-                        checkedItems.map((item, i) => (
-                          <li key={i}>{item}</li>
-                        ))
+                        checkedItems.map((item, i) => <li key={i}>{item}</li>)
                       ) : (
                         <li>No compliance items specified</li>
                       )}
@@ -1205,11 +1322,7 @@ const VewRequisition = ({ job, onClose }) => {
       )}
 
       {alertModal && (
-        <AlertModal
-          title={alertModal.title}
-          message={alertModal.message}
-          onClose={closeAlert}
-        />
+        <AlertModal title={alertModal.title} message={alertModal.message} onClose={closeAlert} />
       )}
     </div>
   );
