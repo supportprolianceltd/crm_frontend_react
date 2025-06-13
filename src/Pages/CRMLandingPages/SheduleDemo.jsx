@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
+import { Link } from 'react-router-dom';
 
 const containerVariants = {
   hidden: {},
@@ -196,8 +197,8 @@ const SheduleDemo = ({ selectedSlot, onSuccess }) => {
             </button>
             <p>
               Schedule a personalized demo with our team to see how{" "}
-              <a href="#">our CRM</a> can help meet your needs. Demos typically
-              last 20–45 minutes and are tailored to your interests. Once booked,
+              <Link to="/">our CRM</Link> can help meet your needs. Demos typically
+              last 20-45 minutes and are tailored to your interests. Once booked,
               you'll receive a confirmation with all the meeting details.
             </p>
             <p>Need to reschedule? Just let us know at least 24 hours in advance.</p>
