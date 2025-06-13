@@ -4,6 +4,8 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import NoAdvertBanner from '../../../assets/Img/noAdvertBanner.png';
+import axios from 'axios';
+import config from '../../../config';
 import {
   InformationCircleIcon,
   PencilIcon,
@@ -109,7 +111,7 @@ const AlertModal = ({ title, message, onClose }) => (
 
 const VewRequisition = ({ job, onClose }) => {
   const navigate = useNavigate();
-  const [status, setStatus] = useState(null);
+  const [status, setStatus] = useState(job?.status || null);
   const [deadlineDate, setDeadlineDate] = useState(null);
   const [startDate, setStartDate] = useState(null);
   const [activeSection, setActiveSection] = useState(0);
@@ -120,13 +122,23 @@ const VewRequisition = ({ job, onClose }) => {
   const [alertModal, setAlertModal] = useState(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [advertBanner, setAdvertBanner] = useState(null);
-  const [isFormMutable, setIsFormMutable] = useState(false);
-  const [isPublishing, setIsPublishing] = useState(false);
-  const [responsibilities, setResponsibilities] = useState(['']); // Initialize with one empty responsibility
+  const [isFormMutable, setIsFormMutable] = useState(status === 'open');
+  const [responsibilities, setResponsibilities] = useState(['']);
+  const [checkedItems, setCheckedItems] = useState([]);
+  const [documentTitle, setDocumentTitle] = useState('');
+  const [documents, setDocuments] = useState([]);
+  const [userHasAdded, setUserHasAdded] = useState(false);
+  const [requisitionData, setRequisitionData] = useState(job || {});
+  const token = localStorage.getItem('accessToken');
+  const API_BASE_URL = config.API_BASE_URL;
 
-  // Form data
+  // console.log("job")
+  // console.log(job)
+  // console.log("job")
+
+  // Form data initialized with requisition data
   const [formData, setFormData] = useState({
-    jobTitle: '',
+    jobTitle: job?.title || '',
     companyName: '',
     jobType: 'Full-time',
     locationType: 'On-site',
@@ -134,19 +146,95 @@ const VewRequisition = ({ job, onClose }) => {
     salaryRange: '',
     jobDescription: '',
     numberOfCandidates: '',
-    qualificationRequirement: '',
-    experienceRequirement: '',
-    knowledgeSkillRequirement: '',
-    reasonForRequisition: '',
+    qualificationRequirement: job?.qualification_requirement || '',
+    experienceRequirement: job?.experience_requirement || '',
+    knowledgeSkillRequirement: job?.knowledge_requirement || '',
+    reasonForRequisition: job?.reason || '',
   });
+
+  // Fetch requisition details
+  useEffect(() => {
+    if (job?.id) {
+      axios
+        .get(`${API_BASE_URL}/api/talent-engine/requisitions/${job.id}/`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((response) => {
+          setRequisitionData(response.data);
+          setStatus(response.data.status);
+          setIsFormMutable(response.data.status === 'open');
+          setFormData((prev) => ({
+            ...prev,
+            jobTitle: response.data.title,
+            qualificationRequirement: response.data.qualification_requirement,
+            experienceRequirement: response.data.experience_requirement,
+            knowledgeSkillRequirement: response.data.knowledge_requirement,
+            reasonForRequisition: response.data.reason,
+          }));
+        })
+        .catch((error) => {
+          setAlertModal({
+            title: 'Error',
+            message: error.response?.data?.detail || 'Failed to fetch requisition details.',
+          });
+        });
+    }
+  }, [job?.id, token]);
+
+  // Fetch existing job advert
+  useEffect(() => {
+    if (job?.id) {
+      axios
+        .get(`${API_BASE_URL}/api/talent-engine/requisitions/${job.id}/advert/`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((response) => {
+          const advert = response.data;
+          setFormData({
+            jobTitle: advert.requisition.title,
+            companyName: advert.company_name,
+            jobType: advert.job_type,
+            locationType: advert.location_type,
+            companyAddress: advert.company_address,
+            salaryRange: advert.salary_range,
+            jobDescription: advert.job_description,
+            numberOfCandidates: advert.number_of_candidates || '',
+            qualificationRequirement: advert.requisition.qualification_requirement,
+            experienceRequirement: advert.requisition.experience_requirement,
+            knowledgeSkillRequirement: advert.requisition.knowledge_requirement,
+            reasonForRequisition: advert.requisition.reason,
+          });
+          setDeadlineDate(advert.deadline_date ? new Date(advert.deadline_date) : null);
+          setStartDate(advert.start_date ? new Date(advert.start_date) : null);
+          setResponsibilities(advert.responsibilities.length ? advert.responsibilities : ['']);
+          setDocuments(advert.documents_required);
+          setCheckedItems(advert.compliance_checklist);
+          setShowPreview(true);
+          setShowJobAdvert(true);
+          if (advert.advert_banner) {
+            setAdvertBanner(`${config.API_BASE_URL}${advert.advert_banner}`);
+          }
+        })
+        .catch((error) => {
+          if (error.response?.status !== 404) {
+            setAlertModal({
+              title: 'Error',
+              message: 'Failed to fetch job advert details.',
+            });
+          }
+        });
+    }
+  }, [job?.id, token]);
 
   const handleInputChange = (e) => {
     const { name, type, value, files } = e.target;
     if (type === 'file') {
       if (files[0]) {
         setAdvertBanner(URL.createObjectURL(files[0]));
+        setFormData((prev) => ({ ...prev, advertBannerFile: files[0] }));
       } else {
         setAdvertBanner(null);
+        setFormData((prev) => ({ ...prev, advertBannerFile: null }));
       }
     } else {
       setFormData((prev) => ({
@@ -171,11 +259,10 @@ const VewRequisition = ({ job, onClose }) => {
   };
 
   const handleRemoveResponsibility = (index) => {
-    if (!isFormMutable || index === 0) return; // Prevent removing the first responsibility
+    if (!isFormMutable || index === 0) return;
     setResponsibilities(responsibilities.filter((_, i) => i !== index));
   };
 
-  // Tab navigation
   const tabs = ['Job details', 'Document uploads', 'Compliance check'];
 
   const validateJobDetails = () => {
@@ -186,7 +273,7 @@ const VewRequisition = ({ job, onClose }) => {
       newErrors.companyAddress = 'Company Address is required for on-site jobs';
     }
     if (!formData.jobDescription.trim()) newErrors.jobDescription = 'Job Description is required';
-    if (responsibilities.length === 0 || responsibilities.every(resp => !resp.trim())) {
+    if (responsibilities.length === 0 || responsibilities.every((resp) => !resp.trim())) {
       newErrors.responsibilities = 'At least one responsibility is required';
     }
     if (!deadlineDate) newErrors.deadlineDate = 'Application Deadline is required';
@@ -201,21 +288,72 @@ const VewRequisition = ({ job, onClose }) => {
     setAlertModal(null);
   };
 
-  const handlePublish = () => {
+  const handlePublish = async () => {
     if (!isFormMutable) {
       showAlert('Action Restricted', 'Please accept the job request to publish.');
       return;
     }
 
+    const jobDetailsErrors = validateJobDetails();
+    if (Object.keys(jobDetailsErrors).length > 0) {
+      setErrors(jobDetailsErrors);
+      showAlert('Validation Error', 'Please fill in all required fields in Job Details');
+      return;
+    }
+
+    if (documents.length === 0) {
+      setErrors({ documents: 'At least one document title is required' });
+      showAlert('Document Error', 'Please add at least one document');
+      return;
+    }
+
+    if (checkedItems.length === 0) {
+      setErrors({ compliance: 'At least one compliance item must be checked' });
+      showAlert('Compliance Error', 'Please check at least one compliance item');
+      return;
+    }
+
     setIsPublishing(true);
-    
-    setTimeout(() => {
+
+    const formDataToSend = new FormData();
+    formDataToSend.append('job_type', formData.jobType);
+    formDataToSend.append('location_type', formData.locationType);
+    formDataToSend.append('company_name', formData.companyName);
+    formDataToSend.append('company_address', formData.companyAddress);
+    formDataToSend.append('salary_range', formData.salaryRange);
+    formDataToSend.append('job_description', formData.jobDescription);
+    formDataToSend.append('number_of_candidates', formData.numberOfCandidates || null);
+    formDataToSend.append('deadline_date', deadlineDate.toISOString().split('T')[0]);
+    if (startDate) formDataToSend.append('start_date', startDate.toISOString().split('T')[0]);
+    formDataToSend.append('responsibilities', JSON.stringify(responsibilities.filter((r) => r.trim())));
+    formDataToSend.append('documents_required', JSON.stringify(documents));
+    formDataToSend.append('compliance_checklist', JSON.stringify(checkedItems));
+    if (formData.advertBannerFile) {
+      formDataToSend.append('advert_banner', formData.advertBannerFile);
+    }
+
+    try {
+      const response = await axios({
+        method: 'post',
+        url: `${API_BASE_URL}requisitions/${job.id}/advert/`,
+        data: formDataToSend,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
       setIsPublishing(false);
       setShowSuccess(true);
-    }, 5000);
+    } catch (error) {
+      setIsPublishing(false);
+      showAlert(
+        'Error',
+        error.response?.data?.detail || 'Failed to publish job advert. Please try again.'
+      );
+      console.error('Error publishing advert:', error);
+    }
   };
 
-  // Auto-navigate after success alert
   useEffect(() => {
     if (showSuccess) {
       const timer = setTimeout(() => {
@@ -307,73 +445,76 @@ const VewRequisition = ({ job, onClose }) => {
     setShowJobAdvert(false);
   };
 
-  const handleAccept = () => {
-    setStatus('Accepted');
-    setIsFormMutable(true);
+  const handleAccept = async () => {
+    try {
+      await axios.patch(
+        `${API_BASE_URL}/api/talent-engine/requisitions/${job.id}/`,
+        { status: 'open' },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setStatus('open');
+      setIsFormMutable(true);
+    } catch (error) {
+      showAlert('Error', error.response?.data?.detail || 'Failed to accept requisition.');
+    }
   };
 
-  const handleReject = () => {
-    setStatus('Rejected');
-    setIsFormMutable(false);
+  const handleReject = async () => {
+    try {
+      await axios.patch(
+        `${API_BASE_URL}/api/talent-engine/requisitions/${job.id}/`,
+        { status: 'rejected' },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setStatus('rejected');
+      setIsFormMutable(false);
+    } catch (error) {
+      showAlert('Error', error.response?.data?.detail || 'Failed to reject requisition.');
+    }
   };
 
-  const handleEditStatus = () => {
+ const handleEditStatus = () => {
     setStatus(null);
     setIsFormMutable(false);
   };
 
-  const handleDeleteAdvert = () => {
+  const handleDelete = () => {
     setShowDeleteModal(true);
   };
 
-  const confirmDeleteAdvert = () => {
-    setFormData({
-      jobTitle: '',
-      companyName: '',
-      jobType: 'Full-time',
-      locationType: 'On-site',
-      companyAddress: '',
-      salaryRange: '',
-      jobDescription: '',
-      numberOfCandidates: '',
-      qualificationRequirement: '',
-      experienceRequirement: '',
-      knowledgeSkillRequirement: '',
-      reasonForRequisition: '',
-    });
-    setDeadlineDate(null);
-    setStartDate(null);
-    setAdvertBanner(null);
-    setDocuments([]);
-    setDocumentTitle('');
-    setUserHasAdded(false);
-    setCheckedItems([]);
-    setResponsibilities(['']); // Reset to one empty responsibility
-    setActiveSection(0);
-    setShowPreview(false);
-    setShowJobAdvert(false);
-    setErrors({});
-    setShowDeleteModal(false);
+  const confirmDelete = async () => {
+    try {
+      // Delete job advert if exists
+      await axios.delete(`${API_BASE_URL}/api/talent-engine/requisitions/${job.id}/advert/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      // Delete requisition
+      await axios.delete(`${API_BASE_URL}/api/talent-engine/requisitions/${job.id}/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setShowDeleteModal(false);
+      onClose();
+    } catch (error) {
+      setShowDeleteModal(false);
+      showAlert(
+        'Error',
+        error.response?.data?.detail || 'Failed to delete requisition and advert.'
+      );
+    }
   };
 
-  const cancelDeleteAdvert = () => {
+  const cancelDelete = () => {
     setShowDeleteModal(false);
   };
 
   const checklistItems = [
-    'Passport / Driver’s Licence',
-    'Shared Code or Date of Birth',
-    'DBS (Background Check)',
-    'Training Certificate',
+    'Passport / ID',
     'Proof of Address',
-    'Right to Work Check',
-    'References (Links to previous jobs/projects)',
+    'Right to Work',
+    'DBS Certificate',
+    'Professional Qualifications',
+    'References',
   ];
-
-  const [checkedItems, setCheckedItems] = useState([]);
-  const [documentTitle, setDocumentTitle] = useState('');
-  const [documents, setDocuments] = useState([]);
-  const [userHasAdded, setUserHasAdded] = useState(false);
 
   const toggleChecklistItem = (item) => {
     if (!isFormMutable) return;
@@ -412,22 +553,11 @@ const VewRequisition = ({ job, onClose }) => {
   };
 
   const tabVariants = {
-    hidden: { 
-      opacity: 0, 
-      x: -20,
-      transition: { duration: 0.2 }
-    },
-    visible: { 
-      opacity: 1, 
-      x: 0,
-      transition: { duration: 0.3, ease: 'easeOut' }
-    },
-    exit: { 
-      opacity: 0, 
-      x: 20,
-      transition: { duration: 0.2 }
-    }
+    hidden: { opacity: 0, x: -20 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.3, ease: 'easeOut' } },
+    exit: { opacity: 0, x: 20, transition: { duration: 0.2 } },
   };
+
 
   return (
     <div className='VewRequisition'>
