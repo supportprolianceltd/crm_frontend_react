@@ -996,6 +996,15 @@ const RecruitmentHome = () => {
     setShowViewRequisition(false);
     setSelectedJob(null);
   };
+  // Get full name from user data
+const getFullName = (user) => {
+  if (!user || typeof user !== 'object') return 'Unknown';
+  if (user.first_name && user.last_name) {
+    return `${user.first_name} ${user.last_name}`;
+  }
+  return user.email || 'Unknown';
+};
+
 
   return (
     <div className="YUa-Opal-sec">
@@ -1135,7 +1144,7 @@ const RecruitmentHome = () => {
                         <span className={`status ${job.status.toLowerCase()}`}>{job.status}</span>
                       </td>
                       <td>{formatDate(job.requestedDate)}</td>
-                      <td>{job.requestedBy}</td>
+                      <td>{getFullName(job.requestedBy)}</td>
                       <td>
                         <span className={`role ${job.role.toLowerCase()}`}>{job.role}</span>
                       </td>
