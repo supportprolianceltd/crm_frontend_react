@@ -922,7 +922,11 @@ const JobAdvert = () => {
                         <button className="view-btn" onClick={() => handleViewClick(job)}>
                           Details
                         </button>
-                        <Link to="/job-application" className="link-btn btn-primary-bg">
+                        {/* <Link to="/job-application" className="link-btn btn-primary-bg">
+                          <GlobeAltIcon />
+                          Site
+                        </Link> */}
+                        <Link  to="/job-application" state={{ job }} className="link-btn btn-primary-bg" >
                           <GlobeAltIcon />
                           Site
                         </Link>
