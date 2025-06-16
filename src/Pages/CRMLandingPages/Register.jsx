@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { Link, useNavigate } from 'react-router-dom';
 import usePageTitle from '../../hooks/usecrmPageTitle';
+import { motion } from 'framer-motion';
 
 const FloatingInput = ({ label, type, value, onChange, name, showToggle, onToggle, isVisible }) => {
   return (
@@ -16,7 +17,6 @@ const FloatingInput = ({ label, type, value, onChange, name, showToggle, onToggl
         className={value ? 'has-value' : ''}
       />
       <label>{label}</label>
-
       {showToggle && (
         <button
           type="button"
@@ -40,11 +40,13 @@ const Register = () => {
     lastName: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
   });
   const [agree, setAgree] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false); // Added loading state
+  const [error, setError] = useState(''); // Added error state for better UX
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -52,30 +54,36 @@ const Register = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setError('');
+    setLoading(true); // Set loading to true
 
     if (!agree) {
-      alert('You must agree to the Terms of Use and Privacy Policy.');
+      setError('You must agree to the Terms of Use and Privacy Policy.');
+      setLoading(false);
       return;
     }
 
     // Simple validation check (all fields filled)
-    const allFieldsFilled = Object.values(formData).every(field => field.trim() !== '');
+    const allFieldsFilled = Object.values(formData).every((field) => field.trim() !== '');
     if (!allFieldsFilled) {
-      alert('Please fill all fields.');
+      setError('Please fill all fields.');
+      setLoading(false);
       return;
     }
 
     // Password match check
     if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match.');
+      setError('Passwords do not match.');
+      setLoading(false);
       return;
     }
 
-    console.log(formData);
-    // Proceed with registration logic here
-
-    // Navigate to code verification page after successful submission
-    navigate('/code-verification');
+    // Simulate async registration process (replace with actual API call if needed)
+    setTimeout(() => {
+      console.log(formData);
+      setLoading(false);
+      navigate('/code-verification'); // Navigate after "processing"
+    }, 1000); // Simulated 1-second delay for demo purposes
   };
 
   return (
@@ -132,17 +140,35 @@ const Register = () => {
               checked={agree}
               onChange={() => setAgree(!agree)}
               required
-            />{" "}
+            />{' '}
             <span>
-              I confirm that I have read, consent and agree to laefy{" "}
-              <Link to="/terms">Terms of Use</Link> and{" "}
+              I confirm that I have read, consent and agree to laefy{' '}
+              <Link to="/terms">Terms of Use</Link> and{' '}
               <Link to="/privacy-policy">Privacy Policy</Link>
             </span>
           </label>
         </div>
 
-        <button className="login-btn btn-primary-bg" type="submit">
-          Create Account
+        {error && <p className="erro-message-Txt">{error}</p>}
+
+        <button className="login-btn btn-primary-bg" type="submit" disabled={loading}>
+          {loading && (
+            <motion.div
+              initial={{ rotate: 0 }}
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+              style={{
+                width: 15,
+                height: 15,
+                borderRadius: '50%',
+                border: '3px solid #fff',
+                borderTopColor: 'transparent',
+                marginRight: '5px',
+                display: 'inline-block',
+              }}
+            />
+          )}
+          {loading ? 'Creating Account...' : 'Create Account'}
         </button>
 
         <div className="FFlaok-paus">
@@ -158,12 +184,7 @@ const Register = () => {
 
           <button className="social-btn google">
             <span className="icon ggole-Pol">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="18"
-                height="18"
-                viewBox="0 0 48 48"
-              >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 48 48">
                 <path
                   fill="#EA4335"
                   d="M24 9.5c3.2 0 5.3 1.4 6.6 2.5l4.9-4.9C32.5 4.3 28.7 2 24 2 14.9 2 7.5 8.4 5.1 16.9l6.6 5.1C13.1 15.3 18.1 9.5 24 9.5z"

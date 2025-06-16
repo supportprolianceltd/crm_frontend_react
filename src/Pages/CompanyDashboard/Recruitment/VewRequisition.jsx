@@ -818,7 +818,7 @@
 //                         <input
 //                           name="companyName"
 //                           type='text'
-//                           placeholder='e.g. ValueFlowTech Ltd'
+//                           placeholder='e.g. Company Ltd'
 //                           value={formData.companyName}
 //                           onChange={handleInputChange}
 //                           required
@@ -1535,6 +1535,10 @@ const VewRequisition = ({ job, onClose }) => {
   const [requisitionData, setRequisitionData] = useState(job || {});
   const token = localStorage.getItem('accessToken');
   const API_BASE_URL = config.API_BASE_URL;
+  // Add new state variables
+const [isAccepting, setIsAccepting] = useState(false);
+const [isRejecting, setIsRejecting] = useState(false);
+
 
   // Form data initialized with requisition data
   const [formData, setFormData] = useState({
@@ -1856,38 +1860,46 @@ const handlePublish = async () => {
     setShowPreview(false);
     setShowJobAdvert(false);
   };
+// Update handleAccept function
+const handleAccept = async () => {
+  setIsAccepting(true); // Start loading
+  try {
+    await axios.patch(
+      `${API_BASE_URL}/api/talent-engine/requisitions/${job.id}/`,
+      { status: 'open' },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    setStatus('open');
+    setIsFormMutable(true);
+    setRequisitionData((prev) => ({ ...prev, status: 'open' }));
+  } catch (error) {
+    showAlert('Error', error.response?.data?.detail || 'Failed to accept requisition.');
+    console.error('Error accepting requisition:', error);
+  } finally {
+    setIsAccepting(false); // Stop loading regardless of outcome
+  }
+};
 
-  const handleAccept = async () => {
-    try {
-      await axios.patch(
-        `${API_BASE_URL}/api/talent-engine/requisitions/${job.id}/`,
-        { status: 'open' },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setStatus('open');
-      setIsFormMutable(true);
-      setRequisitionData((prev) => ({ ...prev, status: 'open' }));
-    } catch (error) {
-      showAlert('Error', error.response?.data?.detail || 'Failed to accept requisition.');
-      console.error('Error accepting requisition:', error);
-    }
-  };
 
-  const handleReject = async () => {
-    try {
-      await axios.patch(
-        `${API_BASE_URL}/api/talent-engine/requisitions/${job.id}/`,
-        { status: 'rejected' },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setStatus('rejected');
-      setIsFormMutable(false);
-      setRequisitionData((prev) => ({ ...prev, status: 'rejected' }));
-    } catch (error) {
-      showAlert('Error', error.response?.data?.detail || 'Failed to reject requisition.');
-      console.error('Error rejecting requisition:', error);
-    }
-  };
+// Update handleReject function
+const handleReject = async () => {
+  setIsRejecting(true); // Start loading
+  try {
+    await axios.patch(
+      `${API_BASE_URL}/api/talent-engine/requisitions/${job.id}/`,
+      { status: 'rejected' },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    setStatus('rejected');
+    setIsFormMutable(false);
+    setRequisitionData((prev) => ({ ...prev, status: 'rejected' }));
+  } catch (error) {
+    showAlert('Error', error.response?.data?.detail || 'Failed to reject requisition.');
+    console.error('Error rejecting requisition:', error);
+  } finally {
+    setIsRejecting(false); // Stop loading regardless of outcome
+  }
+};
 
   const handleEditStatus = () => {
     setStatus(null);
@@ -2035,9 +2047,22 @@ const handlePublish = async () => {
               <span>{formatDisplayDate(requisitionData.requested_date)}</span>
             </div>
 
+
+
             <div className='oluj-Seccco'>
+              
+                  <h2 className='pool-HHga'>{requisitionData.title}</h2>
+
               <div className='oluj-Seccco-Main custom-scroll-bar'>
-                {status && (
+
+                <div className='polau-se'>
+                  <h4>Reason</h4>
+                  <p>{requisitionData.reason || 'No reason provided.'}</p>
+                </div>
+              </div>
+
+
+                              {status && (
                   <div className='polau-se'>
                     <div className='status-container' style={{ display: 'flex', alignItems: 'center' }}>
                       <p className={status.toLowerCase()}>
@@ -2080,22 +2105,70 @@ const handlePublish = async () => {
                     </div>
                   </div>
                 )}
-                <div className='polau-se'>
-                  <h4>Reason</h4>
-                  <p>{requisitionData.reason || 'No reason provided.'}</p>
-                </div>
-              </div>
 
-              {!status && (
-                <div className='Desaa-Btns'>
-                  <button className='accept-Btn' onClick={handleAccept}>
-                    <CheckIcon /> Accept
-                  </button>
-                  <button className='reject-Btn' onClick={handleReject}>
-                    <XMarkIcon /> Reject
-                  </button>
-                </div>
-              )}
+{!status && (
+  <div className='Desaa-Btns'>
+    <button 
+      className='accept-Btn' 
+      onClick={handleAccept}
+      disabled={isAccepting || isRejecting}
+    >
+      {isAccepting ? (
+        <div className='ooo-AGtgs'>
+             <motion.div
+               initial={{ rotate: 0 }}
+               animate={{ rotate: 360 }}
+               transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+               style={{
+                 width: 13,
+                 height: 13,
+                 borderRadius: '50%',
+                 border: '3px solid #7226FF',
+                 borderTopColor: 'transparent',
+                 marginRight: '1px',
+                 display: 'inline-block',
+               }}
+             />
+          Accepting...
+        </div>
+      ) : (
+        <>
+          <CheckIcon /> Accept
+        </>
+      )}
+    </button>
+    
+    <button 
+      className='reject-Btn' 
+      onClick={handleReject}
+      disabled={isAccepting || isRejecting}
+    >
+      {isRejecting ? (
+        <div className='ooo-AGtgs'>
+             <motion.div
+               initial={{ rotate: 0 }}
+               animate={{ rotate: 360 }}
+               transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+               style={{
+                 width: 13,
+                 height: 13,
+                 borderRadius: '50%',
+                 border: '3px solid #991b1b',
+                 borderTopColor: 'transparent',
+                 marginRight: '1px',
+                 display: 'inline-block',
+               }}
+             />
+          Rejecting...
+        </div>
+      ) : (
+        <>
+          <XMarkIcon /> Reject
+        </>
+      )}
+    </button>
+  </div>
+)}
             </div>
           </motion.div>
         </div>
@@ -2194,7 +2267,7 @@ const handlePublish = async () => {
                         <input
                           name="companyName"
                           type='text'
-                          placeholder='e.g. ValueFlowTech Ltd'
+                          placeholder='e.g. Company Ltd'
                           value={formData.companyName}
                           onChange={handleInputChange}
                           required
