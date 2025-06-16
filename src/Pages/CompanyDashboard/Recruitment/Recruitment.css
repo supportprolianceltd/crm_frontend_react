@@ -281,6 +281,17 @@
   text-align: left;
 }
 
+.Gen-Sys-table thead th  span svg{
+    width: 13px;
+    color: #7226FF;
+    margin-top: -2px;
+}
+.Gen-Sys-table th span{
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
 .Gen-Sys-table th,
 .Gen-Sys-table td {
   padding: 14px 18px;
@@ -299,24 +310,36 @@
   text-transform: uppercase;
   font-weight: 600;
   padding: 0px 10px;
-  width: 55px;
+  width: auto;
   height: 20px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 30px;
 }
-
+.haggsb-status{
+    gap: 3px;
+}
+.haggsb-status svg{
+    width: 10px;
+}
+.status.hired,
 .status.open {
   background-color: rgba(75, 192, 192, 0.2);
   color: #065f46;
 }
 
+.status.rejected,
 .status.closed {
   background-color: rgba(255, 99, 132, 0.2);
   color: #991b1b;
 }
 
+
+.status.shortlisted{
+     background-color: rgba(152, 206, 248, 0.2); 
+     color: #2581eb;
+}
 
 .status.pending {
   background-color: rgba(255, 206, 86, 0.2); 
@@ -326,7 +349,10 @@
 .status.rejected{
     color: #f43232;
 }
-
+.status.new{
+    color: #7226FF !important;
+    background: #f3f0fd;
+}
 .gen-td-btns{
     position: relative;
     width: 100%;
@@ -334,8 +360,8 @@
     align-items: center;
     gap: 5px;
 }
-.gen-td-btns a,
-.gen-td-btns button{
+.gen-td-btns .link-btn,
+.gen-td-btns .view-btn{
     font-size: 10px;
     font-weight: 500;
     width: auto;
@@ -350,20 +376,19 @@
     transition: all 0.3s ease-in-out;
 }
 
-.gen-td-btns a svg,
-.gen-td-btns button svg{
+.gen-td-btns .link-btn svg,
+.gen-td-btns .view-btn svg{
     width: 11px;
 }
 
-.gen-td-btns button.view-btn{
+.gen-td-btns .view-btn{
     background-color: #ebe6ff;
     color: #7226FF;
 }
 
-.gen-td-btns button.view-btn:hover{
+.gen-td-btns .view-btn:hover{
     border-color: #7226FF;
 }
-
 
 
 .Dash-OO-Boas-foot{
@@ -533,7 +558,7 @@
   padding: 1.5rem; /* 24px padding */
   max-width: 480px;
   position: fixed;
-  top: 20px;
+  top: 60px;
   left: 50%;
   transform: translate(-50%, 0%) !important;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -651,9 +676,9 @@ button:focus-visible {
     height: auto;
     padding: 20px;
 }
-
+.Top-GHY-s a,
 .Top-GHY-s button{
-    width: 100%;
+    width: 100% !important;
     height: auto;
     position: relative;
     display: inline-flex;
@@ -667,7 +692,7 @@ button:focus-visible {
     font-size: 12px !important;
     font-weight: 500 !important;
 }
-
+.Top-GHY-s a,
 .Top-GHY-s button svg{
     width: 15px;
 }
@@ -1835,7 +1860,7 @@ background: #ebe6ff;
     padding: 0px 20px;
     gap: 8px;
 }
-
+.preview-buttons a,
 .preview-buttons button{
     position: relative;
     display: inline-flex;
@@ -1851,7 +1876,7 @@ background: #ebe6ff;
     cursor: pointer;
     transition: all 0.3s ease-in-out;
 }
-
+.preview-buttons a svg,
 .preview-buttons button svg{
     width: 12px;
 }
@@ -1869,6 +1894,7 @@ background: #ebe6ff;
     width: 100%;
     height: auto;
     max-height: 560px;
+    padding-bottom: 30px;
 }
 .advert-banner{
     position: relative;
@@ -2140,10 +2166,10 @@ background: #ebe6ff;
 background: linear-gradient(135deg, #3D0D99 0%, #8B1FFF 50%, #E54BFF 100%) !important;
 }
 .TTTo-POkay .glo-Top-Card.card-2{
-background: linear-gradient(135deg, #FF6FD8 0%, #FF42A1 50%, #FF9770 100%) !important;
+background: linear-gradient(135deg, #065f46 0%, #0f766e 50%, #2dd4bf 100%) !important;
 }
 .TTTo-POkay .glo-Top-Card.card-3{
- background: linear-gradient(135deg, #6A11CB 0%, #2575FC 50%, #6DD5FA 100%) !important;
+background: linear-gradient(135deg, #FF6FD8 0%, #FF42A1 50%, #FF9770 100%) !important;
 }
 
 .TTTo-POkay .glo-Top-Card{
@@ -2192,4 +2218,430 @@ background: linear-gradient(135deg, #FF6FD8 0%, #FF42A1 50%, #FF9770 100%) !impo
 .glo-Top-Card h5 span{
      background-color: transparent !important;
      border: 1px solid rgba(255,255,255,0.4) !important;
+}
+
+
+
+
+
+
+
+/* OOOP-LOa */
+
+.OOOP-LOa{
+    position: relative;
+    min-height: 0px !important;
+    padding: 0px !important;
+    background-color: transparent !important;
+    border:none !important;
+    border-radius: 0px !important;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Gllla-Toopa */
+
+.Gllla-Toopa{
+    position: relative;
+    width: 100%;
+    height: auto;
+    margin-top: 20px;
+}
+
+.Gllla-Toopa h3{
+    font-size: 20px;
+    font-weight: 500;
+}
+
+.Gllla-SUboopaCard{
+    position: relative;
+    width: 100%;
+    height: auto;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 20px;
+}
+
+.ViewApplications-PPGA .glo-Top-Card p{
+    font-size: 13px !important;
+     white-space: nowrap;
+     color: #fff !important;
+}
+
+.ViewApplications-PPGA .glo-Top-Card h3{
+    color: #3a325a !important;
+    font-size: 23px !important;
+    margin: 5px 0px !important;
+}
+
+.ViewApplications-PPGA .glo-Top-Card h4{
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+    font-size: 10px;
+    font-weight: 400;
+    gap: 5px;
+}
+
+.ViewApplications-PPGA .glo-Top-Card h4 span{
+    position: relative;
+    width: 25px;
+    height: 25px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border-radius: 7px;
+    color: #fff;
+    background-color: #7226FF;
+}
+.uayh-AccraD:nth-child(1) h4 span{
+    background-color: #6DD5FA !important;
+}
+
+.uayh-AccraD:nth-child(2) h4 span{
+    background-color: #FF9770 !important;
+}
+
+.uayh-AccraD:nth-child(3) h4 span{
+    background-color: #2dd4bf !important;
+}
+
+.uayh-AccraD:nth-child(4) h4 span{
+    background-color: #E54BFF !important;
+}
+
+
+.ViewApplications-PPGA .glo-Top-Card h4 span svg{
+    width: 70%;
+}
+
+
+
+.Gtah-Cardaa{
+    position: relative;
+    width: 100%;
+    height: auto;
+     display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-gap:20px;
+    grid-template-rows: auto;
+}
+
+
+.uayh-AccraD{
+    border:none !important;
+    z-index: 1;
+    overflow: hidden;
+}
+.uayh-AccraD::before{
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 32px;
+    z-index: -100;
+    left: 0;
+    top: 0;
+    background-color: #7226FF;
+}
+
+.uayh-AccraD:nth-child(1)::before{
+    background: linear-gradient(135deg, #6A11CB 0%, #2575FC 50%, #6DD5FA 100%);
+}
+.uayh-AccraD:nth-child(2)::before{
+    background: linear-gradient(135deg, #FF6FD8 0%, #FF42A1 50%, #FF9770 100%);
+}
+
+.uayh-AccraD:nth-child(3)::before{
+    background: linear-gradient(135deg, #065f46 0%, #0f766e 50%, #2dd4bf 100%);
+}
+
+.uayh-AccraD:nth-child(4)::before{
+    background: linear-gradient(135deg, #3D0D99 0%, #8B1FFF 50%, #E54BFF 100%);
+}
+
+
+
+
+
+/* cgayhs-ao */
+
+.cgayhs-ao{
+    position: relative;
+    width: 100%;
+    height: auto;
+    padding:30px;
+    margin-top: 20px;
+    padding-bottom: 60px;
+    border-radius: 10px !important;
+}
+
+
+
+/* yyess-sec */
+
+.yyess-sec{
+    position: relative;
+    padding:10px 20px;
+}
+
+.yyess-sec h3{
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 15px;
+    color: #7226FF;
+}
+.resume-link{
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #7226FF !important;
+    text-transform: uppercase;
+    font-size: 10px !important;
+    font-weight: 500 !important;
+}
+.resume-link:hover{
+    text-decoration: underline;
+}
+.pdf-icon{
+    position: relative;
+    width: 14px;
+}
+
+
+
+
+
+.modal-backdrop {
+  z-index: 4000 !important;
+}
+.modal-content {
+  z-index: 4001 !important;
+}
+
+
+
+
+
+/* ddaol-headrr */
+
+.ddaol-headrr{
+    position: relative;
+    width: 100%;
+    height: auto;
+    padding: 10px 20px;
+    padding-bottom: 0px;
+}
+
+.ddaol-headrr h3{
+    font-size: 18px;
+    font-weight: 500;
+}
+
+
+
+
+
+
+.poola-apiks{
+    position: relative;
+    width: 100%;
+    height: auto;
+    padding:0px 20px;
+}
+
+.poola-apiks .Gtahy-SSa p{
+    padding: 0px !important;
+    border:none !important;
+    margin-top: 8px !important;
+}
+
+
+.poola-apiks .Gtahy-SSa h4{
+    color: #7226FF !important;
+}
+
+.poola-apiks .Gtahy-SSa{
+    border:1px solid #7226FF !important;
+}
+
+.poola-apiks .Gtahy-SSa-2 a{
+    color: #7226FF !important;
+    background-color:#ebe6ff !important;
+    border:1px solid transparent;
+}
+
+.poola-apiks .Gtahy-SSa-2 a:hover{
+    border-color: #7226FF !important;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+/* Schedule-PPao */
+
+.Schedule-PPao{
+    position: relative;
+    width: 100%;
+    height: auto;
+}
+
+
+.Schedule-PPao-main{
+    position: relative;
+    width: 100%;
+    height: auto;
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 50px;
+}
+
+.Schedule-PPao-1{
+    position: sticky;
+    top: 70px;
+    left: 0;
+    z-index: 500;
+    width: 100%;
+    height: 100vh;
+}
+
+.Schedule-PPao-1-Boxx{
+    position: inherit;
+    top: inherit;
+    left: inherit;
+    z-index: inherit;
+    width: inherit;
+    height: auto;
+}
+
+.Schedule-PPao-1-Boxx-Top{
+    position: relative;
+    width: 100%;
+    height: auto;
+    padding: 20px 0px;
+}
+
+.Schedule-PPao-1-Boxx-Top h3{
+    font-size: 15px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.Schedule-PPao-1-Boxx-Main{
+    position: relative;
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.Schedule-PPao-1-Boxx-Card{
+    position: relative;
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    border:1px solid #e7e2f7;
+    overflow: hidden;
+}
+
+.Schedule-PPao-1-Boxx-Card-Top{
+    position: relative;
+    width: 100%;
+    height: auto;
+    padding:10px 20px;
+}
+
+.Schedule-PPao-1-Boxx-Card-Top h4{
+    font-size: 14px;
+    font-weight: 600;
+     display: -webkit-box;
+  -webkit-line-clamp:2; 
+  line-clamp:2; 
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.Schedule-PPao-1-Boxx-Card-Sub{
+    position: relative;
+    width: 100%;
+    height: auto;
+    padding: 10px 20px;
+    border-top: 1px solid #e7e2f7;
+    display: none;
+
+}
+
+.Schedule-PPao-1-Boxx-Card-Sub ul{
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: space-between;
+}
+
+.Schedule-PPao-1-Boxx-Card-Sub ul li{
+    position: relative;
+}
+
+.Schedule-PPao-1-Boxx-Card-Sub ul li h5{
+    font-size: 8px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+.Schedule-PPao-1-Boxx-Card-Sub ul li p{
+    font-size: 10px;
+    font-weight: 500;
+}
+.Schedule-PPao-1-Boxx-Card-Foot{
+    position: relative;
+    width: 100%;
+    height: auto;
+    padding: 7px 20px;
+    background-color: #ebe6ff;
+}
+
+.Schedule-PPao-1-Boxx-Card-Foot p{
+    font-size: 9px;
+    color: #7226FF;
+}
+.Schedule-PPao-1-Boxx-Card-Foot p span{
+    text-transform: uppercase;
+    font-weight: 500;
 }

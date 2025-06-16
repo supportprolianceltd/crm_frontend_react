@@ -869,76 +869,77 @@ const JobAdvert = () => {
           )}
         </AnimatePresence>
 
-        <div className="table-container">
-          <table className="Gen-Sys-table">
-            <thead>
-              <tr>
-                <th>
-                  <input
-                    type="checkbox"
-                    ref={masterCheckboxRef}
-                    onChange={handleSelectAllVisible}
-                    checked={currentJobs.length > 0 && currentJobs.every((job) => selectedIds.includes(job.id))}
-                  />
-                </th>
-                <th>Job ID</th>
-                <th>Job Title</th>
-                <th>Company Name</th>
-                <th>Job Type</th>
-                <th>Location</th>
-                <th>Deadline for Applications</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {currentJobs.length === 0 ? (
-                <tr>
-                  <td colSpan={9} style={{ textAlign: 'center', padding: '20px', fontStyle: 'italic' }}>
-                    No matching job advertisements found
-                  </td>
-                </tr>
-              ) : (
-                currentJobs.map((job) => (
-                  <tr key={job.id}>
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.includes(job.id)}
-                        onChange={() => handleCheckboxChange(job.id)}
-                      />
-                    </td>
-                    <td>{job.id}</td>
-                    <td>{job.title}</td>
-                    <td>{job.company}</td>
-                    <td>{job.jobType}</td>
-                    <td>{job.location}</td>
-                    <td>{job.deadline}</td>
-                    <td>
-                      <span className={`status ${job.status.toLowerCase()}`}>{job.status}</span>
-                    </td>
-                    <td>
-                      <div className="gen-td-btns">
-                        <button className="view-btn" onClick={() => handleViewClick(job)}>
-                          Details
-                        </button>
-                        {/* <Link to="/job-application" className="link-btn btn-primary-bg">
-                          <GlobeAltIcon />
-                          Site
-                        </Link> */}
-                        <Link  to="/job-application" state={{ job }} className="link-btn btn-primary-bg" >
-                          <GlobeAltIcon />
-                          Site
-                        </Link>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
+      <div className="table-container">
+  <table className="Gen-Sys-table">
+    <thead>
+      <tr>
+        <th>
+          <input
+            type="checkbox"
+            ref={masterCheckboxRef}
+            onChange={handleSelectAllVisible}
+            checked={currentJobs.length > 0 && currentJobs.every((job) => selectedIds.includes(job.id))}
+          />
+        </th>
+        <th>Job ID</th>
+        <th>Job Title</th>
+        <th>Job Type</th>
+        <th>Location</th>
+        <th>Deadline for Applications</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {currentJobs.length === 0 ? (
+        <tr>
+          <td colSpan={8} style={{ textAlign: 'center', padding: '20px', fontStyle: 'italic' }}>
+            No matching job advertisements found
+          </td>
+        </tr>
+      ) : (
+        currentJobs.map((job) => (
+          <tr key={job.id}>
+            <td>
+              <input
+                type="checkbox"
+                checked={selectedIds.includes(job.id)}
+                onChange={() => handleCheckboxChange(job.id)}
+              />
+            </td>
+            <td>{job.id}</td>
+            <td>{job.title}</td>
+            <td>{job.jobType}</td>
+            <td>{job.location}</td>
+            <td>{job.deadline}</td>
+            <td>
+              <span className={`status ${job.status.toLowerCase()}`}>
+                {job.status}
+              </span>
+            </td>
+            <td>
+              <div className="gen-td-btns">
+                <button
+                  className="view-btn"
+                  onClick={() => handleViewClick(job)}
+                >
+                  Details
+                </button>
+                <Link
+                  to='/job-application'
+                  className='link-btn btn-primary-bg'
+                >
+                  <GlobeAltIcon />
+                  Site
+                </Link>
+              </div>
+            </td>
+          </tr>
+        ))
+      )}
+    </tbody>
+  </table>
+</div>
         {filteredJobs.length > 0 && (
           <div className="pagination-controls">
             <div className="Dash-OO-Boas-foot">
