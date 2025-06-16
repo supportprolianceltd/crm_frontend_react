@@ -491,11 +491,11 @@ const getPosition = (user) => {
                 >
                   <div className="All-TTo-Nagbs-main ouj-pia">
                     <div className="All-TTo-Nagbs-1">
-                      <span>{initials}</span>
+                      <span>{getInitials(user)}</span>
                     </div>
                     <div className="All-TTo-Nagbs-2 oujah-osi">
-                      <p>{fullName}</p>
-                      <span>{role}</span>
+                       <p>{getFullName(user)}</p>
+                      <span>{getPosition(user)}</span>
                     </div>
                     <div className="All-TTo-Nagbs-3 ouajjs-sua">
                       <CheckIcon />
