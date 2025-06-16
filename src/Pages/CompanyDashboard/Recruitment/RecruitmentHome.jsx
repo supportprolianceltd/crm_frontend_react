@@ -1040,13 +1040,22 @@ setJobData(normalizedData);
   };
 
   // Get full name from user data
-  const getFullName = (user) => {
-    if (!user || typeof user !== 'object') return 'Unknown';
-    if (user.first_name && user.last_name) {
-      return `${user.first_name} ${user.last_name}`;
-    }
-    return user.email || 'Unknown';
-  };
+const getFullName = (user) => {
+  if (!user || typeof user !== 'object') return 'Unknown';
+  if (user.first_name && user.last_name) {
+    return `${user.first_name} ${user.last_name}`;
+  }
+  return user.email || 'Unknown';
+};
+
+const getPosition = (user) => {
+  if (!user || typeof user !== 'object') return 'Unknown';
+  if (user.job_role) {
+    return `${user.job_role}`;
+  }
+  return  'staff';
+};
+
 
   return (
     <div className="YUa-Opal-sec">
@@ -1237,7 +1246,7 @@ setJobData(normalizedData);
                       <td>{formatDate(job.requestedDate)}</td>
                       <td>{getFullName(job.requestedBy)}</td>
                       <td>
-                        <span className={`role ${job.role.toLowerCase()}`}>{job.role}</span>
+                        <span className={`role ${getPosition(job.requestedBy).toLowerCase()}`}>{getPosition(job.requestedBy)}</span>
                       </td>
                       <td>
                         <div className="gen-td-btns">

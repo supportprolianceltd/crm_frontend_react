@@ -16,6 +16,6 @@ export default config;
 
 // {
 //     "username": "SupportAdmin",
-//     "email": "admin@prolianceltd.com",
+//     "email": "admin@prolianceltd.com", 
 //     "password": "qwerty"
 // }
