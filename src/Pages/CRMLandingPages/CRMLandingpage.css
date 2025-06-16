@@ -1404,6 +1404,7 @@ background-color: rgba(255,255,255,0.2);
     position: relative;
 }
 
+.Gtahy-SSa-2 a,
 .Gtahy-SSa-2 span{
     position: relative;
     width: 27px;
@@ -1419,10 +1420,11 @@ background-color: rgba(255,255,255,0.2);
     color: #463b71;
 }
 
+.Gtahy-SSa-2 a svg,
 .Gtahy-SSa-2 span svg{
     width: 14px;
 }
-
+.Gtahy-SSa-2 a:hover,
 .Gtahy-SSa-2 span:hover{
     color: #7226FF;
     background-color:#ebe6ff;

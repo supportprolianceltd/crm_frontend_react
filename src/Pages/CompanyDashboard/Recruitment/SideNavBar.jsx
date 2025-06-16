@@ -197,13 +197,13 @@ const SideNavBar = () => {
             SolidIcon={UsersSolid}
             to={`${basePath}/applications`}
           />
-          <MenuItem
+          {/* <MenuItem
             name="vetting"
             label="Vetting"
-            OutlineIcon={Cog6ToothOutline}  // fixed outline icon
+            OutlineIcon={Cog6ToothOutline}  
             SolidIcon={Cog6ToothSolid}
             to={`${basePath}/vetting`}
-          />
+          /> */}
           <MenuItem
             name="schedule"
             label="Interview Schedule"
