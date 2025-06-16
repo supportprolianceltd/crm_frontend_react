@@ -120,6 +120,10 @@ background: #f7f5ff;
   height: 50px;
   padding: 0px 20px;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap:3px;
 }
 
 

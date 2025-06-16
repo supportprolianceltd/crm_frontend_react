@@ -476,6 +476,8 @@
 // };
 
 // export default JobAdvert;
+
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -603,6 +605,7 @@ const JobAdvert = () => {
     open: 0,
     closed: 0,
   });
+  const [isLoading, setIsLoading] = useState(true);
 
   const token = localStorage.getItem('accessToken');
   const API_BASE_URL = config.API_BASE_URL;
@@ -632,6 +635,7 @@ const JobAdvert = () => {
   // Fetch jobs from API
   useEffect(() => {
     const fetchJobs = async () => {
+      setIsLoading(true);
       try {
         const response = await axios.get(`${API_BASE_URL}/api/talent-engine/requisitions/`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -646,7 +650,7 @@ const JobAdvert = () => {
             jobType: reverseJobTypeMap[job.job_type] || job.job_type,
             location: reverseLocationTypeMap[job.location_type] || job.location_type,
             deadline: formatDate(job.deadline_date),
-            status: job.status.charAt(0).toUpperCase() + job.status.slice(1), // Capitalize (e.g., 'open' → 'Open')
+            status: job.status.charAt(0).toUpperCase() + job.status.slice(1),
           }));
         setJobData(publishedJobs);
 
@@ -662,6 +666,8 @@ const JobAdvert = () => {
           message: error.response?.data?.detail || 'Failed to fetch job advertisements.',
         });
         console.error('Error fetching jobs:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -673,7 +679,7 @@ const JobAdvert = () => {
     const interval = setInterval(() => {
       setTrigger((prev) => prev + 1);
       setLastUpdateTime(new Date());
-    }, 50000); // Update every 50 seconds
+    }, 50000);
     return () => clearInterval(interval);
   }, []);
 
@@ -744,7 +750,6 @@ const JobAdvert = () => {
 
   const confirmDelete = async () => {
     try {
-      // Send DELETE requests for each selected job
       await Promise.all(
         selectedIds.map((id) =>
           axios.delete(`${API_BASE_URL}/api/talent-engine/requisitions/${id}/`, {
@@ -752,7 +757,6 @@ const JobAdvert = () => {
           })
         )
       );
-      // Update local state
       setJobData((prev) => prev.filter((job) => !selectedIds.includes(job.id)));
       setSelectedIds([]);
       if (currentPage > Math.ceil(filteredJobs.length / rowsPerPage)) {
@@ -869,78 +873,94 @@ const JobAdvert = () => {
           )}
         </AnimatePresence>
 
-      <div className="table-container">
-  <table className="Gen-Sys-table">
-    <thead>
-      <tr>
-        <th>
-          <input
-            type="checkbox"
-            ref={masterCheckboxRef}
-            onChange={handleSelectAllVisible}
-            checked={currentJobs.length > 0 && currentJobs.every((job) => selectedIds.includes(job.id))}
-          />
-        </th>
-        <th>Job ID</th>
-        <th>Job Title</th>
-        <th>Job Type</th>
-        <th>Location</th>
-        <th>Deadline for Applications</th>
-        <th>Status</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      {currentJobs.length === 0 ? (
-        <tr>
-          <td colSpan={8} style={{ textAlign: 'center', padding: '20px', fontStyle: 'italic' }}>
-            No matching job advertisements found
-          </td>
-        </tr>
-      ) : (
-        currentJobs.map((job) => (
-          <tr key={job.id}>
-            <td>
-              <input
-                type="checkbox"
-                checked={selectedIds.includes(job.id)}
-                onChange={() => handleCheckboxChange(job.id)}
-              />
-            </td>
-            <td>{job.id}</td>
-            <td>{job.title}</td>
-            <td>{job.jobType}</td>
-            <td>{job.location}</td>
-            <td>{job.deadline}</td>
-            <td>
-              <span className={`status ${job.status.toLowerCase()}`}>
-                {job.status}
-              </span>
-            </td>
-            <td>
-              <div className="gen-td-btns">
-                <button
-                  className="view-btn"
-                  onClick={() => handleViewClick(job)}
-                >
-                  Details
-                </button>
-                <Link
-                  to='/job-application'
-                  className='link-btn btn-primary-bg'
-                >
-                  <GlobeAltIcon />
-                  Site
-                </Link>
-              </div>
-            </td>
-          </tr>
-        ))
-      )}
-    </tbody>
-  </table>
-</div>
-        {filteredJobs.length > 0 && (
+        <div className="table-container">
+          <table className="Gen-Sys-table">
+            <thead>
+              <tr>
+                <th>
+                  <input
+                    type="checkbox"
+                    ref={masterCheckboxRef}
+                    onChange={handleSelectAllVisible}
+                    checked={currentJobs.length > 0 && currentJobs.every((job) => selectedIds.includes(job.id))}
+                    disabled={isLoading}
+                  />
+                </th>
+                <th>Job ID</th>
+                <th>Job Title</th>
+                <th>Job Type</th>
+                <th>Location</th>
+                <th>Deadline for Applications</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {isLoading ? (
+                <tr>
+                  <td colSpan={8} style={{ textAlign: 'center', padding: '20px', fontStyle: 'italic' }}>
+                   <ul className='tab-Loadding-AniMMA'>
+                        <li></li>
+                        <li></li>
+                        <li></li>
+                        <li></li>
+                        <li></li>
+                        <li></li>
+                        <li></li>
+                      </ul>
+                  </td>
+                </tr>
+              ) : filteredJobs.length === 0 ? (
+                <tr>
+                  <td colSpan={8} style={{ textAlign: 'center', padding: '20px', fontStyle: 'italic' }}>
+                    No Job Advertisements found
+                  </td>
+                </tr>
+              ) : (
+                currentJobs.map((job) => (
+                  <tr key={job.id}>
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(job.id)}
+                        onChange={() => handleCheckboxChange(job.id)}
+                      />
+                    </td>
+                    <td>{job.id}</td>
+                    <td>{job.title}</td>
+                    <td>{job.jobType}</td>
+                    <td>{job.location}</td>
+                    <td>{job.deadline}</td>
+                    <td>
+                      <span className={`status ${job.status.toLowerCase()}`}>
+                        {job.status}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="gen-td-btns">
+                        <button
+                          className="view-btn"
+                          onClick={() => handleViewClick(job)}
+                        >
+                          Details
+                        </button>
+                        <Link
+                          to='/job-application'
+                          className='link-btn btn-primary-bg'
+                        >
+                          <GlobeAltIcon />
+                          Site
+                        </Link>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {!isLoading && filteredJobs.length > 0 && (
           <div className="pagination-controls">
             <div className="Dash-OO-Boas-foot">
               <div className="Dash-OO-Boas-foot-1">

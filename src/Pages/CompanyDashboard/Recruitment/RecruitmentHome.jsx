@@ -595,6 +595,8 @@
 // };
 
 // export default RecruitmentHome;
+
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
@@ -617,7 +619,6 @@ import {
   AdjustmentsHorizontalIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  ExclamationCircleIcon,
   LockClosedIcon,
 } from '@heroicons/react/24/outline';
 import CountUp from 'react-countup';
@@ -734,7 +735,37 @@ const AlertModal = ({ title, message, onClose }) => (
   </AnimatePresence>
 );
 
-const renderPieChart = (jobData) => {
+const renderPieChart = (jobData, isLoading) => {
+  if (isLoading) {
+    return (
+      <div className="chart-wrapper" style={{ textAlign: 'center', padding: '20px', fontStyle: 'italic' }}>
+        
+         <span className='Reee-Splak'>
+                            <motion.div
+                              initial={{ rotate: 0 }}
+                              animate={{ rotate: 360 }}
+                              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                              style={{
+                                width: 14,
+                                height: 14,
+                                borderRadius: '50%',
+                                border: '3px solid #7226FF',
+                                borderTopColor: 'transparent',
+                                marginRight: '5px',
+                                display: 'inline-block',
+                              }}
+                            />
+                           Loading chart...
+                        </span>
+                          <ul className='tab-Loadding-AniMMA upp-Top'>
+                        <li></li>
+                        <li></li>
+                        <li></li>
+                      </ul>
+      </div>
+    );
+  }
+
   const counts = {
     Open: jobData.filter((job) => job.status === 'open').length,
     Pending: jobData.filter((job) => job.status === 'pending').length,
@@ -809,7 +840,8 @@ const renderPieChart = (jobData) => {
       <div className="chart-summary">
         <div className="summary-item">
           <div className="summary-color">
-            <LockOpenIcon /> <span style={{ backgroundColor: 'rgba(75, 192, 192, 0.8)' }}></span>
+            <LockOpenIcon className="w-5 h-5" />
+            <span style={{ backgroundColor: 'rgba(75, 192, 192, 0.8)' }}></span>
           </div>
           <div className="summary-text">
             {counts.Open} ({percentages.Open}%)
@@ -817,7 +849,8 @@ const renderPieChart = (jobData) => {
         </div>
         <div className="summary-item">
           <div className="summary-color">
-            <ClockIcon /> <span style={{ backgroundColor: 'rgba(255, 206, 86, 0.8)' }}></span>
+            <ClockIcon className="w-5 h-5" />
+            <span style={{ backgroundColor: 'rgba(255, 206, 86, 0.8)' }}></span>
           </div>
           <div className="summary-text">
             {counts.Pending} ({percentages.Pending}%)
@@ -825,7 +858,8 @@ const renderPieChart = (jobData) => {
         </div>
         <div className="summary-item">
           <div className="summary-color">
-            <XMarkIcon /> <span style={{ backgroundColor: 'rgba(255, 99, 132, 0.8)' }}></span>
+            <XMarkIcon className="w-5 h-5" />
+            <span style={{ backgroundColor: 'rgba(255, 99, 132, 0.8)' }}></span>
           </div>
           <div className="summary-text">
             {counts.Closed} ({percentages.Closed}%)
@@ -840,6 +874,7 @@ const RecruitmentHome = () => {
   const [trigger, setTrigger] = useState(0);
   const [lastUpdateTime, setLastUpdateTime] = useState(new Date());
   const [jobData, setJobData] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -870,6 +905,7 @@ const RecruitmentHome = () => {
 
   const fetchJobs = async () => {
     try {
+      setIsLoading(true);
       const token = localStorage.getItem('accessToken');
       const response = await axios.get(`${config.API_BASE_URL}/api/talent-engine/requisitions/`, {
         headers: {
@@ -885,10 +921,14 @@ const RecruitmentHome = () => {
       // Normalize data for display
       const normalizedData = response.data.map((job) => ({
         ...job,
-        requestedDate: job.requested_date, // Map requested_date to requestedDate
-        requestedBy: job.requested_by, // Map requested_by to requestedBy
+        requestedDate: job.requested_date,
+        requestedBy: job.requested_by,
       }));
-      setJobData(normalizedData);
+     normalizedData.sort((a, b) => 
+  new Date(b.created_at) - new Date(a.created_at)
+);
+
+setJobData(normalizedData);
       setCardStats({
         total: normalizedData.length,
         open: normalizedData.filter((job) => job.status === 'open').length,
@@ -897,8 +937,10 @@ const RecruitmentHome = () => {
       });
       setErrorMessage('');
     } catch (error) {
-      setErrorMessage(error.response?.data?.detail || 'Failed to fetch job requisitions. Please try again.');
+      setErrorMessage(error.response?.data?.detail || 'Failed to load job requisitions. Please try again.');
       console.error('Error fetching jobs:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -996,24 +1038,59 @@ const RecruitmentHome = () => {
     setShowViewRequisition(false);
     setSelectedJob(null);
   };
-  // Get full name from user data
-const getFullName = (user) => {
-  if (!user || typeof user !== 'object') return 'Unknown';
-  if (user.first_name && user.last_name) {
-    return `${user.first_name} ${user.last_name}`;
-  }
-  return user.email || 'Unknown';
-};
 
+  // Get full name from user data
+  const getFullName = (user) => {
+    if (!user || typeof user !== 'object') return 'Unknown';
+    if (user.first_name && user.last_name) {
+      return `${user.first_name} ${user.last_name}`;
+    }
+    return user.email || 'Unknown';
+  };
 
   return (
     <div className="YUa-Opal-sec">
       <div className="YUa-Opal-Part-1">
-        {errorMessage && (
-          <div className="error-alert" style={{ color: 'red', marginBottom: '10px' }}>
-            {errorMessage}
-          </div>
-        )}
+     <AnimatePresence>
+  {errorMessage && (
+    <motion.div
+      className="error-alert mmoah-Dals"
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3 }}
+      style={{
+        color: 'white',
+        padding: '10px 15px',
+        borderRadius: '6px',
+        marginBottom: '15px',
+        display: 'flex',
+        alignItems: 'center',
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+      }}
+    >
+      <div className='mmoah-Dals-DDga'>
+      <svg 
+        xmlns="http://www.w3.org/2000/svg" 
+        className="h-5 w-5 mr-2" 
+        viewBox="0 0 20 20" 
+        fill="currentColor"
+        style={{ minWidth: '20px' }}
+      >
+        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+      </svg>
+      {errorMessage}
+      </div>
+      <button 
+        onClick={() => setErrorMessage('')}
+        className="ml-auto focus:outline-none"
+        aria-label="Close error"
+      >
+        <XMarkIcon className="h-5 w-5" />
+      </button>
+    </motion.div>
+  )}
+</AnimatePresence>
         <div className="glo-Top-Cards">
           {[
             { icon: ClipboardDocumentListIcon, label: 'Total Job Requisitions', value: cardStats.total },
@@ -1024,13 +1101,13 @@ const getFullName = (user) => {
             <div key={idx} className={`glo-Top-Card card-${idx + 1} Gen-Boxshadow`}>
               <div className="ffl-TOp">
                 <span>
-                  <item.icon />
+                  <item.icon className="w-6 h-6" />
                 </span>
                 <p>{item.label}</p>
               </div>
               <h3>
-                <ArrowTrendingUpIcon />
-                <CountUp key={trigger + `-${idx}`} end={item.value} duration={2} />{' '}
+                <ArrowTrendingUpIcon className="w-5 h-5" />
+                <CountUp key={trigger + `-${idx}`} end={item.value} duration={2} />
                 <span className="ai-check-span">Last checked - {formatTime(lastUpdateTime)}</span>
               </h3>
               <h5>
@@ -1047,14 +1124,14 @@ const getFullName = (user) => {
           <div className="Dash-OO-Boas-Top">
             <div className="Dash-OO-Boas-Top-1">
               <span onClick={toggleSection}>
-                <AdjustmentsHorizontalIcon />
+                <AdjustmentsHorizontalIcon className="w-6 h-6" />
               </span>
               <h3>Job Requisitions</h3>
             </div>
             <div className="Dash-OO-Boas-Top-2">
               <div className="genn-Drop-Search">
                 <span>
-                  <MagnifyingGlassIcon />
+                  <MagnifyingGlassIcon className="w-5 h-5" />
                 </span>
                 <input
                   type="text"
@@ -1122,10 +1199,24 @@ const getFullName = (user) => {
                 </tr>
               </thead>
               <tbody>
-                {currentJobs.length === 0 ? (
+                {isLoading ? (
                   <tr>
                     <td colSpan={8} style={{ textAlign: 'center', padding: '20px', fontStyle: 'italic' }}>
-                      No matching job requisitions found
+                      <ul className='tab-Loadding-AniMMA'>
+                        <li></li>
+                        <li></li>
+                        <li></li>
+                        <li></li>
+                        <li></li>
+                        <li></li>
+                        <li></li>
+                      </ul>
+                    </td>
+                  </tr>
+                ) : currentJobs.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} style={{ textAlign: 'center', padding: '20px', fontStyle: 'italic' }}>
+                      No job requisitions found
                     </td>
                   </tr>
                 ) : (
@@ -1138,7 +1229,7 @@ const getFullName = (user) => {
                           onChange={() => handleCheckboxChange(job.id)}
                         />
                       </td>
-                      <td>{job.id}</td> {/* Shorten UUID for display */}
+                      <td>{job.id}</td>
                       <td>{job.title}</td>
                       <td>
                         <span className={`status ${job.status.toLowerCase()}`}>{job.status}</span>
@@ -1245,7 +1336,7 @@ const getFullName = (user) => {
       <div className="YUa-Opal-Part-2">
         <div className="Top-GHY-s">
           <button onClick={() => setShowRequisition(true)} className="btn-primary-bg">
-            <PlusIcon /> Create Job Requisition
+            <PlusIcon className="w-5 h-5" /> Create Job Requisition
           </button>
           <p>
             Last Created{' '}
@@ -1255,26 +1346,16 @@ const getFullName = (user) => {
           </p>
         </div>
 
-        <div className="chart-container">{renderPieChart(jobData)}</div>
+        <div className="chart-container">{renderPieChart(jobData, isLoading)}</div>
       </div>
 
       <AnimatePresence>
         {showRequisition && <CreateRequisition onClose={() => setShowRequisition(false)} />}
       </AnimatePresence>
 
-      <AnimatePresence>
         {showViewRequisition && (
-          <motion.div
-            variants={viewRequisitionVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            transition={{ duration: 0.3 }}
-          >
             <VewRequisition job={selectedJob} onClose={handleCloseViewRequisition} />
-          </motion.div>
         )}
-      </AnimatePresence>
     </div>
   );
 };

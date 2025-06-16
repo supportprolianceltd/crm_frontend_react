@@ -5,6 +5,7 @@ import usePageTitle from '../../hooks/usecrmPageTitle';
 import axios from 'axios';
 import config from '../../config';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const FloatingInput = ({ label, type, value, onChange, name, showToggle, onToggle, isVisible }) => {
   const inputRef = useRef(null);
@@ -117,7 +118,6 @@ const Login = () => {
       <form className="login-form Gen-Boxshadow" onSubmit={handleSubmit} autoComplete="on">
         <h2 className="form-title">Login to continue</h2>
 
-        {error && <p className="error-message" style={{ color: 'red' }}>{error}</p>}
 
         <FloatingInput
           label="Email address"
@@ -142,13 +142,33 @@ const Login = () => {
           <Link to='/forgot-password'>Forgot password?</Link>
         </div>
 
-        <button className="login-btn btn-primary-bg" type="submit" disabled={loading}>
-          {loading ? 'Logging in...' : 'Continue'}
-        </button>
+     <button className="login-btn btn-primary-bg" type="submit" disabled={loading}>
+  {loading && (
+    <motion.div
+      initial={{ rotate: 0 }}
+      animate={{ rotate: 360 }}
+      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+      style={{
+        width: 15,
+        height: 15,
+        borderRadius: '50%',
+        border: '3px solid #fff',
+        borderTopColor: 'transparent',
+        marginRight: '5px',
+        display: 'inline-block',
+      }}
+    />
+  )}
+  {loading ? 'Logging in...' : 'Continue'}
+</button>
+
+        {error && <p className="erro-message-Txt">{error}</p>}
+
 
         <div className='FFlaok-paus'>
           <p>Don't have an account? <Link to='/register'>Create account</Link></p>
         </div>
+
 
         <div className="social-login">
           <p className="login-divider"><span>or</span></p>

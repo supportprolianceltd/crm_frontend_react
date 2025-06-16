@@ -310,7 +310,7 @@
   text-transform: uppercase;
   font-weight: 600;
   padding: 0px 10px;
-  width: auto;
+  width: 70px;
   height: 20px;
   display: inline-flex;
   align-items: center;
@@ -2111,6 +2111,7 @@ background: #ebe6ff;
     font-weight: 600;
     text-transform: uppercase;
     margin-bottom: 10px;
+    color: #645e7c;
 }
 
 .polau-se p{
@@ -2644,4 +2645,129 @@ background: linear-gradient(135deg, #FF6FD8 0%, #FF42A1 50%, #FF9770 100%) !impo
 .Schedule-PPao-1-Boxx-Card-Foot p span{
     text-transform: uppercase;
     font-weight: 500;
+}
+
+
+
+
+
+
+/* Reee-Splak */
+
+.Reee-Splak{
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    font-size: 10px;
+}
+
+
+/* tab-Loadding-AniMMA */
+
+.tab-Loadding-AniMMA{
+    position: relative;
+    width: 100%;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.tab-Loadding-AniMMA li{
+    position: relative;
+    width: 100%;
+    height: 30px;
+      background: linear-gradient(
+    100deg,
+    #ebe6ff 20%,
+    #f7f5ff 50%,
+    #ebe6ff 80%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  -webkit-animation: shimmer 1.5s infinite;
+  -moz-animation: shimmer 1.5s infinite;
+  border-radius: 5px;
+}
+
+
+
+.upp-Top{
+    margin-top: 10px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@-webkit-keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@-moz-keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+
+
+
+
+
+.mmoah-Dals{
+    width:auto !important;
+    position: fixed;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 12px;
+    z-index: 2500;
+    top: 30px;
+    transform: translateX(-50%) !important;
+    left: 50%;
+    background-color: rgba(229, 62, 62, 0.9);
+}
+
+.mmoah-Dals svg{
+    width: 17px !important;
+}
+
+.ooo-AGtgs,
+.mmoah-Dals-DDga{
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.mmoah-Dals button{
+    cursor: pointer;
+    user-select: none;
+    padding: 5px;
+    background-color: transparent;
+}
+
+
+.pool-HHga{
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 10px;
+    /* color: #7226FF; */
+    line-height: 120%;
+    text-transform: uppercase;
 }
