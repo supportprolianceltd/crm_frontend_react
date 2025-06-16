@@ -3,17 +3,54 @@ import { useNavigate } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { motion, AnimatePresence } from 'framer-motion';
+import axios from 'axios';
+import config from '../../../config';
 import NoAdvertBanner from '../../../assets/Img/noAdvertBanner.png';
 import {
   InformationCircleIcon,
+  PencilIcon,
   EyeIcon,
   XMarkIcon,
+  CheckIcon,
   ArrowLeftIcon,
   ArrowRightIcon,
   PlusIcon,
   MinusIcon,
   TrashIcon,
+  GlobeAltIcon,
 } from '@heroicons/react/24/outline';
+
+// Date formatting function
+const formatDisplayDate = (dateString) => {
+  if (!dateString) return 'Not specified';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+};
+
+// Get initials from user data
+const getInitials = (user) => {
+  if (!user || typeof user !== 'object') return 'N/A';
+  if (user.first_name && user.last_name) {
+    return `${user.first_name[0]}${user.last_name[0]}`.toUpperCase();
+  }
+  if (user.email) {
+    return user.email.slice(0, 2).toUpperCase();
+  }
+  return 'N/A';
+};
+
+// Get full name from user data
+const getFullName = (user) => {
+  if (!user || typeof user !== 'object') return 'Unknown';
+  if (user.first_name && user.last_name) {
+    return `${user.first_name} ${user.last_name}`;
+  }
+  return user.email || 'Unknown';
+};
 
 // Backdrop component
 const Backdrop = ({ onClick }) => (
@@ -29,18 +66,18 @@ const Backdrop = ({ onClick }) => (
 // Modal animation variants
 const modalVariants = {
   hidden: { opacity: 0, y: 25, scale: 0.95 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
-    scale: 1, 
-    transition: { duration: 0.2, ease: 'easeOut' }
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.2, ease: 'easeOut' },
   },
-  exit: { 
-    opacity: 0, 
-    y: 25, 
-    scale: 0.95, 
-    transition: { duration: 0.2, ease: 'easeIn' }
-  }
+  exit: {
+    opacity: 0,
+    y: 25,
+    scale: 0.95,
+    transition: { duration: 0.2, ease: 'easeIn' },
+  },
 };
 
 // Modal component
@@ -107,51 +144,225 @@ const AlertModal = ({ title, message, onClose }) => (
 
 const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = true }) => {
   const navigate = useNavigate();
-  // Set default date to today for deadlineDate and one month from now for startDate
+  const token = localStorage.getItem('accessToken');
+  const API_BASE_URL = `${config.API_BASE_URL}/api/talent-engine/`;
+
+  // Set default dates
   const today = new Date();
   const defaultStartDate = new Date(today);
   defaultStartDate.setMonth(today.getMonth() + 1);
 
-  const [deadlineDate, setDeadlineDate] = useState(today);
-  const [startDate, setStartDate] = useState(defaultStartDate);
+  const [status, setStatus] = useState(job?.status || 'pending');
+  const [publishStatus, setPublishStatus] = useState(job?.publish_status || false);
+  const [deadlineDate, setDeadlineDate] = useState(null);
+  const [startDate, setStartDate] = useState(null);
   const [activeSection, setActiveSection] = useState(0);
   const [showPreview, setShowPreview] = useState(false);
   const [showJobAdvert, setShowJobAdvert] = useState(false);
   const [errors, setErrors] = useState({});
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [alertModal, setAlertModal] = useState(null);
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(null);
   const [advertBanner, setAdvertBanner] = useState(null);
-  const [isPublishing, setIsPublishing] = useState(false);
-  const [responsibilities, setResponsibilities] = useState([
-    'Develop and maintain web applications using modern frameworks',
-    'Collaborate with cross-functional teams to define and implement features',
-    'Write clean, efficient, and well-documented code',
-    'Participate in code reviews and ensure code quality standards'
-  ]); // Initialize with multiple responsibilities
+  const [advertBannerFile, setAdvertBannerFile] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isTogglingPublish, setIsTogglingPublish] = useState(false);
+  const [responsibilities, setResponsibilities] = useState([]);
+  const [checkedItems, setCheckedItems] = useState(['Right to Work Check']);
+  const [documentTitle, setDocumentTitle] = useState('');
+  const [documents, setDocuments] = useState(['Resume']);
+  const [userHasAdded, setUserHasAdded] = useState(false);
+  const [requisitionData, setRequisitionData] = useState(job || { requested_by: null });
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
-  // Form data with default values
+  // Form data with defaults
   const [formData, setFormData] = useState({
-    jobTitle: 'Frontend Developer',
-    companyName: 'ValueFlowTech Ltd',
+    jobTitle: '',
+    companyName: '',
     jobType: 'Full-time',
     locationType: 'On-site',
-    companyAddress: '24 Marina Street, Lagos',
-    salaryRange: '$50,000 - $70,000',
-    jobDescription: 'Develop and maintain web applications using React, JavaScript, and CSS.',
-    numberOfCandidates: '5',
-    qualificationRequirement: 'Bachelor’s degree in Computer Science',
-    experienceRequirement: '3+ years in web development',
-    knowledgeSkillRequirement: 'React, JavaScript, CSS',
+    companyAddress: '',
+    salaryRange: '',
+    jobDescription: '',
+    numberOfCandidates: '',
+    qualificationRequirement: '',
+    experienceRequirement: '',
+    knowledgeSkillRequirement: '',
+    reason: '',
   });
+
+  // Fetch requisition data if job.id exists
+  useEffect(() => {
+    if (job?.id) {
+      const fetchRequisition = async () => {
+        try {
+          const response = await axios.get(`${API_BASE_URL}requisitions/${job.id}/`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          });
+          const data = response.data;
+          console.log("data")
+          console.log(data)
+          console.log("data")
+          setRequisitionData({
+            ...data,
+            requested_by: data.requested_by || null,
+          });
+          setStatus(data.status || 'pending');
+          setPublishStatus(data.publish_status || false);
+          setFormData({
+            jobTitle: data.title || '',
+            companyName: data.company_name || '',
+            jobType: data.job_type
+              ? {
+                  full_time: 'Full-time',
+                  part_time: 'Part-time',
+                  contract: 'Contract',
+                  freelance: 'Freelance',
+                  internship: 'Internship',
+                }[data.job_type] || 'Full-time'
+              : 'Full-time',
+            locationType: data.location_type
+              ? {
+                  on_site: 'On-site',
+                  remote: 'Remote',
+                  hybrid: 'Hybrid',
+                }[data.location_type] || 'On-site'
+              : 'On-site',
+            companyAddress: data.company_address || '',
+            salaryRange: data.salary_range || '',
+            jobDescription: data.job_description || '',
+            numberOfCandidates: data.number_of_candidates || '',
+            qualificationRequirement: data.qualification_requirement || '',
+            experienceRequirement: data.experience_requirement || '',
+            knowledgeSkillRequirement: data.knowledge_requirement || '',
+            reason: data.reason || '',
+          });
+          setDeadlineDate(data.deadline_date ? new Date(data.deadline_date) : null);
+          setStartDate(data.start_date ? new Date(data.start_date) : null);
+          setResponsibilities(data.responsibilities || []);
+          setDocuments(data.documents_required || ['Resume']);
+          setCheckedItems(data.compliance_checklist || ['Right to Work Check']);
+          setAdvertBanner(data.advert_banner ? `${config.API_BASE_URL}${data.advert_banner}` : null);
+          setHasUnsavedChanges(false); // Reset unsaved changes after fetching
+        } catch (error) {
+          setAlertModal({
+            title: 'Error',
+            message: error.response?.data?.detail || 'Failed to fetch requisition data.',
+          });
+          console.error('Error fetching requisition:', error);
+        }
+      };
+      fetchRequisition();
+    }
+  }, [job?.id, token]);
+
+  // Detect unsaved changes
+  useEffect(() => {
+    const isFormDataChanged = () => {
+      return (
+        formData.jobTitle !== (requisitionData.title || '') ||
+        formData.companyName !== (requisitionData.company_name || '') ||
+        formData.jobType !==
+          (requisitionData.job_type
+            ? {
+                full_time: 'Full-time',
+                part_time: 'Part-time',
+                contract: 'Contract',
+                freelance: 'Freelance',
+                internship: 'Internship',
+              }[requisitionData.job_type] || 'Full-time'
+            : 'Full-time') ||
+        formData.locationType !==
+          (requisitionData.location_type
+            ? {
+                on_site: 'On-site',
+                remote: 'Remote',
+                hybrid: 'Hybrid',
+              }[requisitionData.location_type] || 'On-site'
+            : 'On-site') ||
+        formData.companyAddress !== (requisitionData.company_address || '') ||
+        formData.salaryRange !== (requisitionData.salary_range || '') ||
+        formData.jobDescription !== (requisitionData.job_description || '') ||
+        formData.numberOfCandidates !== (requisitionData.number_of_candidates || '') ||
+        formData.qualificationRequirement !== (requisitionData.qualification_requirement || '') ||
+        formData.experienceRequirement !== (requisitionData.experience_requirement || '') ||
+        formData.knowledgeSkillRequirement !== (requisitionData.knowledge_requirement || '') ||
+        formData.reason !== (requisitionData.reason || '')
+      );
+    };
+
+    const isResponsibilitiesChanged = () => {
+      const savedResponsibilities = requisitionData.responsibilities || [];
+      return (
+        responsibilities.length !== savedResponsibilities.length ||
+        responsibilities.some((resp, i) => resp !== savedResponsibilities[i])
+      );
+    };
+
+    const isDocumentsChanged = () => {
+      const savedDocuments = requisitionData.documents_required || ['Resume'];
+      return (
+        documents.length !== savedDocuments.length ||
+        documents.some((doc, i) => doc !== savedDocuments[i])
+      );
+    };
+
+    const isComplianceChanged = () => {
+      const savedCompliance = requisitionData.compliance_checklist || ['Right to Work Check'];
+      return (
+        checkedItems.length !== savedCompliance.length ||
+        checkedItems.some((item, i) => item !== savedCompliance[i])
+      );
+    };
+
+    const isDateChanged = () => {
+      const savedDeadline = requisitionData.deadline_date
+        ? new Date(requisitionData.deadline_date).toISOString().split('T')[0]
+        : null;
+      const currentDeadline = deadlineDate ? deadlineDate.toISOString().split('T')[0] : null;
+      const savedStart = requisitionData.start_date
+        ? new Date(requisitionData.start_date).toISOString().split('T')[0]
+        : null;
+      const currentStart = startDate ? startDate.toISOString().split('T')[0] : null;
+      return savedDeadline !== currentDeadline || savedStart !== currentStart;
+    };
+
+    const isBannerChanged = () => {
+      return !!advertBannerFile;
+    };
+
+    const hasChanges =
+      isFormDataChanged() ||
+      isResponsibilitiesChanged() ||
+      isDocumentsChanged() ||
+      isComplianceChanged() ||
+      isDateChanged() ||
+      isBannerChanged();
+
+    setHasUnsavedChanges(hasChanges);
+  }, [
+    formData,
+    responsibilities,
+    documents,
+    checkedItems,
+    deadlineDate,
+    startDate,
+    advertBannerFile,
+    requisitionData,
+  ]);
 
   const handleInputChange = (e) => {
     const { name, type, value, files } = e.target;
     if (type === 'file') {
       if (files[0]) {
         setAdvertBanner(URL.createObjectURL(files[0]));
+        setAdvertBannerFile(files[0]);
       } else {
         setAdvertBanner(null);
+        setAdvertBannerFile(null);
       }
     } else {
       setFormData((prev) => ({
@@ -176,11 +387,10 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
   };
 
   const handleRemoveResponsibility = (index) => {
-    if (!isFormMutable || index === 0) return; // Prevent removing the first responsibility
+    if (!isFormMutable || index === 0) return;
     setResponsibilities(responsibilities.filter((_, i) => i !== index));
   };
 
-  // Tab navigation
   const tabs = ['Job details', 'Document uploads', 'Compliance check'];
 
   const validateJobDetails = () => {
@@ -191,13 +401,10 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
       newErrors.companyAddress = 'Company Address is required for on-site jobs';
     }
     if (!formData.jobDescription.trim()) newErrors.jobDescription = 'Job Description is required';
-    if (responsibilities.length === 0 || responsibilities.every(resp => !resp.trim())) {
+    if (responsibilities.length === 0 || responsibilities.every((resp) => !resp.trim())) {
       newErrors.responsibilities = 'At least one responsibility is required';
     }
     if (!deadlineDate) newErrors.deadlineDate = 'Application Deadline is required';
-    if (formData.numberOfCandidates && isNaN(formData.numberOfCandidates)) {
-      newErrors.numberOfCandidates = 'Number of Candidates must be a valid number';
-    }
     return newErrors;
   };
 
@@ -209,28 +416,197 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
     setAlertModal(null);
   };
 
-  const handlePublish = () => {
-    setIsPublishing(true);
-    
-    setTimeout(() => {
-      setIsPublishing(false);
-      setShowSuccess(true);
-    }, 5000);
+  const handleSaveChanges = async () => {
+    if (!isFormMutable) {
+      showAlert('Action Restricted', 'Form is not mutable.');
+      return;
+    }
+
+    const jobDetailsErrors = validateJobDetails();
+    if (Object.keys(jobDetailsErrors).length > 0) {
+      setErrors(jobDetailsErrors);
+      showAlert('Validation Error', 'Please fill in all required fields in Job Details');
+      return;
+    }
+
+    if (documents.length === 0) {
+      setErrors({ documents: 'At least one document title is required' });
+      showAlert('Document Error', 'Please add at least one document');
+      return;
+    }
+
+    if (checkedItems.length === 0) {
+      setErrors({ compliance: 'At least one compliance item must be checked' });
+      showAlert('Compliance Error', 'Please check at least one compliance item');
+      return;
+    }
+
+    setIsSaving(true);
+
+    const formDataToSend = new FormData();
+    formDataToSend.append('title', formData.jobTitle);
+    formDataToSend.append('company_name', formData.companyName);
+    formDataToSend.append(
+      'job_type',
+      {
+        'Full-time': 'full_time',
+        'Part-time': 'part_time',
+        Contract: 'contract',
+        Freelance: 'freelance',
+        Internship: 'internship',
+      }[formData.jobType] || 'full_time'
+    );
+    formDataToSend.append(
+      'location_type',
+      {
+        'On-site': 'on_site',
+        Remote: 'remote',
+        Hybrid: 'hybrid',
+      }[formData.locationType] || 'on_site'
+    );
+    formDataToSend.append('company_address', formData.companyAddress);
+    formDataToSend.append('salary_range', formData.salaryRange);
+    formDataToSend.append('job_description', formData.jobDescription);
+    formDataToSend.append('number_of_candidates', formData.numberOfCandidates || '');
+    formDataToSend.append('qualification_requirement', formData.qualificationRequirement);
+    formDataToSend.append('experience_requirement', formData.experienceRequirement);
+    formDataToSend.append('knowledge_requirement', formData.knowledgeSkillRequirement);
+    formDataToSend.append('reason', formData.reason);
+    formDataToSend.append('deadline_date', deadlineDate ? deadlineDate.toISOString().split('T')[0] : '');
+    if (startDate) formDataToSend.append('start_date', startDate.toISOString().split('T')[0]);
+    formDataToSend.append('responsibilities', JSON.stringify(responsibilities.filter((r) => r.trim())));
+    formDataToSend.append('documents_required', JSON.stringify(documents));
+    formDataToSend.append('compliance_checklist', JSON.stringify(checkedItems));
+    if (advertBannerFile) formDataToSend.append('advert_banner', advertBannerFile);
+
+    try {
+
+      console.log("job")
+      console.log(job)
+      console.log("job")
+
+      let response;
+      if (job?.id) {
+        response = await axios.patch(`${API_BASE_URL}requisitions/${job.id}/`, formDataToSend, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+      } else {
+        response = await axios.post(`${API_BASE_URL}requisitions/`, formDataToSend, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+      }
+      setRequisitionData({
+        ...response.data,
+        requested_by: response.data.requested_by || null,
+      });
+      setPublishStatus(response.data.publish_status);
+      setIsSaving(false);
+      setHasUnsavedChanges(false); // Reset unsaved changes after saving
+      setShowSuccess({ type: 'save', message: 'Changes saved successfully!' });
+      return response.data; // Return data for use in handleTogglePublish
+    } catch (error) {
+      setIsSaving(false);
+      showAlert(
+        'Error',
+        error.response?.data?.detail || 'Failed to save changes. Please try again.'
+      );
+      console.error('Error saving requisition:', error);
+      throw error; // Rethrow to handle in handleTogglePublish
+    }
   };
 
-  // Auto-navigate and hide after success alert
+  const handleTogglePublish = async () => {
+    if (!isFormMutable) {
+      showAlert('Action Restricted', 'Form is not mutable.');
+      return;
+    }
+
+    if (!job?.id) {
+      showAlert('Error', 'Please save the job before publishing.');
+      return;
+    }
+
+    // Client-side validation
+    const jobDetailsErrors = validateJobDetails();
+    if (Object.keys(jobDetailsErrors).length > 0) {
+      setErrors(jobDetailsErrors);
+      showAlert('Validation Error', 'Please fill in all required fields in Job Details');
+      return;
+    }
+
+    if (documents.length === 0) {
+      setErrors({ documents: 'At least one document title is required' });
+      showAlert('Document Error', 'Please add at least one document');
+      return;
+    }
+
+    if (checkedItems.length === 0) {
+      setErrors({ compliance: 'At least one compliance item must be checked' });
+      showAlert('Compliance Error', 'Please check at least one compliance item');
+      return;
+    }
+
+    setIsTogglingPublish(true);
+
+    try {
+      // Save changes first
+      await handleSaveChanges();
+
+      // Then toggle publish status
+      const newPublishStatus = !publishStatus;
+      const response = await axios.patch(
+        `${API_BASE_URL}requisitions/${job.id}/`,
+        { publish_status: newPublishStatus },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      setPublishStatus(newPublishStatus);
+      setRequisitionData({
+        ...response.data,
+        requested_by: response.data.requested_by || null,
+      });
+      setIsTogglingPublish(false);
+      setShowSuccess({
+        type: 'publish',
+        message: newPublishStatus ? 'Job published successfully!' : 'Job unpublished successfully!',
+      });
+    } catch (error) {
+      setIsTogglingPublish(false);
+      const errorMessage = error.response?.data?.detail || error.response?.data || 'Failed to toggle publish status.';
+      showAlert('Error', typeof errorMessage === 'object' ? JSON.stringify(errorMessage) : errorMessage);
+      console.error('Error toggling publish status:', error);
+    }
+  };
+
   useEffect(() => {
     if (showSuccess) {
       const timer = setTimeout(() => {
-        setShowSuccess(false);
-        navigate('/company/recruitment/job-adverts');
-        onHideEditRequisition(); // Hide the EditRequisition component
+        setShowSuccess(null);
+        if (showSuccess.type === 'save' || showSuccess.type === 'publish') {
+          navigate('/company/recruitment/job-adverts');
+          onHideEditRequisition();
+        }
       }, 1000);
       return () => clearTimeout(timer);
     }
   }, [showSuccess, navigate, onHideEditRequisition]);
 
   const handleNext = () => {
+    if (!isFormMutable) {
+      showAlert('Action Restricted', 'Form is not mutable.');
+      return;
+    }
+
     if (activeSection === 0) {
       const jobDetailsErrors = validateJobDetails();
       if (Object.keys(jobDetailsErrors).length > 0) {
@@ -262,6 +638,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
   };
 
   const handlePrev = () => {
+    if (!isFormMutable) return;
     if (activeSection > 0) {
       setActiveSection(activeSection - 1);
       setErrors({});
@@ -269,6 +646,11 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
   };
 
   const handleTabClick = (index) => {
+    if (!isFormMutable) {
+      showAlert('Action Restricted', 'Form is not mutable.');
+      return;
+    }
+
     if (index > activeSection) {
       if (activeSection === 0) {
         const jobDetailsErrors = validateJobDetails();
@@ -296,42 +678,102 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
     setShowJobAdvert(false);
   };
 
+  const handleAccept = async () => {
+    try {
+      await axios.patch(
+        `${API_BASE_URL}requisitions/${job.id}/`,
+        { status: 'open' },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setStatus('open');
+      setRequisitionData((prev) => ({
+        ...prev,
+        status: 'open',
+        requested_by: prev.requested_by || null,
+      }));
+    } catch (error) {
+      showAlert('Error', error.response?.data?.detail || 'Failed to accept requisition.');
+      console.error('Error accepting requisition:', error);
+    }
+  };
+
+  const handleReject = async () => {
+    try {
+      await axios.patch(
+        `${API_BASE_URL}requisitions/${job.id}/`,
+        { status: 'rejected' },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setStatus('rejected');
+      setRequisitionData((prev) => ({
+        ...prev,
+        status: 'rejected',
+        requested_by: prev.requested_by || null,
+      }));
+    } catch (error) {
+      showAlert('Error', error.response?.data?.detail || 'Failed to reject requisition.');
+      console.error('Error rejecting requisition:', error);
+    }
+  };
+
+  const handleEditStatus = () => {
+    setStatus(null);
+  };
+
   const handleDeleteAdvert = () => {
     setShowDeleteModal(true);
   };
 
-  const confirmDeleteAdvert = () => {
-    setFormData({
-      jobTitle: 'Frontend Developer',
-      companyName: 'ValueFlowTech Ltd',
-      jobType: 'Full-time',
-      locationType: 'On-site',
-      companyAddress: '24 Marina Street, Lagos',
-      salaryRange: '$50,000 - $70,000',
-      jobDescription: 'Develop and maintain web applications using React, JavaScript, and CSS.',
-      numberOfCandidates: '5',
-      qualificationRequirement: 'Bachelor’s degree in Computer Science',
-      experienceRequirement: '3+ years in web development',
-      knowledgeSkillRequirement: 'React, JavaScript, CSS',
-    });
-    setDeadlineDate(today);
-    setStartDate(defaultStartDate);
-    setAdvertBanner(null);
-    setDocuments(['Resume']);
-    setDocumentTitle('');
-    setUserHasAdded(false);
-    setCheckedItems(['Right to Work Check']);
-    setResponsibilities([
-      'Develop and maintain web applications using modern frameworks',
-      'Collaborate with cross-functional teams to define and implement features',
-      'Write clean, efficient, and well-documented code',
-      'Participate in code reviews and ensure code quality standards'
-    ]); // Reset to multiple responsibilities
-    setActiveSection(0);
-    setShowPreview(false);
-    setShowJobAdvert(false);
-    setErrors({});
-    setShowDeleteModal(false);
+  const confirmDeleteAdvert = async () => {
+    if (job?.id) {
+      try {
+        await axios.delete(`${API_BASE_URL}requisitions/${job.id}/`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        setShowDeleteModal(false);
+        setShowSuccess({ type: 'delete', message: 'Job deleted successfully!' });
+      } catch (error) {
+        setShowDeleteModal(false);
+        showAlert(
+          'Error',
+          error.response?.data?.detail || 'Failed to delete requisition. Please try again.'
+        );
+        console.error('Error deleting requisition:', error);
+      }
+    } else {
+      setFormData({
+        jobTitle: '',
+        companyName: '',
+        jobType: 'Full-time',
+        locationType: 'On-site',
+        companyAddress: '',
+        salaryRange: '',
+        jobDescription: '',
+        numberOfCandidates: '',
+        qualificationRequirement: '',
+        experienceRequirement: '',
+        knowledgeSkillRequirement: '',
+        reason: '',
+      });
+      setDeadlineDate(null);
+      setStartDate(null);
+      setAdvertBanner(null);
+      setAdvertBannerFile(null);
+      setDocuments(['Resume']);
+      setDocumentTitle('');
+      setUserHasAdded(false);
+      setCheckedItems(['Right to Work Check']);
+      setResponsibilities([]);
+      setActiveSection(0);
+      setShowPreview(false);
+      setShowJobAdvert(false);
+      setErrors({});
+      setShowDeleteModal(false);
+      setHasUnsavedChanges(false);
+    }
   };
 
   const cancelDeleteAdvert = () => {
@@ -348,12 +790,8 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
     'References (Links to previous jobs/projects)',
   ];
 
-  const [checkedItems, setCheckedItems] = useState(['Right to Work Check']);
-  const [documentTitle, setDocumentTitle] = useState('');
-  const [documents, setDocuments] = useState(['Resume']);
-  const [userHasAdded, setUserHasAdded] = useState(false);
-
   const toggleChecklistItem = (item) => {
+    if (!isFormMutable) return;
     setCheckedItems((prev) =>
       prev.includes(item) ? prev.filter((i) => i !== item) : [...prev, item]
     );
@@ -361,11 +799,12 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
   };
 
   const handleAddDocument = () => {
+    if (!isFormMutable) return;
     const trimmed = documentTitle.trim();
     if (trimmed && !documents.includes(trimmed)) {
       setDocuments((prev) => [...prev, trimmed]);
       setUserHasAdded(true);
-      setDocumentTitle(''); // Clear the input field
+      setDocumentTitle('');
       setErrors((prev) => ({ ...prev, documents: '' }));
     } else if (!trimmed) {
       setErrors((prev) => ({ ...prev, documents: 'Document title cannot be empty' }));
@@ -375,6 +814,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
   };
 
   const handleRemoveDocument = (titleToRemove) => {
+    if (!isFormMutable) return;
     setDocuments((prev) => prev.filter((doc) => doc !== titleToRemove));
   };
 
@@ -390,21 +830,9 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
   };
 
   const tabVariants = {
-    hidden: { 
-      opacity: 0, 
-      x: -20,
-      transition: { duration: 0.2 }
-    },
-    visible: { 
-      opacity: 1, 
-      x: 0,
-      transition: { duration: 0.3, ease: 'easeOut' }
-    },
-    exit: { 
-      opacity: 0, 
-      x: 20,
-      transition: { duration: 0.2 }
-    }
+    hidden: { opacity: 0, x: -20 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.3, ease: 'easeOut' } },
+    exit: { opacity: 0, x: 20, transition: { duration: 0.2 } },
   };
 
   return (
@@ -430,7 +858,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
               zIndex: 9999,
             }}
           >
-           All set! Changes saved
+            {showSuccess.message}
           </motion.div>
         )}
       </AnimatePresence>
@@ -439,7 +867,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
       <button className='VewRequisition-btn' onClick={onHideEditRequisition}>
         <XMarkIcon />
       </button>
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, x: 50 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5 }}
@@ -447,11 +875,110 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
       >
         <div className='VewRequisition-Part'>
           <div className='VewRequisition-Part-Top'>
-            <h3>Job Advert Drafting</h3>
+            <h3>Job Request</h3>
+          </div>
+
+          <div className='ssen-regs'>
+            <div className='ssen-regs-1'>
+              <span>{getInitials(requisitionData.requested_by)}</span>
+            </div>
+            <div className='ssen-regs-2'>
+              <div>
+                <h4>{getFullName(requisitionData.requested_by)}</h4>
+                <p>{requisitionData.role || 'Staff'}</p>
+              </div>
+            </div>
+          </div>
+          <motion.div
+            initial={{ x: -10, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+          >
+            <div className='oola-Toa'>
+              <h3>Request ID: {requisitionData.id || 'N/A'}</h3>
+              <span>{formatDisplayDate(requisitionData.requested_date)}</span>
+            </div>
+
+            <div className='oluj-Seccco'>
+              <div className='oluj-Seccco-Main custom-scroll-bar'>
+                {status && (
+                  <div className='polau-se'>
+                    <div className='status-container' style={{ display: 'flex', alignItems: 'center' }}>
+                      <p className={status.toLowerCase()}>
+                        <span>Status:</span> {status.charAt(0).toUpperCase() + status.slice(1)}
+                      </p>
+                      {status === 'open' ? (
+                        <svg
+                          width='16'
+                          height='16'
+                          viewBox='0 0 24 24'
+                          fill='none'
+                          stroke='#7226FF'
+                          strokeWidth='2'
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          style={{ marginLeft: '6px' }}
+                        >
+                          <path d='M20 6L9 17l-5-5' />
+                        </svg>
+                      ) : (
+                        <svg
+                          width='16'
+                          height='16'
+                          viewBox='0 0 24 24'
+                          fill='none'
+                          stroke='#991b1b'
+                          strokeWidth='2'
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          style={{ marginLeft: '6px' }}
+                        >
+                          <line x1='18' y1='6' x2='6' y2='18' />
+                          <line x1='6' y1='6' x2='18' y2='18' />
+                        </svg>
+                      )}
+                      <button className='edit-status-btn' onClick={handleEditStatus}>
+                        <PencilIcon className='w-4 h-4' />
+                        Edit
+                      </button>
+                    </div>
+                  </div>
+                )}
+                <div className='polau-se'>
+                  <h4>Publish Status</h4>
+                  <p className={publishStatus ? 'open' : 'closed'}>
+                    <span>{publishStatus ? 'Published' : 'Unpublished'}</span>
+                  </p>
+                </div>
+                <div className='polau-se'>
+                  <h4>Reason</h4>
+                  <p>{requisitionData.reason || 'No reason provided.'}</p>
+                </div>
+              </div>
+
+              {!status && (
+                <div className='Desaa-Btns'>
+                  <button className='accept-Btn' onClick={handleAccept}>
+                    <CheckIcon /> Accept
+                  </button>
+                  <button className='reject-Btn' onClick={handleReject}>
+                    <XMarkIcon /> Reject
+                  </button>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </div>
+
+        <div className='VewRequisition-Part'>
+          <div className='VewRequisition-Part-Top'>
+            <h3>
+              Job Advert Drafting {hasUnsavedChanges && <span className="text-red-600 ml-2">* Unsaved Changes</span>}
+            </h3>
           </div>
           <div className='ssol-Subam'>
             {tabs.map((tab, index) => (
-              <span 
+              <span
                 key={index}
                 className={index === activeSection ? 'active-ssol-Subam' : ''}
                 onClick={() => handleTabClick(index)}
@@ -462,34 +989,37 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
           </div>
 
           <div className='GHuh-Form-Sec'>
-          <div className='GHuh-Form-Sec-Top'>
+            <div className='GHuh-Form-Sec-Top'>
               <h3>{tabs[activeSection]}</h3>
               <div className='GHuh-Form-Sec-Top-Btns'>
-                <span 
-                  onClick={handlePrev} 
-                  style={{ 
-                    cursor: activeSection > 0 ? 'pointer' : 'not-allowed', 
-                    opacity: activeSection > 0 ? 1 : 0.5 
+                <span
+                  onClick={handlePrev}
+                  style={{
+                    cursor: activeSection > 0 && isFormMutable ? 'pointer' : 'not-allowed',
+                    opacity: activeSection > 0 && isFormMutable ? 1 : 0.5,
                   }}
                 >
                   <ArrowLeftIcon /> Prev
                 </span>
-                <span 
-                  onClick={handleNext} 
-                  style={{ 
-                    cursor: activeSection < tabs.length ? 'pointer' : 'not-allowed', 
-                    opacity: activeSection < tabs.length ? 1 : 0.5 
+                <span
+                  onClick={handleNext}
+                  style={{
+                    cursor: activeSection < tabs.length && isFormMutable ? 'pointer' : 'not-allowed',
+                    opacity: activeSection < tabs.length && isFormMutable ? 1 : 0.5,
                   }}
                 >
                   {activeSection === tabs.length - 1 ? (
-                    <>View Advert <EyeIcon /></>
+                    <>
+                      View Advert <EyeIcon />
+                    </>
                   ) : (
-                    <>Next <ArrowRightIcon /></>
+                    <>
+                      Next <ArrowRightIcon />
+                    </>
                   )}
                 </span>
               </div>
             </div>
-
 
             <div className='GHuh-Form-Sec-Main custom-scroll-bar'>
               <AnimatePresence mode='wait'>
@@ -508,13 +1038,13 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                       <div className='Gland-All-Grid'>
                         <div className='GHuh-Form-Input'>
                           <label>Job Title</label>
-                          <input 
+                          <input
                             name="jobTitle"
-                            type='text' 
-                            placeholder='e.g. Frontend Developer' 
+                            type='text'
+                            placeholder='e.g. Frontend Developer'
                             value={formData.jobTitle}
                             onChange={handleInputChange}
-                            required 
+                            required
                             disabled={!isFormMutable}
                           />
                           {errors.jobTitle && <p className='error'>{errors.jobTitle}</p>}
@@ -522,8 +1052,8 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
 
                         <div className='GHuh-Form-Input'>
                           <label>Advert Banner (optional)</label>
-                          <input 
-                            type='file' 
+                          <input
+                            type='file'
                             accept="image/*"
                             onChange={handleInputChange}
                             disabled={!isFormMutable}
@@ -533,13 +1063,13 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
 
                       <div className='GHuh-Form-Input'>
                         <label>Company Name</label>
-                        <input 
+                        <input
                           name="companyName"
-                          type='text' 
-                          placeholder='e.g. ValueFlowTech Ltd' 
+                          type='text'
+                          placeholder='e.g. ValueFlowTech Ltd'
                           value={formData.companyName}
                           onChange={handleInputChange}
-                          required 
+                          required
                           disabled={!isFormMutable}
                         />
                         {errors.companyName && <p className='error'>{errors.companyName}</p>}
@@ -548,7 +1078,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                       <div className='Gland-All-Grid'>
                         <div className='GHuh-Form-Input'>
                           <label>Job Type</label>
-                          <select 
+                          <select
                             name="jobType"
                             value={formData.jobType}
                             onChange={handleInputChange}
@@ -563,7 +1093,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                         </div>
                         <div className='GHuh-Form-Input'>
                           <label>Location</label>
-                          <select 
+                          <select
                             name="locationType"
                             value={formData.locationType}
                             onChange={handleInputChange}
@@ -579,13 +1109,13 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                       {formData.locationType === 'On-site' && (
                         <div className='GHuh-Form-Input'>
                           <label>Company Address</label>
-                          <input 
+                          <input
                             name="companyAddress"
-                            type='text' 
-                            placeholder='e.g. 24 Marina Street, Lagos' 
+                            type='text'
+                            placeholder='e.g. 24 Marina Street, Lagos'
                             value={formData.companyAddress}
                             onChange={handleInputChange}
-                            required 
+                            required
                             disabled={!isFormMutable}
                           />
                           {errors.companyAddress && <p className='error'>{errors.companyAddress}</p>}
@@ -594,10 +1124,10 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
 
                       <div className='GHuh-Form-Input'>
                         <label>Salary Range (optional)</label>
-                        <input 
+                        <input
                           name="salaryRange"
-                          type='text' 
-                          placeholder='e.g. $0.00 - $0.00' 
+                          type='text'
+                          placeholder='e.g. $0.00 - $0.00'
                           value={formData.salaryRange}
                           onChange={handleInputChange}
                           disabled={!isFormMutable}
@@ -606,10 +1136,10 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
 
                       <div className='GHuh-Form-Input'>
                         <label>Number of Candidates (Needed for Interview) (optional)</label>
-                        <input 
+                        <input
                           name="numberOfCandidates"
-                          type='text' 
-                          placeholder='e.g. 10' 
+                          type='text'
+                          placeholder='e.g. 10'
                           value={formData.numberOfCandidates}
                           onChange={handleInputChange}
                           disabled={!isFormMutable}
@@ -619,10 +1149,10 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
 
                       <div className='GHuh-Form-Input'>
                         <label>Qualification Requirement (optional)</label>
-                        <input 
+                        <input
                           name="qualificationRequirement"
-                          type='text' 
-                          placeholder='e.g. Bachelor’s degree in Computer Science' 
+                          type='text'
+                          placeholder='e.g. Bachelor’s degree in Computer Science'
                           value={formData.qualificationRequirement}
                           onChange={handleInputChange}
                           disabled={!isFormMutable}
@@ -632,10 +1162,10 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
 
                       <div className='GHuh-Form-Input'>
                         <label>Experience Requirement (optional)</label>
-                        <input 
+                        <input
                           name="experienceRequirement"
-                          type='text' 
-                          placeholder='e.g. 3+ years in web development' 
+                          type='text'
+                          placeholder='e.g. 3+ years in web development'
                           value={formData.experienceRequirement}
                           onChange={handleInputChange}
                           disabled={!isFormMutable}
@@ -645,10 +1175,10 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
 
                       <div className='GHuh-Form-Input'>
                         <label>Knowledge/Skill Requirement (optional)</label>
-                        <input 
+                        <input
                           name="knowledgeSkillRequirement"
-                          type='text' 
-                          placeholder='e.g. React, JavaScript, CSS' 
+                          type='text'
+                          placeholder='e.g. React, JavaScript, CSS'
                           value={formData.knowledgeSkillRequirement}
                           onChange={handleInputChange}
                           disabled={!isFormMutable}
@@ -656,11 +1186,23 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                         {errors.knowledgeSkillRequirement && <p className='error'>{errors.knowledgeSkillRequirement}</p>}
                       </div>
 
+                      <div className='GHuh-Form-Input'>
+                        <label>Reason for Requisition (optional)</label>
+                        <textarea
+                          name="reason"
+                          placeholder='e.g. Expansion of the development team'
+                          value={formData.reason}
+                          onChange={handleInputChange}
+                          disabled={!isFormMutable}
+                        ></textarea>
+                        {errors.reason && <p className='error'>{errors.reason}</p>}
+                      </div>
+
                       <h3>Job Description</h3>
                       <div className='GHuh-Form-Input'>
-                        <textarea 
+                        <textarea
                           name="jobDescription"
-                          placeholder='Enter job responsibilities, requirements, etc.' 
+                          placeholder='Enter job responsibilities, requirements, etc.'
                           value={formData.jobDescription}
                           onChange={handleInputChange}
                           required
@@ -669,11 +1211,23 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                         {errors.jobDescription && <p className='error'>{errors.jobDescription}</p>}
                       </div>
 
-                      <h3>Key Responsibilities <span onClick={handleAddResponsibility} className={isFormMutable ? 'cursor-pointer' : 'cursor-not-allowed'}><PlusIcon /> Add</span></h3>
+                      <h3>
+                        Key Responsibilities{' '}
+                        <span
+                          onClick={handleAddResponsibility}
+                          className={isFormMutable ? 'cursor-pointer' : 'cursor-not-allowed'}
+                        >
+                          <PlusIcon /> Add
+                        </span>
+                      </h3>
                       <div className='GHuh-Form-Input'>
                         <label>Responsibilities</label>
                         {responsibilities.map((resp, index) => (
-                          <div key={index} className='responsibility-Inn-Box' style={{ display: 'flex', alignItems: 'center', marginTop: '8px' }}>
+                          <div
+                            key={index}
+                            className='responsibility-Inn-Box'
+                            style={{ display: 'flex', alignItems: 'center', marginTop: '8px' }}
+                          >
                             <input
                               type='text'
                               placeholder='Add a responsibility'
@@ -682,11 +1236,11 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                               disabled={!isFormMutable}
                             />
                             {index > 0 && (
-                              <span 
+                              <span
                                 onClick={() => handleRemoveResponsibility(index)}
-                                style={{ 
+                                style={{
                                   cursor: isFormMutable ? 'pointer' : 'not-allowed',
-                                  marginLeft: '8px'
+                                  marginLeft: '8px',
                                 }}
                               >
                                 <XMarkIcon className='w-4 h-4' />
@@ -718,7 +1272,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                         </div>
 
                         <div className='GHuh-Form-Input'>
-                          <label>Start Date</label>
+                          <label>Start Date (optional)</label>
                           <DatePicker
                             selected={startDate}
                             onChange={(date) => {
@@ -750,11 +1304,11 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                             required
                             disabled={!isFormMutable}
                           />
-                          <span 
+                          <span
                             onClick={handleAddDocument}
-                            style={{ 
-                              cursor: isFormMutable ? 'pointer' : 'not-allowed', 
-                              opacity: isFormMutable ? 1 : 0.5 
+                            style={{
+                              cursor: isFormMutable ? 'pointer' : 'not-allowed',
+                              opacity: isFormMutable ? 1 : 0.5,
                             }}
                           >
                             <PlusIcon className='w-5 h-5' />
@@ -765,8 +1319,10 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                         <ul className='apooul-Ul'>
                           {documents.map((doc, index) => (
                             <li key={index} className='flex justify-between items-center'>
-                              <p><MinusIcon className='w-4 h-4 inline-block mr-2' /> {doc}</p>
-                              <button 
+                              <p>
+                                <MinusIcon className='w-4 h-4 inline-block mr-2' /> {doc}
+                              </p>
+                              <button
                                 onClick={() => handleRemoveDocument(doc)}
                                 className='text-red-600 hover:text-red-800'
                                 disabled={!isFormMutable}
@@ -790,9 +1346,9 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                               key={index}
                               className={checkedItems.includes(item) ? 'active-Li-Check' : ''}
                               onClick={() => toggleChecklistItem(item)}
-                              style={{ 
-                                cursor: isFormMutable ? 'pointer' : 'not-allowed', 
-                                opacity: isFormMutable ? 1 : 0.5 
+                              style={{
+                                cursor: isFormMutable ? 'pointer' : 'not-allowed',
+                                opacity: isFormMutable ? 1 : 0.5,
                               }}
                             >
                               <p>{item}</p>
@@ -814,21 +1370,18 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
           <div className='VewRequisition-Part-Top'>
             <h3>Job Advert</h3>
             {showPreview && (
-              <button 
-                className='close-preview-btn'
-                onClick={handleClosePreview}
-              >
+              <button className='close-preview-btn' onClick={handleClosePreview}>
                 <XMarkIcon className='w-4 h-4' />
               </button>
             )}
           </div>
-          
+
           {!showPreview ? (
             <div className='no-advert-message'>
               <motion.div
                 initial={{ x: -10, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
+                transition={{ duration: 0.3, ease: 'easeOut' }}
               >
                 <img src={NoAdvertBanner} alt="No Advert" />
                 <h4>No advert yet!</h4>
@@ -836,24 +1389,24 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
               </motion.div>
             </div>
           ) : (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, x: -5 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3 }}
               className='job-preview-container'
             >
               <div className='preview-buttons'>
-                <button 
-                  className='publish-btn btn-primary-bg' 
-                  onClick={handlePublish}
-                  disabled={isPublishing || !isFormMutable}
+                <button
+                  className='publish-btn btn-primary-bg'
+                  onClick={handleSaveChanges}
+                  disabled={isSaving || !isFormMutable}
                 >
-                  {isPublishing ? (
+                  {isSaving ? (
                     <>
                       <motion.div
                         initial={{ rotate: 0 }}
                         animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                         style={{
                           width: 15,
                           height: 15,
@@ -867,10 +1420,44 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                       Saving Changes...
                     </>
                   ) : (
-                    'Save Changes'
+                    `Save Changes${hasUnsavedChanges ? ' *' : ''}`
                   )}
                 </button>
-                <button className='delete-btn' onClick={handleDeleteAdvert} disabled={!isFormMutable}>
+                <button
+                  className={`publish-btn ${publishStatus ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'}`}
+                  onClick={handleTogglePublish}
+                  disabled={isTogglingPublish || !isFormMutable}
+                >
+                  {isTogglingPublish ? (
+                    <>
+                      <motion.div
+                        initial={{ rotate: 0 }}
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                        style={{
+                          width: 15,
+                          height: 15,
+                          borderRadius: '50%',
+                          border: '3px solid #fff',
+                          borderTopColor: 'transparent',
+                          marginRight: '5px',
+                          display: 'inline-block',
+                        }}
+                      />
+                      {publishStatus ? 'Saving and Unpublishing...' : 'Saving and Publishing...'}
+                    </>
+                  ) : (
+                    <>
+                      <GlobeAltIcon className='w-5 h-5 inline-block mr-2' />
+                      {publishStatus ? 'Unpublish' : 'Publish'}
+                    </>
+                  )}
+                </button>
+                <button
+                  className='delete-btn'
+                  onClick={handleDeleteAdvert}
+                  disabled={!isFormMutable}
+                >
                   <TrashIcon className='w-5 h-5' /> Delete
                 </button>
               </div>
@@ -878,75 +1465,126 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
               <div className='main-Prevs-Sec custom-scroll-bar'>
                 {advertBanner && (
                   <div className='advert-banner'>
-                    <img 
-                      src={advertBanner} 
-                      alt="Job Advert Banner" 
+                    <img
+                      src={advertBanner}
+                      alt="Job Advert Banner QWERTY"
                       className='w-full h-auto object-cover rounded-md mb-4'
                     />
-                    <span><InformationCircleIcon /> Advert Banner</span>
+                    <span>
+                      <InformationCircleIcon /> Advert Banner
+                    </span>
                   </div>
                 )}
-                
+
                 <div className='preview-section-All'>
                   <div className='preview-section'>
                     <h3>Basic Job Information</h3>
-                    <p><span>Job Title:</span> {formData.jobTitle}</p>
-                    <p><span>Company Name:</span> {formData.companyName}</p>
-                    <p><span>Job Type:</span> {formData.jobType}</p>
-                    <p><span>Location:</span> {formData.locationType}</p>
-                    {formData.companyAddress && <p><span>Company Address:</span> {formData.companyAddress}</p>}
-                    {formData.salaryRange && <p><span>Salary Range:</span> {formData.salaryRange}</p>}
-                    {formData.numberOfCandidates && <p><span>Number of Candidates:</span> {formData.numberOfCandidates}</p>}
-                    {formData.qualificationRequirement && <p><span>Qualification Requirement:</span> {formData.qualificationRequirement}</p>}
-                    {formData.experienceRequirement && <p><span>Experience Requirement:</span> {formData.experienceRequirement}</p>}
-                    {formData.knowledgeSkillRequirement && <p><span>Knowledge/Skill Requirement:</span> {formData.knowledgeSkillRequirement}</p>}
-                   
+                    <p>
+                      <span>Job Title:</span> {formData.jobTitle}
+                    </p>
+                    <p>
+                      <span>Company Name:</span> {formData.companyName}
+                    </p>
+                    <p>
+                      <span>Job Type:</span> {formData.jobType}
+                    </p>
+                    <p>
+                      <span>Location:</span> {formData.locationType}
+                    </p>
+                    {formData.companyAddress && (
+                      <p>
+                        <span>Company Address:</span> {formData.companyAddress}
+                      </p>
+                    )}
+                    {formData.salaryRange && (
+                      <p>
+                        <span>Salary Range:</span> {formData.salaryRange}
+                      </p>
+                    )}
+                    {formData.numberOfCandidates && (
+                      <p>
+                        <span>Number of Candidates:</span> {formData.numberOfCandidates}
+                      </p>
+                    )}
+                    {formData.qualificationRequirement && (
+                      <p>
+                        <span>Qualification Requirement:</span> {formData.qualificationRequirement}
+                      </p>
+                    )}
+                    {formData.experienceRequirement && (
+                      <p>
+                        <span>Experience Requirement:</span> {formData.experienceRequirement}
+                      </p>
+                    )}
+                    {formData.knowledgeSkillRequirement && (
+                      <p>
+                        <span>Knowledge/Skill Requirement:</span> {formData.knowledgeSkillRequirement}
+                      </p>
+                    )}
+                    {formData.reason && (
+                      <p>
+                        <span>Reason for Requisition:</span>{' '}
+                        <div
+                          dangerouslySetInnerHTML={{
+                            __html: formData.reason.replace(/\n/g, '<br/>'),
+                          }}
+                        />
+                      </p>
+                    )}
                   </div>
 
-                      <div className='preview-section aadda-poa'>
+                  <div className='preview-section aadda-poa'>
                     <h3>Job Description</h3>
-                    <p><div dangerouslySetInnerHTML={{ __html: formData.jobDescription.replace(/\n/g, '<br/>') }} /></p>
-                   </div>
+                    <p>
+                      <div
+                        dangerouslySetInnerHTML={{
+                          __html: formData.jobDescription.replace(/\n/g, '<br/>'),
+                        }}
+                      />
+                    </p>
+                  </div>
 
-                   <div className='preview-section'>
+                  <div className='preview-section'>
                     <h3>Responsibilities</h3>
-                     {responsibilities.length > 0 && (
-                        <ul>
-                          {responsibilities.filter(resp => resp.trim()).map((resp, i) => (
+                    {responsibilities.length > 0 && (
+                      <ul>
+                        {responsibilities
+                          .filter((resp) => resp.trim())
+                          .map((resp, i) => (
                             <li key={i}>{resp}</li>
                           ))}
-                        </ul>
+                      </ul>
                     )}
-                   </div>
+                  </div>
 
-
-                  
                   <div className='preview-section'>
                     <h3>Application Details</h3>
-                    <p><span>Deadline for Applications:</span> {deadlineDate ? deadlineDate.toDateString() : 'Not specified'}</p>
-                    <p><span>Start Date:</span> {startDate ? startDate.toDateString() : 'Not specified'}</p>
+                    <p>
+                      <span>Deadline for Applications:</span>{' '}
+                      {deadlineDate ? formatDisplayDate(deadlineDate) : 'Not specified'}
+                    </p>
+                    <p>
+                      <span>Start Date:</span>{' '}
+                      {startDate ? formatDisplayDate(startDate) : 'Not specified'}
+                    </p>
                   </div>
-                  
+
                   <div className='preview-section'>
                     <h3>Documents Required</h3>
                     <ul>
                       {documents.length > 0 ? (
-                        documents.map((doc, i) => (
-                          <li key={i}>{doc}</li>
-                        ))
+                        documents.map((doc, i) => <li key={i}>{doc}</li>)
                       ) : (
                         <li>No documents specified</li>
                       )}
                     </ul>
                   </div>
-                  
+
                   <div className='preview-section'>
                     <h3>Compliance Checklist</h3>
                     <ul>
                       {checkedItems.length > 0 ? (
-                        checkedItems.map((item, i) => (
-                          <li key={i}>{item}</li>
-                        ))
+                        checkedItems.map((item, i) => <li key={i}>{item}</li>)
                       ) : (
                         <li>No compliance items specified</li>
                       )}
@@ -971,11 +1609,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
       )}
 
       {alertModal && (
-        <AlertModal
-          title={alertModal.title}
-          message={alertModal.message}
-          onClose={closeAlert}
-        />
+        <AlertModal title={alertModal.title} message={alertModal.message} onClose={closeAlert} />
       )}
     </div>
   );

@@ -71,7 +71,11 @@ const Login = () => {
       localStorage.setItem('refreshToken', response.data.refresh);
       localStorage.setItem('tenantId', response.data.tenant_id);
       localStorage.setItem('tenantSchema', response.data.tenant_schema);
-      navigate('/dashboard');
+          // Save user details
+      if (response.data.user) {
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+      }
+      navigate('/company');
     } catch (err) {
       setError(err.response?.data?.detail || 'Invalid email or password. Please try again.');
     } finally {
