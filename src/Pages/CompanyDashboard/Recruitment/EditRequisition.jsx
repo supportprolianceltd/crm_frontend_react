@@ -52,6 +52,14 @@ const getFullName = (user) => {
   return user.email || 'Unknown';
 };
 
+const getPosition = (user) => {
+  if (!user || typeof user !== 'object') return 'Unknown';
+  if (user.job_role) {
+    return `${user.job_role}`;
+  }
+  return  'staff';
+};
+
 // Backdrop component
 const Backdrop = ({ onClick }) => (
   <motion.div
@@ -885,7 +893,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
             <div className='ssen-regs-2'>
               <div>
                 <h4>{getFullName(requisitionData.requested_by)}</h4>
-                <p>{requisitionData.role || 'Staff'}</p>
+                <p>{getPosition(requisitionData.requested_by)}</p>
               </div>
             </div>
           </div>

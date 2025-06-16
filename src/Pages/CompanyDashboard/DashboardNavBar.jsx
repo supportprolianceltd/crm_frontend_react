@@ -241,17 +241,17 @@ import HRIcon from '../../assets/Img/CRMPack/HR.svg';
 import PayrollIcon from '../../assets/Img/CRMPack/Payroll.svg';
 
 // Utility function to get profile initials
-const getInitials = (firstName, lastName) => {
-  const first = firstName ? firstName.charAt(0).toUpperCase() : '';
-  const last = lastName ? lastName.charAt(0).toUpperCase() : '';
-  return `${first}${last}` || 'NA'; // Fallback to 'NA' if no names
-};
+// const getInitials = (firstName, lastName) => {
+//   const first = firstName ? firstName.charAt(0).toUpperCase() : '';
+//   const last = lastName ? lastName.charAt(0).toUpperCase() : '';
+//   return `${first}${last}` || 'NA'; // Fallback to 'NA' if no names
+// };
 
-// Utility function to capitalize role
-const capitalizeRole = (role) => {
-  if (!role) return 'User';
-  return role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
-};
+// // Utility function to capitalize role
+// const capitalizeRole = (role) => {
+//   if (!role) return 'User';
+//   return role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
+// };
 
 const DashboardNavBar = () => {
   const navigate = useNavigate();
@@ -336,15 +336,45 @@ const DashboardNavBar = () => {
   ];
 
   // User data
-  const fullName = user
-    ? `${user.email || ''}`.trim() || 'Unknown User'
-    // ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Unknown User'
-    : 'Unknown User';
-  const initials = user
-    ? getInitials(user.email,)
-    // ? getInitials(user.first_name, user.last_name)
-    : 'NA';
-  const role = user ? capitalizeRole(user.role) : 'User';
+  // const fullName = user
+  //   ? `${user.email || ''}`.trim() || 'Unknown User'
+  //   // ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Unknown User'
+  //   : 'Unknown User';
+  // const initials = user
+  //   ? getInitials(user.email,)
+  //   // ? getInitials(user.first_name, user.last_name)
+  //   : 'NA';
+  // const role = user ? capitalizeRole(user.role) : 'User';
+
+// Get initials from user data
+const getInitials = (user) => {
+  if (!user || typeof user !== 'object') return 'N/A';
+  if (user.first_name && user.last_name) {
+    return `${user.first_name[0]}${user.last_name[0]}`.toUpperCase();
+  }
+  if (user.email) {
+    return user.email.slice(0, 2).toUpperCase();
+  }
+  return 'N/A';
+};
+
+// Get full name from user data
+const getFullName = (user) => {
+  if (!user || typeof user !== 'object') return 'Unknown';
+  if (user.first_name && user.last_name) {
+    return `${user.first_name} ${user.last_name}`;
+  }
+  return user.email || 'Unknown';
+};
+
+const getPosition = (user) => {
+  if (!user || typeof user !== 'object') return 'Unknown';
+  if (user.job_role) {
+    return `${user.job_role}`;
+  }
+  return  'staff';
+};
+
 
   return (
     <div className="DashboardNavBar">
@@ -438,12 +468,12 @@ const DashboardNavBar = () => {
             ref={profileRef}
           >
             <div className="NaV-2-Prof-1">
-              <span>{initials}</span>
+              <span>{getInitials(user)}</span>
             </div>
             <div className="NaV-2-Prof-2">
               <div>
-                <h4>{fullName}</h4>
-                <p>{role}</p>
+                <h4>{getFullName(user)}</h4>
+                <p>{getPosition(user)}</p>
               </div>
             </div>
             <div className="NaV-2-Prof-3">

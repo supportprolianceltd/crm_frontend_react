@@ -1005,6 +1005,14 @@ const getFullName = (user) => {
   return user.email || 'Unknown';
 };
 
+const getPosition = (user) => {
+  if (!user || typeof user !== 'object') return 'Unknown';
+  if (user.job_role) {
+    return `${user.job_role}`;
+  }
+  return  'staff';
+};
+
 
   return (
     <div className="YUa-Opal-sec">
@@ -1146,7 +1154,7 @@ const getFullName = (user) => {
                       <td>{formatDate(job.requestedDate)}</td>
                       <td>{getFullName(job.requestedBy)}</td>
                       <td>
-                        <span className={`role ${job.role.toLowerCase()}`}>{job.role}</span>
+                        <span className={`role ${getPosition(job.requestedBy).toLowerCase()}`}>{getPosition(job.requestedBy)}</span>
                       </td>
                       <td>
                         <div className="gen-td-btns">
