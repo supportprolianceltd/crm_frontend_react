@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import { ArrowPathIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 
 const jobList = [
@@ -11,65 +13,47 @@ const jobList = [
   { id: 7, title: "UI/UX Designer", posted: "2 weeks ago" },
   { id: 8, title: "Backend Developer", posted: "6 days ago" },
   { id: 9, title: "Cybersecurity Engineer", posted: "4 days ago" },
-   { id: 10, title: "Project Manager", posted: "11 days ago" }
+  { id: 10, title: "Project Manager", posted: "11 days ago" }
 ];
 
-const applicants = [
-  {
-    id: 1,
-    initials: 'PG',
-    name: 'Prince Godson',
-    schedule: '06 May 2025 - 7:35 AM'
-  },
-  {
-    id: 2,
-    initials: 'OD',
-    name: 'Orji Daniel',
-    schedule: '06 Jun 2025 - 5:35 PM'
-  },
-  {
-    id: 3,
-    initials: 'MJ',
-    name: 'Mary Johnson',
-    schedule: '15 Jul 2025 - 9:00 AM'
-  },
-  {
-    id: 4,
-    initials: 'AB',
-    name: 'Ali Bello',
-    schedule: '21 Jul 2025 - 11:00 AM'
-  },
-  {
-    id: 5,
-    initials: 'CN',
-    name: 'Chinyere Nnaji',
-    schedule: '30 Jul 2025 - 3:15 PM'
-  },
-  {
-    id: 6,
-    initials: 'KS',
-    name: 'Kemi Shola',
-    schedule: '05 Aug 2025 - 8:45 AM'
-  },
-  {
-    id: 7,
-    initials: 'ET',
-    name: 'Emeka Tony',
-    schedule: '10 Aug 2025 - 1:30 PM'
-  },
-  {
-    id: 8,
-    initials: 'FA',
-    name: 'Fatima Abubakar',
-    schedule: '12 Aug 2025 - 4:00 PM'
-  }
+// Create initial applicants data with schedule and clearable state
+const createInitialApplicants = () => [
+  { id: 1, initials: 'PG', name: 'Prince Godson', schedule: '', hasSchedule: true },
+  { id: 2, initials: 'OD', name: 'Orji Daniel', schedule: '', hasSchedule: true },
+  { id: 3, initials: 'MJ', name: 'Mary Johnson', schedule: '', hasSchedule: false },
+  { id: 4, initials: 'AB', name: 'Ali Bello', schedule: '', hasSchedule: false },
+  { id: 5, initials: 'CN', name: 'Chinyere Nnaji', schedule: '', hasSchedule: false },
+  { id: 6, initials: 'KS', name: 'Kemi Shola', schedule: '', hasSchedule: false },
+  { id: 7, initials: 'ET', name: 'Emeka Tony', schedule: '', hasSchedule: false },
+  { id: 8, initials: 'FA', name: 'Fatima Abubakar', schedule: '', hasSchedule: false }
 ];
 
 const Schedule = () => {
   const [activeJobId, setActiveJobId] = useState(jobList[0].id);
   const [selectedApplicants, setSelectedApplicants] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [showTimeDropdown, setShowTimeDropdown] = useState(false);
+  const [timeSelectionMode, setTimeSelectionMode] = useState('start');
+  const [startTime, setStartTime] = useState(null);
+  const [endTime, setEndTime] = useState(null);
+  const [applicantsData, setApplicantsData] = useState(createInitialApplicants());
+  const timeDropdownRef = useRef(null);
 
   const activeJob = jobList.find(job => job.id === activeJobId);
+
+  // Close time dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (timeDropdownRef.current && !timeDropdownRef.current.contains(event.target)) {
+        setShowTimeDropdown(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const handleJobClick = (jobId) => {
     setActiveJobId(jobId);
@@ -79,13 +63,115 @@ const Schedule = () => {
   const handleApplicantClick = (applicantId) => {
     setSelectedApplicants(prevSelected => {
       if (prevSelected.includes(applicantId)) {
-        // Deselect
         return prevSelected.filter(id => id !== applicantId);
       } else {
-        // Select
         return [...prevSelected, applicantId];
       }
     });
+  };
+
+  const formatMonth = (date) => {
+    return date.toLocaleString('default', { month: 'short' });
+  };
+
+  const formatDay = (date) => {
+    return date.getDate();
+  };
+
+  const formatFullDate = (date) => {
+    const day = date.getDate().toString().padStart(2, '0');
+    const monthShort = date.toLocaleString('default', { month: 'short' });
+    const year = date.getFullYear();
+    return `${day} ${monthShort} ${year}`;
+  };
+
+  // Format time to HH:MM AM/PM
+  const formatTime = (date) => {
+    if (!date) return '';
+    let hours = date.getHours();
+    let minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+    return `${hours}:${minutes} ${ampm}`;
+  };
+
+  // Generate time options for dropdown (every 30 minutes)
+  const generateTimeOptions = () => {
+    const times = [];
+    for (let hour = 0; hour < 24; hour++) {
+      for (let minute = 0; minute < 60; minute += 30) {
+        const time = new Date();
+        time.setHours(hour);
+        time.setMinutes(minute);
+        times.push(time);
+      }
+    }
+    return times;
+  };
+
+  const timeOptions = generateTimeOptions();
+
+  const handleTimeButtonClick = () => {
+    // If both times are set, reset and start over
+    if (startTime && endTime) {
+      setStartTime(null);
+      setEndTime(null);
+      setTimeSelectionMode('start');
+    }
+    
+    setShowTimeDropdown(!showTimeDropdown);
+  };
+
+  const handleTimeSelect = (time) => {
+    if (timeSelectionMode === 'start') {
+      setStartTime(time);
+      setTimeSelectionMode('end');
+    } else {
+      setEndTime(time);
+      setTimeSelectionMode('start');
+      setShowTimeDropdown(false);
+    }
+  };
+
+  // Apply schedule to applicants
+  const applySchedule = () => {
+    if (!startTime) return;
+    
+    // Create schedule string with only start time
+    const scheduleString = `${formatFullDate(selectedDate)} - ${formatTime(startTime)}`;
+    
+    // Determine who to update
+    const applicantsToUpdate = selectedApplicants.length > 0 
+      ? selectedApplicants 
+      : applicantsData.map(applicant => applicant.id);
+    
+    setApplicantsData(prev => prev.map(applicant => {
+      if (applicantsToUpdate.includes(applicant.id)) {
+        return {
+          ...applicant,
+          schedule: scheduleString,
+          hasSchedule: true
+        };
+      }
+      return applicant;
+    }));
+  };
+
+  // Clear schedule for a specific applicant
+  const handleClearSchedule = (applicantId, e) => {
+    e.stopPropagation();
+    setApplicantsData(prev => prev.map(applicant => {
+      if (applicant.id === applicantId) {
+        return {
+          ...applicant,
+          schedule: '',
+          hasSchedule: false
+        };
+      }
+      return applicant;
+    }));
   };
 
   return (
@@ -119,20 +205,20 @@ const Schedule = () => {
             <h3>
               {activeJob.title} <span><b>Posted:</b> {activeJob.posted}</span>
             </h3>
-            <p>Date: 6-16-2025</p>
+            <p>Date: {formatFullDate(new Date())}</p>
           </div>
 
           <div className='OOl_AGtg_Sec'>
             <div className='OOl_AGtg_Sec_1'>
               <div className='Schedule-PPao-1-Boxx-Top ooo-Hyha'>
                 <h3>
-                  Shortlisted Applicants <span>{applicants.length} total</span>
+                  Shortlisted Applicants <span>{applicantsData.length} total</span>
                 </h3>
               </div>
 
               <div className='OOl_AGtg_Sec_1_main'>
                 <ul>
-                  {applicants.map(applicant => (
+                  {applicantsData.map(applicant => (
                     <li
                       key={applicant.id}
                       className={selectedApplicants.includes(applicant.id) ? 'active-OLI-O' : ''}
@@ -146,10 +232,18 @@ const Schedule = () => {
                         <div className='LLia_DV_2'>
                           <div>
                             <h3>{applicant.name}</h3>
-                            <p><span>Schedule:</span> {applicant.schedule}</p>
-                            <span className='clear-schedule-Data'>
-                              <ArrowPathIcon />
-                            </span>
+                            <p>
+                              <span>Schedule:</span> 
+                              {applicant.schedule ? ` ${applicant.schedule}` : ' Not scheduled'}
+                            </p>
+                            {applicant.hasSchedule && (
+                              <span 
+                                className='clear-schedule-Data'
+                                onClick={(e) => handleClearSchedule(applicant.id, e)}
+                              >
+                                <ArrowPathIcon />
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -160,41 +254,82 @@ const Schedule = () => {
             </div>
 
             <div className='OOl_AGtg_Sec_2'>
-                  <div className='Sheccuc-BosXX Gen-Boxshadow'>
-                        <div className='Schedule-PPao-1-Boxx-Top ooo-Hyha'>
-                        <h3>
-                          Schedule Interview
-                        </h3>
-                      </div>
+              <div className='Sheccuc-BosXX Gen-Boxshadow'>
+                <div className='Schedule-PPao-1-Boxx-Top ooo-Hyha'>
+                  <h3>Schedule Interview</h3>
+                </div>
 
-                      <div className='ppol-Btns'>
-                        <div className='oii-DDDDV'>
-                        <button>Schedule Calendar</button>
-                        <p>Schedule for: <span>All</span></p>
-                        </div>
-                        <button>Time <ChevronDownIcon /></button>
-                      </div>
-
-                      <div className='PPOli_Sea'>
-                        <div className='PPOli_Sea_Card'>
-                          <div className='PPOli_Sea_Card_1'>
-                            <span className='DDat-IADf'>AUG</span>
-                            <span>24</span>
-                          </div>
-                          <div className='PPOli_Sea_Card_2'>
-                            <div>
-                              <h5>Tuesday, 24 2025</h5>
-                              <h6>5:30 PM</h6>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
+                <div className='ppol-Btns'>
+                  <div className='oii-DDDDV'>
+                    <button onClick={applySchedule}>Apply Schedule</button>
+                    <p>Schedule for: 
+                      <span>
+                        {selectedApplicants.length > 0 
+                          ? ` ${selectedApplicants.length} selected` 
+                          : ' all applicants'}
+                      </span>
+                    </p>
                   </div>
+                  <div className="time-select-container" ref={timeDropdownRef}>
+                    <button onClick={handleTimeButtonClick}>
+                      {timeSelectionMode === 'start' ? 'Start Time' : 'End Time'} 
+                      <ChevronDownIcon className={`icon ${showTimeDropdown ? 'rotate-180' : ''}`} />
+                    </button>
+                    
+                    {showTimeDropdown && (
+                      <div className="time-dropdown custom-scroll-bar">
+                        {timeOptions.map((time, index) => (
+                          <div 
+                            key={index} 
+                            className="time-option"
+                            onClick={() => handleTimeSelect(time)}
+                          >
+                            {formatTime(time)}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className='PPOli_Sea'>
+                  <div className='PPOli_Sea_Card'>
+                    <div className='PPOli_Sea_Card_1'>
+                      <span className='DDat-IADf'>{formatMonth(selectedDate)}</span>
+                      <span>{formatDay(selectedDate)}</span>
+                    </div>
+                    <div className='PPOli_Sea_Card_2'>
+                      <div>
+                        <h5>{formatFullDate(selectedDate)}</h5>
+                        <h6>
+                          {startTime ? formatTime(startTime) : '00:00'} 
+                          {' - '}
+                          {endTime ? formatTime(endTime) : '00:00'}
+                        </h6>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className='realTime-Calendar-wrapper'>
+                  <DatePicker
+                    selected={selectedDate}
+                    onChange={(date) => {
+                      setSelectedDate(date);
+                      // Reset times when date changes
+                      setStartTime(null);
+                      setEndTime(null);
+                    }}
+                    inline
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+ 
     </div>
   );
 };
