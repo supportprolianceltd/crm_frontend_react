@@ -61,6 +61,8 @@
     padding:8px 15px;
     z-index: 10;
     transition: all 0.3s ease-in-out;
+    user-select: none;
+    cursor: pointer;
 }
 /* .glo-Top-Card:hover{
     background-color: #ebe6ff;
@@ -310,7 +312,7 @@
   text-transform: uppercase;
   font-weight: 600;
   padding: 0px 10px;
-  width: 70px;
+  width: 53px;
   height: 20px;
   display: inline-flex;
   align-items: center;
@@ -337,10 +339,14 @@
 
 
 .status.shortlisted{
-     background-color: rgba(152, 206, 248, 0.2); 
-     color: #2581eb;
+     color: #2575FC;
+     width: auto !important;
+     padding: 0px !important;
+     gap: 5px !important;
 }
-
+.status.shortlisted svg{
+    width: 10px !important;
+}
 .status.pending {
   background-color: rgba(255, 206, 86, 0.2); 
   color: #212529; 
@@ -3162,4 +3168,59 @@ background: linear-gradient(135deg, #FF6FD8 0%, #FF42A1 50%, #FF9770 100%) !impo
     height: auto;
     display: flex;
     align-items: center;
+}
+
+
+
+
+
+
+/* oooi-Cuup-LinkD */
+
+.oooi-Cuup-LinkD{
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    user-select: none;
+    cursor: pointer;
+    color:#7226FF;
+}
+
+.oooi-Cuup-LinkD p{
+    display: -webkit-box;
+  -webkit-line-clamp:1; 
+  line-clamp:1; 
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 10px;
+  font-weight: 500;
+  padding-top: 3px;
+  line-height:17px !important;
+}
+
+.oooi-Cuup-LinkD span{
+    position: relative;
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    transition: all 0.3s ease-in-out;
+     color:#7226FF;
+    background-color: #ebe6ff;
+}
+
+.oooi-Cuup-LinkD span svg{
+    width: 11px;
+}
+
+.coppied-Stattsu{
+    position: absolute !important;
+    width: auto !important;
+    height: auto !important;
+    padding: 5px 10px !important;
+    border:1px solid #7226FF !important;
 }
