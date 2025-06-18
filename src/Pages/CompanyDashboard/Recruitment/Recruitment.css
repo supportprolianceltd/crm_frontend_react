@@ -2746,13 +2746,14 @@ background: linear-gradient(135deg, #FF6FD8 0%, #FF42A1 50%, #FF9770 100%) !impo
 .Schedule-PPao-1-Boxx-Main ul li p{
     position: relative;
     width: 100%;
-    font-size: 8px;
+    font-size: 9px;
     color: #6c6394;
 }
 
 
 .Schedule-PPao-1-Boxx-Main ul li:hover{
     background-color: #ebe6ff;
+    border-color: #fff;
 }
 
 .active-ggarg-Li{
@@ -3413,4 +3414,16 @@ background: linear-gradient(135deg, #FF6FD8 0%, #FF42A1 50%, #FF9770 100%) !impo
         
         .rotate-180 {
           transform: rotate(180deg);
+        }
+
+
+
+
+
+
+        /* OPP-YHag */
+
+        .OPP-YHag.error{
+            margin-top: 10px !important;
+            display: block;
         }
