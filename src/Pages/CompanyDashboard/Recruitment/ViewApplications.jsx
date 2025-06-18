@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, useMotionValue, useTransform, animate, AnimatePresence } from 'framer-motion';
-import { ArrowTrendingUpIcon, MagnifyingGlassIcon, AdjustmentsHorizontalIcon, CheckCircleIcon, TrashIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { ArrowTrendingUpIcon, MagnifyingGlassIcon, AdjustmentsHorizontalIcon, CheckCircleIcon, CheckIcon, TrashIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import PDFICON from '../../../assets/Img/pdf-icon.png';
 import ApplicantDetails from './ApplicantDetails';
-
 import { Link } from 'react-router-dom';
 
 // Generate 100 applicants to match the stats
@@ -61,11 +60,10 @@ const generateApplicantData = () => {
   const sources = ['Website', 'LinkedIn', 'Referral', 'Indeed', 'Glassdoor'];
   const statuses = ['New', 'Shortlisted', 'Rejected', 'Hired'];
   
-  // Generate 95 more applicants
   const additionalApplicants = Array.from({ length: 95 }, (_, i) => {
     const id = `APP-${(i + 6).toString().padStart(3, '0')}`;
     const baseIndex = i % baseApplicants.length;
-    const baseDate = new Date(2025, 5, 14 - Math.floor(i/10)); // Generate dates in June 2025
+    const baseDate = new Date(2025, 5, 14 - Math.floor(i/10));
     
     return {
       id,
@@ -267,15 +265,13 @@ const ViewApplications = () => {
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [showNoSelectionAlert, setShowNoSelectionAlert] = useState(false);
   const [selectedApplicant, setSelectedApplicant] = useState(null);
-const [showApplicantDetails, setShowApplicantDetails] = useState(false);
+  const [showApplicantDetails, setShowApplicantDetails] = useState(false);
 
-  // Calculate stats based on applicant data
   const calculateStats = useCallback(() => {
     const total = applicantData.length;
     const shortlisted = applicantData.filter(a => a.status === 'Shortlisted').length;
     const hired = applicantData.filter(a => a.status === 'Hired').length;
     const rejected = applicantData.filter(a => a.status === 'Rejected').length;
-    const newCount = applicantData.filter(a => a.status === 'New').length;
 
     return [
       { title: 'Total Applications', count: total, percentage: 100, color: '#6DD5FA' },
@@ -366,37 +362,46 @@ const [showApplicantDetails, setShowApplicantDetails] = useState(false);
     setIsVisible(prev => !prev);
   };
 
+  const handleViewClick = (applicant) => {
+    setSelectedApplicant(applicant);
+    setShowApplicantDetails(true);
+  };
 
+  const handleCloseDetails = () => {
+    setShowApplicantDetails(false);
+    setSelectedApplicant(null);
+  };
 
-  // Updated to open details view
-const handleViewClick = (applicant) => {
-  setSelectedApplicant(applicant);
-  setShowApplicantDetails(true);
-};
+  const handleStatusChange = (id, newStatus) => {
+    setApplicantData(prev => 
+      prev.map(applicant => 
+        applicant.id === id ? {...applicant, status: newStatus} : applicant
+      )
+    );
+  };
 
-// To close the details view
-const handleCloseDetails = () => {
-  setShowApplicantDetails(false);
-  setSelectedApplicant(null);
-};
-
-
-// Updates status from details view
-const handleStatusChange = (id, newStatus) => {
-  setApplicantData(prev => 
-    prev.map(applicant => 
-      applicant.id === id ? {...applicant, status: newStatus} : applicant
-    )
-  );
-};
-
+  const handleCardClick = (title) => {
+    const filterMap = {
+      'Total Applications': 'All',
+      'Shortlisted': 'Shortlisted',
+      'Hired': 'Hired',
+      'Rejected': 'Rejected',
+    };
+    setStatusFilter(filterMap[title] || 'All');
+    setCurrentPage(1);
+  };
 
   return (
     <div className="YUa-Opal-sec ViewApplications-PPGA">
       <div className="YUa-Opal-Part-1">
         <div className="Gtah-Cardaa">
           {stats.map((item, index) => (
-            <div className="glo-Top-Card Gen-Boxshadow uayh-AccraD" key={index}>
+            <div
+              className="glo-Top-Card Gen-Boxshadow uayh-AccraD"
+              key={index}
+              onClick={() => handleCardClick(item.title)}
+              style={{ cursor: 'pointer' }}
+            >
               <p>{item.title}</p>
               <div className="Gllla-SUboopaCard">
                 <div className="Gllla-SUboopaCard-1">
@@ -505,6 +510,9 @@ const handleStatusChange = (id, newStatus) => {
                       <td>
                         <span className={`status ${applicant.status.toLowerCase()}`}>
                           {applicant.status}
+                          {applicant.status === 'Shortlisted' && (
+                            <CheckIcon className="w-4 h-4 inline ml-1" />
+                          )}
                         </span>
                       </td>
                       <td>{applicant.source}</td>
@@ -613,9 +621,9 @@ const handleStatusChange = (id, newStatus) => {
 
       <div className="YUa-Opal-Part-2">
         <div className="Top-GHY-s">
-           <Link to='/job-application' className='link-btn btn-primary-bg'
-                >Visit Site
-              </Link>
+          <Link to='/job-application' className='link-btn btn-primary-bg'>
+            Visit Site
+          </Link>
           <p>Created on <span>2025-06-02 ✦ 9:21 AM</span></p>
         </div>
         <div className="yyess-sec">
@@ -623,17 +631,14 @@ const handleStatusChange = (id, newStatus) => {
         </div>
       </div>
 
-
-   {/* Only shown when an applicant is selected */}
-{showApplicantDetails && selectedApplicant && (
-  <ApplicantDetails 
-    job={{ title: 'Frontend Website Developer' }}
-    applicant={selectedApplicant}
-    onClose={handleCloseDetails}
-    onStatusChange={handleStatusChange}
-  />
-)}
-      
+      {showApplicantDetails && selectedApplicant && (
+        <ApplicantDetails 
+          job={{ title: 'Frontend Website Developer' }}
+          applicant={selectedApplicant}
+          onClose={handleCloseDetails}
+          onStatusChange={handleStatusChange}
+        />
+      )}
     </div>
   );
 };
