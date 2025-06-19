@@ -2,7 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import CRMLandingpage from './Pages/CRMLandingPages/CRMLandingpage';
 import './App.css';
 import CompanyDashboard from './Pages/CompanyDashboard/Dashboard';
-// import Recruitment from './Pages/Recruitment/Recruitment';
+import ApplicantDashboard from './Pages/ApplicantDashboard/Dashboard';
 import SocialCallback from './Pages/CRMLandingPages/SocialCallback';
 import ScrollToTop from './assets/ScrollToTop';
 
@@ -16,7 +16,7 @@ function App() {
       <Route path="/*" element={<CRMLandingpage />} />
       <Route path="/company/*" element={<CompanyDashboard />} />
       <Route path="/api/social/callback/" element={<SocialCallback />} />
-      {/* <Route path="/recruitment/*" element={<Recruitment />} /> */}
+      <Route path="/applicant/*" element={<ApplicantDashboard />} />
     </Routes>
     </div>
   );

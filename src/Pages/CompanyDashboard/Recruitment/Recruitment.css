@@ -2795,13 +2795,15 @@ background: linear-gradient(135deg, #FF6FD8 0%, #FF42A1 50%, #FF9770 100%) !impo
     align-items: center;
     flex-wrap: wrap;
     gap: 10px;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 500;
+    color: #7226FF;
 }
 
 .Schedule-PPao-2-header h3 span{
     font-size: 12px;
     font-weight: 400;
+    color: #372580;
 }
 
 .Schedule-PPao-2-header h3 span b{
@@ -3427,3 +3429,91 @@ background: linear-gradient(135deg, #FF6FD8 0%, #FF42A1 50%, #FF9770 100%) !impo
             margin-top: 10px !important;
             display: block;
         }
+
+
+
+
+
+
+        /* Add to your CSS file */
+.success-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: #4caf50;
+  color: white;
+  padding: 16px 24px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 4000;
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+  font-size: 12px;
+}
+
+.success-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.success-icon {
+  width: 18px;
+  height: 18px;
+  fill: white;
+}
+
+
+
+
+/* TTTy-Solka */
+
+.TTTy-Solka{
+    position: relative;
+    width: 100%;
+    height: auto;
+    padding: 20px 0px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.poli-BTn{
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 8px 20px;
+    border-radius: 30px;
+    user-select: none;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.poli-BTn svg{
+    width: 14px;
+}
+
+.TTTy-Solka h3{
+    font-size: 30px;
+    font-weight: 500;
+    
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
