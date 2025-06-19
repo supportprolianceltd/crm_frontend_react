@@ -17,7 +17,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import JobDetails from './JobDetails';
 import EditRequisition from './EditRequisition';
 import CountUp from 'react-countup';
-import { fetchAllRequisitions } from './apiService';
+import { fetchAllRequisitions } from './ApiService';
 
 // Modal component
 const Modal = ({ title, message, onConfirm, onCancel, confirmText = 'Confirm', cancelText = 'Cancel' }) => (

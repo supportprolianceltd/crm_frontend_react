@@ -22,7 +22,7 @@ import {
 } from '@heroicons/react/24/outline';
 import CountUp from 'react-countup';
 import { motion, AnimatePresence } from 'framer-motion';
-import { fetchAllRequisitions, bulkDeleteRequisitions } from './apiService';
+import { fetchAllRequisitions, bulkDeleteRequisitions } from './ApiService';
 
 // Register Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend);

@@ -3,7 +3,7 @@ import { MicrophoneIcon as MicOutline } from '@heroicons/react/24/outline';
 import { MicrophoneIcon as MicSolid } from '@heroicons/react/24/solid';
 import { PaperAirplaneIcon, InformationCircleIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
-import { createRequisition } from './apiService';
+import { createRequisition } from './ApiService';
 
 const MAX_HEIGHT = 150;
 const MAX_WORDS = 1000;

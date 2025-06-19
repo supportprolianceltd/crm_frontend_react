@@ -7,7 +7,7 @@ import {
 } from '@heroicons/react/24/outline';
 import config from '../../../config';
 import AdvertBanner from '../../../assets/Img/Advert-Banner.jpg';
-import { fetchRequisition } from './apiService';
+import { fetchRequisition } from './ApiService';
 
 // AlertModal component (reused from VewRequisition)
 const AlertModal = ({ title, message, onClose }) => (

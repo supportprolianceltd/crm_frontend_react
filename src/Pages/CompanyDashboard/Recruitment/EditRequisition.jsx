@@ -17,7 +17,7 @@ import {
   TrashIcon,
   GlobeAltIcon,
 } from '@heroicons/react/24/outline';
-import { fetchRequisition, updateRequisition, deleteRequisition, updateRequisitionStatus, togglePublishRequisition } from './apiService';
+import { fetchRequisition, updateRequisition, deleteRequisition, updateRequisitionStatus, togglePublishRequisition } from './ApiService';
 
 // Date formatting function
 const formatDisplayDate = (dateString) => {

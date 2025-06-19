@@ -21,7 +21,7 @@ import {
   updateRequisition,
   updateRequisitionStatus,
   deleteRequisition,
-} from './apiService';
+} from './ApiService';
 
 // Date formatting function
 const formatDisplayDate = (dateString) => {
