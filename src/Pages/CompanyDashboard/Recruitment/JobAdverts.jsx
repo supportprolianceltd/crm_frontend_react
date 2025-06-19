@@ -17,9 +17,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import JobDetails from './JobDetails';
 import EditRequisition from './EditRequisition';
 import CountUp from 'react-countup';
-import axios from 'axios';
-import config from '../../../config';
+import { fetchAllRequisitions } from './ApiService';
 
+// Modal component
 const Modal = ({ title, message, onConfirm, onCancel, confirmText = 'Confirm', cancelText = 'Cancel' }) => (
   <AnimatePresence>
     <motion.div
@@ -58,6 +58,7 @@ const Modal = ({ title, message, onConfirm, onCancel, confirmText = 'Confirm', c
   </AnimatePresence>
 );
 
+// AlertModal component
 const AlertModal = ({ title, message, onClose }) => (
   <AnimatePresence>
     <motion.div
@@ -129,8 +130,6 @@ const JobAdvert = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [copiedJobId, setCopiedJobId] = useState(null);
 
-  const token = localStorage.getItem('accessToken');
-  const API_BASE_URL = config.API_BASE_URL;
   const masterCheckboxRef = useRef(null);
 
   // Format date for display
@@ -174,11 +173,9 @@ const JobAdvert = () => {
     const fetchJobs = async () => {
       setIsLoading(true);
       try {
-        const response = await axios.get(`${API_BASE_URL}/api/talent-engine/requisitions/`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await fetchAllRequisitions();
         // Filter for published jobs and map to component's format
-        const publishedJobs = response.data
+        const publishedJobs = response
           .filter((job) => job.publish_status === true)
           .map((job) => ({
             id: job.id,
@@ -200,7 +197,7 @@ const JobAdvert = () => {
       } catch (error) {
         setAlertModal({
           title: 'Error',
-          message: error.response?.data?.detail || 'Failed to fetch job advertisements.',
+          message: error,
         });
         console.error('Error fetching jobs:', error);
       } finally {
@@ -209,7 +206,7 @@ const JobAdvert = () => {
     };
 
     fetchJobs();
-  }, [trigger, token]);
+  }, [trigger]);
 
   // Polling for updates
   useEffect(() => {
@@ -223,7 +220,7 @@ const JobAdvert = () => {
   // Filter jobs based on search and status
   const filteredJobs = jobData.filter((job) => {
     const matchesSearch =
-      job.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      job.id.toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
       job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
       job.jobType.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -287,13 +284,8 @@ const JobAdvert = () => {
 
   const confirmDelete = async () => {
     try {
-      await Promise.all(
-        selectedIds.map((id) =>
-          axios.delete(`${API_BASE_URL}/api/talent-engine/requisitions/${id}/`, {
-            headers: { Authorization: `Bearer ${token}` },
-          })
-        )
-      );
+      // Use bulkDeleteRequisitions for efficiency
+      await bulkDeleteRequisitions(selectedIds);
       setJobData((prev) => prev.filter((job) => !selectedIds.includes(job.id)));
       setSelectedIds([]);
       if (currentPage > Math.ceil(filteredJobs.length / rowsPerPage)) {
@@ -304,7 +296,7 @@ const JobAdvert = () => {
       setShowConfirmDelete(false);
       setAlertModal({
         title: 'Error',
-        message: error.response?.data?.detail || 'Failed to delete selected job advertisements.',
+        message: error,
       });
       console.error('Error deleting jobs:', error);
     }
@@ -610,7 +602,7 @@ const JobAdvert = () => {
       )}
 
       {showEditRequisition && (
-        <EditRequisition onHideEditRequisition={handleHideEditRequisition} />
+        <EditRequisition job={selectedJob} onHideEditRequisition={handleHideEditRequisition} />
       )}
     </div>
   );

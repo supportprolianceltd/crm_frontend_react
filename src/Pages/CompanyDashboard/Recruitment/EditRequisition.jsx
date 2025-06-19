@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { motion, AnimatePresence } from 'framer-motion';
-import axios from 'axios';
-import config from '../../../config';
 import NoAdvertBanner from '../../../assets/Img/noAdvertBanner.png';
 import {
   InformationCircleIcon,
@@ -19,6 +17,7 @@ import {
   TrashIcon,
   GlobeAltIcon,
 } from '@heroicons/react/24/outline';
+import { fetchRequisition, updateRequisition, deleteRequisition, updateRequisitionStatus, togglePublishRequisition } from './ApiService';
 
 // Date formatting function
 const formatDisplayDate = (dateString) => {
@@ -57,7 +56,7 @@ const getPosition = (user) => {
   if (user.job_role) {
     return `${user.job_role}`;
   }
-  return  'staff';
+  return 'staff';
 };
 
 // Backdrop component
@@ -67,7 +66,7 @@ const Backdrop = ({ onClick }) => (
     initial={{ opacity: 0 }}
     animate={{ opacity: 0.5 }}
     exit={{ opacity: 0 }}
-    onClick={onClick}
+ onClick={onClick}
   />
 );
 
@@ -152,8 +151,6 @@ const AlertModal = ({ title, message, onClose }) => (
 
 const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = true }) => {
   const navigate = useNavigate();
-  const token = localStorage.getItem('accessToken');
-  const API_BASE_URL = `${config.API_BASE_URL}/api/talent-engine/`;
 
   // Set default dates
   const today = new Date();
@@ -202,18 +199,9 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
   // Fetch requisition data if job.id exists
   useEffect(() => {
     if (job?.id) {
-      const fetchRequisition = async () => {
+      const fetchRequisitionData = async () => {
         try {
-          const response = await axios.get(`${API_BASE_URL}requisitions/${job.id}/`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-          });
-          const data = response.data;
-          console.log("data")
-          console.log(data)
-          console.log("data")
+          const data = await fetchRequisition(job.id);
           setRequisitionData({
             ...data,
             requested_by: data.requested_by || null,
@@ -254,18 +242,18 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
           setDocuments(data.documents_required || ['Resume']);
           setCheckedItems(data.compliance_checklist || ['Right to Work Check']);
           setAdvertBanner(data.advert_banner ? `${config.API_BASE_URL}${data.advert_banner}` : null);
-          setHasUnsavedChanges(false); // Reset unsaved changes after fetching
+          setHasUnsavedChanges(false);
         } catch (error) {
           setAlertModal({
             title: 'Error',
-            message: error.response?.data?.detail || 'Failed to fetch requisition data.',
+            message: error,
           });
           console.error('Error fetching requisition:', error);
         }
       };
-      fetchRequisition();
+      fetchRequisitionData();
     }
-  }, [job?.id, token]);
+  }, [job?.id]);
 
   // Detect unsaved changes
   useEffect(() => {
@@ -488,44 +476,26 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
     if (advertBannerFile) formDataToSend.append('advert_banner', advertBannerFile);
 
     try {
-
-      console.log("job")
-      console.log(job)
-      console.log("job")
-
       let response;
       if (job?.id) {
-        response = await axios.patch(`${API_BASE_URL}requisitions/${job.id}/`, formDataToSend, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data',
-          },
-        });
+        response = await updateRequisition(job.id, formDataToSend);
       } else {
-        response = await axios.post(`${API_BASE_URL}requisitions/`, formDataToSend, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data',
-          },
-        });
+        response = await createRequisition(formDataToSend);
       }
       setRequisitionData({
-        ...response.data,
-        requested_by: response.data.requested_by || null,
+        ...response,
+        requested_by: response.requested_by || null,
       });
-      setPublishStatus(response.data.publish_status);
+      setPublishStatus(response.publish_status);
       setIsSaving(false);
-      setHasUnsavedChanges(false); // Reset unsaved changes after saving
+      setHasUnsavedChanges(false);
       setShowSuccess({ type: 'save', message: 'Changes saved successfully!' });
-      return response.data; // Return data for use in handleTogglePublish
+      return response;
     } catch (error) {
       setIsSaving(false);
-      showAlert(
-        'Error',
-        error.response?.data?.detail || 'Failed to save changes. Please try again.'
-      );
+      showAlert('Error', error);
       console.error('Error saving requisition:', error);
-      throw error; // Rethrow to handle in handleTogglePublish
+      throw error;
     }
   };
 
@@ -540,7 +510,6 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
       return;
     }
 
-    // Client-side validation
     const jobDetailsErrors = validateJobDetails();
     if (Object.keys(jobDetailsErrors).length > 0) {
       setErrors(jobDetailsErrors);
@@ -563,25 +532,13 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
     setIsTogglingPublish(true);
 
     try {
-      // Save changes first
       await handleSaveChanges();
-
-      // Then toggle publish status
       const newPublishStatus = !publishStatus;
-      const response = await axios.patch(
-        `${API_BASE_URL}requisitions/${job.id}/`,
-        { publish_status: newPublishStatus },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      const response = await togglePublishRequisition(job.id, newPublishStatus);
       setPublishStatus(newPublishStatus);
       setRequisitionData({
-        ...response.data,
-        requested_by: response.data.requested_by || null,
+        ...response,
+        requested_by: response.requested_by || null,
       });
       setIsTogglingPublish(false);
       setShowSuccess({
@@ -590,8 +547,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
       });
     } catch (error) {
       setIsTogglingPublish(false);
-      const errorMessage = error.response?.data?.detail || error.response?.data || 'Failed to toggle publish status.';
-      showAlert('Error', typeof errorMessage === 'object' ? JSON.stringify(errorMessage) : errorMessage);
+      showAlert('Error', typeof error === 'object' ? JSON.stringify(error) : error);
       console.error('Error toggling publish status:', error);
     }
   };
@@ -688,11 +644,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
 
   const handleAccept = async () => {
     try {
-      await axios.patch(
-        `${API_BASE_URL}requisitions/${job.id}/`,
-        { status: 'open' },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const response = await updateRequisitionStatus(job.id, 'open');
       setStatus('open');
       setRequisitionData((prev) => ({
         ...prev,
@@ -700,18 +652,14 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
         requested_by: prev.requested_by || null,
       }));
     } catch (error) {
-      showAlert('Error', error.response?.data?.detail || 'Failed to accept requisition.');
+      showAlert('Error', error);
       console.error('Error accepting requisition:', error);
     }
   };
 
   const handleReject = async () => {
     try {
-      await axios.patch(
-        `${API_BASE_URL}requisitions/${job.id}/`,
-        { status: 'rejected' },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const response = await updateRequisitionStatus(job.id, 'rejected');
       setStatus('rejected');
       setRequisitionData((prev) => ({
         ...prev,
@@ -719,7 +667,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
         requested_by: prev.requested_by || null,
       }));
     } catch (error) {
-      showAlert('Error', error.response?.data?.detail || 'Failed to reject requisition.');
+      showAlert('Error', error);
       console.error('Error rejecting requisition:', error);
     }
   };
@@ -735,20 +683,12 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
   const confirmDeleteAdvert = async () => {
     if (job?.id) {
       try {
-        await axios.delete(`${API_BASE_URL}requisitions/${job.id}/`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
+        await deleteRequisition(job.id);
         setShowDeleteModal(false);
         setShowSuccess({ type: 'delete', message: 'Job deleted successfully!' });
       } catch (error) {
         setShowDeleteModal(false);
-        showAlert(
-          'Error',
-          error.response?.data?.detail || 'Failed to delete requisition. Please try again.'
-        );
+        showAlert('Error', error);
         console.error('Error deleting requisition:', error);
       }
     } else {
