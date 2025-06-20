@@ -255,6 +255,7 @@ const ApplicationStatsChart = ({ data }) => (
 );
 
 const ViewApplications = () => {
+
   const [applicantData, setApplicantData] = useState(generateApplicantData());
   const [selectedIds, setSelectedIds] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);

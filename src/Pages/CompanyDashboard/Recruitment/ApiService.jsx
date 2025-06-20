@@ -148,3 +148,23 @@ export const togglePublishRequisition = async (id, publishStatus) => {
     throw error.response?.data || 'Failed to toggle publish status.';
   }
 };
+
+// API function to fetch all job applications
+export const fetchAllJobApplications = async () => {
+  try {
+    const response = await apiClient.get('/api/talent-engine-job-applications/applications/');
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.detail || 'Failed to load job applications. Please try again.';
+  }
+};
+
+// API function to bulk delete job applications
+export const bulkDeleteJobApplications = async (ids) => {
+  try {
+    const response = await apiClient.post('/api/talent-engine-job-applications/applications/bulk-delete/', { ids });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.detail || 'Failed to delete job applications. Please try again.';
+  }
+};

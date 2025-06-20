@@ -1,28 +1,26 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   MagnifyingGlassIcon,
   AdjustmentsHorizontalIcon,
+  LockClosedIcon,
+  LockOpenIcon,
+  GlobeAltIcon,
   CheckCircleIcon,
   TrashIcon,
-  BriefcaseIcon,
-  MegaphoneIcon,
-  LockClosedIcon,
-  ClipboardDocumentIcon,
-  GlobeAltIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  BriefcaseIcon,
+  UsersIcon,
+  CalendarIcon,
+  ClockIcon,
+  Cog6ToothIcon,
 } from '@heroicons/react/24/outline';
-import { motion, AnimatePresence } from 'framer-motion';
-import JobDetails from './JobDetails';
-import EditRequisition from './EditRequisition';
 import CountUp from 'react-countup';
 import { fetchAllRequisitions, bulkDeleteRequisitions } from './ApiService';
-import config from '../../../config';
 
-const WEB_PAGE_URL = `${config.WEB_PAGE__URL}`;
-
-// Modal component
+// Modal component for confirmation dialogs
 const Modal = ({ title, message, onConfirm, onCancel, confirmText = 'Confirm', cancelText = 'Cancel' }) => (
   <AnimatePresence>
     <motion.div
@@ -61,7 +59,7 @@ const Modal = ({ title, message, onConfirm, onCancel, confirmText = 'Confirm', c
   </AnimatePresence>
 );
 
-// AlertModal component
+// AlertModal component for simple alerts
 const AlertModal = ({ title, message, onClose }) => (
   <AnimatePresence>
     <motion.div
@@ -109,19 +107,18 @@ const reverseLocationTypeMap = {
   hybrid: 'Hybrid',
 };
 
-const JobAdvert = () => {
+// Main JobApplication component
+const JobApplication = () => {
+  // State declarations
   const [jobData, setJobData] = useState([]);
-  const [selectedIds, setSelectedIds] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [isVisible, setIsVisible] = useState(false);
-  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [selectedIds, setSelectedIds] = useState([]);
   const [showNoSelectionAlert, setShowNoSelectionAlert] = useState(false);
-  const [showViewRequisition, setShowViewRequisition] = useState(false);
-  const [selectedJob, setSelectedJob] = useState(null);
-  const [showEditRequisition, setShowEditRequisition] = useState(false);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [alertModal, setAlertModal] = useState(null);
   const [trigger, setTrigger] = useState(0);
   const [lastUpdateTime, setLastUpdateTime] = useState(new Date());
@@ -131,9 +128,9 @@ const JobAdvert = () => {
     closed: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
-  const [copiedUniqueLink, setCopiedUniqueLink] = useState(null);
-
   const masterCheckboxRef = useRef(null);
+
+  const statuses = ['All', ...new Set(jobData.map((job) => job.status))];
 
   // Format date for display
   const formatDate = (dateString) => {
@@ -156,21 +153,6 @@ const JobAdvert = () => {
     });
   };
 
-  // Copy link to clipboard using unique_link
-  const handleCopyLink = (uniqueLink) => {
-    const link = `${WEB_PAGE_URL}/jobs/${uniqueLink}`;
-    navigator.clipboard.writeText(link).then(() => {
-      setCopiedUniqueLink(uniqueLink);
-      setTimeout(() => setCopiedUniqueLink(null), 2000);
-    }).catch((err) => {
-      console.error('Failed to copy link:', err);
-      setAlertModal({
-        title: 'Error',
-        message: 'Failed to copy the link to clipboard.',
-      });
-    });
-  };
-
   // Fetch jobs from API
   useEffect(() => {
     const fetchJobs = async () => {
@@ -182,11 +164,9 @@ const JobAdvert = () => {
           .map((job) => ({
             id: job.id,
             title: job.title,
-            unique_link: job.unique_link,
-            company: job.company_name || 'N/A',
-            jobType: reverseJobTypeMap[job.job_type] || job.job_type,
-            location: reverseLocationTypeMap[job.location_type] || job.location_type,
+            numApplications: job.num_of_applications || 0,
             deadline: formatDate(job.deadline_date),
+            lastModified: formatDate(job.updated_at),
             status: job.status.charAt(0).toUpperCase() + job.status.slice(1),
           }));
         setJobData(publishedJobs);
@@ -198,9 +178,9 @@ const JobAdvert = () => {
       } catch (error) {
         setAlertModal({
           title: 'Error',
-          message: error.message || 'Failed to fetch jobs.',
+          message: error.message || 'Failed to fetch job requisitions.',
         });
-        console.error('Error fetching jobs:', error);
+        console.error('Error fetching job requisitions:', error);
       } finally {
         setIsLoading(false);
       }
@@ -218,25 +198,74 @@ const JobAdvert = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Filter jobs based on search and status
+  // Filter jobs based on search term and status
   const filteredJobs = jobData.filter((job) => {
     const matchesSearch =
-      job.id.toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.jobType.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.deadline.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.status.toLowerCase().includes(searchTerm.toLowerCase());
-
+      job.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      job.title.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'All' || job.status === statusFilter;
-
     return matchesSearch && matchesStatus;
   });
 
+  // Pagination logic
   const totalPages = Math.ceil(filteredJobs.length / rowsPerPage);
-  const startIdx = (currentPage - 1) * rowsPerPage;
-  const currentJobs = filteredJobs.slice(startIdx, startIdx + rowsPerPage);
+  const startIndex = (currentPage - 1) * rowsPerPage;
+  const currentJobs = filteredJobs.slice(startIndex, startIndex + rowsPerPage);
+
+  // Handle checkbox selection for individual jobs
+  const handleCheckboxChange = (id) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((jobId) => jobId !== id) : [...prev, id]
+    );
+  };
+
+  // Handle select all visible jobs
+  const handleSelectAllVisible = () => {
+    const allVisibleIds = currentJobs.map((job) => job.id);
+    const areAllVisibleSelected = allVisibleIds.every((id) => selectedIds.includes(id));
+    if (areAllVisibleSelected) {
+      setSelectedIds((prev) => prev.filter((id) => !allVisibleIds.includes(id)));
+    } else {
+      setSelectedIds((prev) => [...new Set([...prev, ...allVisibleIds])]);
+    }
+  };
+
+  // Handle delete marked jobs
+  const handleDeleteMarked = () => {
+    if (selectedIds.length === 0) {
+      setShowNoSelectionAlert(true);
+      return;
+    }
+    setShowConfirmDelete(true);
+  };
+
+  // Confirm deletion of selected jobs
+  const confirmDelete = async () => {
+    try {
+      await bulkDeleteRequisitions(selectedIds);
+      setJobData((prev) => prev.filter((job) => !selectedIds.includes(job.id)));
+      setSelectedIds([]);
+      if (currentPage > Math.ceil(filteredJobs.length / rowsPerPage)) {
+        setCurrentPage((prev) => Math.max(prev - 1, 1));
+      }
+      setShowConfirmDelete(false);
+    } catch (error) {
+      setShowConfirmDelete(false);
+      setAlertModal({
+        title: 'Error',
+        message: error.message || 'Failed to delete job requisitions.',
+      });
+      console.error('Error deleting job requisitions:', error);
+    }
+  };
+
+  // Reset master checkbox when page or rows change
+  useEffect(() => {
+    if (masterCheckboxRef.current) {
+      masterCheckboxRef.current.checked = false;
+    }
+    setSelectedIds([]);
+  }, [currentPage, rowsPerPage]);
 
   // Update master checkbox state
   useEffect(() => {
@@ -255,89 +284,24 @@ const JobAdvert = () => {
     }
   }, [rowsPerPage, filteredJobs.length, currentPage]);
 
+  // Reset page on filter change
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, statusFilter, rowsPerPage]);
 
-  const handleCheckboxChange = (id) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
-  };
-
-  const handleSelectAllVisible = () => {
-    const allVisibleIds = currentJobs.map((job) => job.id);
-    const areAllVisibleSelected = allVisibleIds.every((id) => selectedIds.includes(id));
-    if (areAllVisibleSelected) {
-      setSelectedIds((prev) => prev.filter((id) => !allVisibleIds.includes(id)));
-    } else {
-      setSelectedIds((prev) => [...new Set([...prev, ...allVisibleIds])]);
-    }
-  };
-
-  const handleDeleteMarked = () => {
-    if (selectedIds.length === 0) {
-      setShowNoSelectionAlert(true);
-      return;
-    }
-    setShowConfirmDelete(true);
-  };
-
-  const confirmDelete = async () => {
-    try {
-      await bulkDeleteRequisitions(selectedIds);
-      setJobData((prev) => prev.filter((job) => !selectedIds.includes(job.id)));
-      setSelectedIds([]);
-      if (currentPage > Math.ceil(filteredJobs.length / rowsPerPage)) {
-        setCurrentPage((prev) => Math.max(prev - 1, 1));
-      }
-      setShowConfirmDelete(false);
-    } catch (error) {
-      setShowConfirmDelete(false);
-      setAlertModal({
-        title: 'Error',
-        message: error.message || 'Failed to delete jobs.',
-      });
-      console.error('Error deleting jobs:', error);
-    }
-  };
-
+  // Toggle filter dropdown visibility
   const toggleSection = () => {
     setIsVisible((prev) => !prev);
   };
 
-  const handleViewClick = (job) => {
-    setSelectedJob(job);
-    setShowViewRequisition(true);
-  };
-
-  const handleCloseViewRequisition = () => {
-    setShowViewRequisition(false);
-    setSelectedJob(null);
-  };
-
-  const handleShowEditRequisition = () => {
-    setShowEditRequisition(true);
-  };
-
-  const handleHideEditRequisition = () => {
-    setShowEditRequisition(false);
-  };
-
-  const closeAlert = () => {
-    setAlertModal(null);
-  };
-
-  const statuses = ['All', ...new Set(jobData.map((job) => job.status))];
-
   return (
-    <div className="JobAdvert-sec">
+    <div className="JobApplication-sec">
       <div className="Dash-OO-Boas TTTo-POkay">
         <div className="glo-Top-Cards">
           {[
-            { icon: BriefcaseIcon, label: 'Total Job Advertisements', value: stats.total },
-            { icon: MegaphoneIcon, label: 'Open Advertisements', value: stats.open },
-            { icon: LockClosedIcon, label: 'Closed Advertisements', value: stats.closed },
+            { icon: BriefcaseIcon, label: 'Total Job Requisitions', value: stats.total },
+            { icon: LockOpenIcon, label: 'Open Requisitions', value: stats.open },
+            { icon: LockClosedIcon, label: 'Closed Requisitions', value: stats.closed },
           ].map((item, idx) => (
             <div key={idx} className={`glo-Top-Card card-${idx + 1}`}>
               <div className="ffl-TOp">
@@ -358,19 +322,15 @@ const JobAdvert = () => {
       <div className="Dash-OO-Boas Gen-Boxshadow">
         <div className="Dash-OO-Boas-Top">
           <div className="Dash-OO-Boas-Top-1">
-            <span onClick={toggleSection}>
-              <AdjustmentsHorizontalIcon />
-            </span>
-            <h3>Job Advertisements</h3>
+            <span onClick={toggleSection}><AdjustmentsHorizontalIcon className="h-6 w-6" /></span>
+            <h3>Job Requisitions</h3>
           </div>
           <div className="Dash-OO-Boas-Top-2">
             <div className="genn-Drop-Search">
-              <span>
-                <MagnifyingGlassIcon />
-              </span>
-              <input
-                type="text"
-                placeholder="Search advertisements..."
+              <span><MagnifyingGlassIcon className="h-6 w-6" /></span>
+              <input 
+                type="text" 
+                placeholder="Search requisitions..." 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -382,8 +342,8 @@ const JobAdvert = () => {
           {isVisible && (
             <motion.div
               className="filter-dropdowns"
-              initial={{ height: 0, opacity: 0, overflow: 'hidden' }}
-              animate={{ height: 'auto', opacity: 1 }}
+              initial={{ height: 0, opacity: 0, overflow: "hidden" }}
+              animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.3 }}
             >
@@ -392,7 +352,7 @@ const JobAdvert = () => {
                 onChange={(e) => setStatusFilter(e.target.value)}
                 className="filter-select"
               >
-                {statuses.map((status) => (
+                {statuses.map(status => (
                   <option key={status} value={status}>
                     {status === 'All' ? 'All Statuses' : status}
                   </option>
@@ -415,20 +375,54 @@ const JobAdvert = () => {
                     disabled={isLoading}
                   />
                 </th>
-                <th>Job ID</th>
-                <th>Job Title</th>
-                <th>Job Type</th>
-                <th>Location</th>
-                <th>Deadline for Applications</th>
-                <th>Status</th>
-                <th>Advert Link</th>
-                <th>Actions</th>
+                <th>
+                  <span className="flex items-center gap-1">
+                    <GlobeAltIcon className="h-5 w-5" />
+                    Job ID
+                  </span>
+                </th>
+                <th>
+                  <span className="flex items-center gap-1">
+                    <BriefcaseIcon className="h-5 w-5" />
+                    Job Title
+                  </span>
+                </th>
+                <th>
+                  <span className="flex items-center gap-1">
+                    <UsersIcon className="h-5 w-5" />
+                    No. of Applications
+                  </span>
+                </th>
+                <th>
+                  <span className="flex items-center gap-1">
+                    <CalendarIcon className="h-5 w-5" />
+                    Deadline for Applications
+                  </span>
+                </th>
+                <th>
+                  <span className="flex items-center gap-1">
+                    <ClockIcon className="h-5 w-5" />
+                    Last Modified
+                  </span>
+                </th>
+                <th>
+                  <span className="flex items-center gap-1">
+                    <LockClosedIcon className="h-5 w-5" />
+                    Status
+                  </span>
+                </th>
+                <th>
+                  <span className="flex items-center gap-1">
+                    <Cog6ToothIcon className="h-5 w-5" />
+                    Actions
+                  </span>
+                </th>
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={9} style={{ textAlign: 'center', padding: '20px', fontStyle: 'italic' }}>
+                  <td colSpan={8} style={{ textAlign: 'center', padding: '20px', fontStyle: 'italic' }}>
                     <ul className="tab-Loadding-AniMMA">
                       <li></li>
                       <li></li>
@@ -443,8 +437,8 @@ const JobAdvert = () => {
                 </tr>
               ) : filteredJobs.length === 0 ? (
                 <tr>
-                  <td colSpan={9} style={{ textAlign: 'center', padding: '20px', fontStyle: 'italic' }}>
-                    No Job Advertisements found
+                  <td colSpan={8} style={{ textAlign: 'center', padding: '20px', fontStyle: 'italic' }}>
+                    No job requisitions found
                   </td>
                 </tr>
               ) : (
@@ -459,45 +453,26 @@ const JobAdvert = () => {
                     </td>
                     <td>{job.id}</td>
                     <td>{job.title}</td>
-                    <td>{job.jobType}</td>
-                    <td>{job.location}</td>
+                    <td>{job.numApplications}</td>
                     <td>{job.deadline}</td>
+                    <td>{job.lastModified}</td>
                     <td>
-                      <span className={`status ${job.status.toLowerCase()}`}>
+                      <span className={`status ${job.status.toLowerCase()} haggsb-status`}>
+                        {job.status === 'Open' ? (
+                          <LockOpenIcon className="h-5 w-5" />
+                        ) : (
+                          <LockClosedIcon className="h-5 w-5" />
+                        )}
                         {job.status}
                       </span>
                     </td>
                     <td>
-                      <div
-                        className="oooi-Cuup-LinkD"
-                        onClick={() => handleCopyLink(job.unique_link)}
-                      >
-                        <p style={{ marginRight: '8px' }}>
-                          {`${WEB_PAGE_URL}/jobs/${job.unique_link}`}
-                        </p>
-                        <span>
-                          {copiedUniqueLink === job.unique_link ? (
-                            <span className='coppied-Stattsu'>Copied!</span>
-                          ) : (
-                            <ClipboardDocumentIcon className="h-5 w-5" />
-                          )}
-                        </span>
-                      </div>
-                    </td>
-                    <td>
                       <div className="gen-td-btns">
-                        <button
-                          className="view-btn"
-                          onClick={() => handleViewClick(job)}
-                        >
-                          Details
-                        </button>
                         <Link
-                          to={`/jobs/${job.unique_link}`}
-                          className="link-btn btn-primary-bg"
+                          to={`/company/recruitment/view-applications/${job.id}`}
+                          className="view-btn"
                         >
-                          <GlobeAltIcon />
-                          Site
+                          View Applications
                         </Link>
                       </div>
                     </td>
@@ -565,47 +540,33 @@ const JobAdvert = () => {
       </div>
 
       <AnimatePresence>
+        {showNoSelectionAlert && (
+          <AlertModal
+            title="No Selection"
+            message="You have not selected any requisitions to delete."
+            onClose={() => setShowNoSelectionAlert(false)}
+          />
+        )}
         {showConfirmDelete && (
           <Modal
             title="Confirm Delete"
-            message={`Are you sure you want to delete ${selectedIds.length} marked advertisement(s)? This action cannot be undone.`}
+            message={`Are you sure you want to delete ${selectedIds.length} selected requisition(s)? This action cannot be undone.`}
             onConfirm={confirmDelete}
             onCancel={() => setShowConfirmDelete(false)}
             confirmText="Delete"
             cancelText="Cancel"
           />
         )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showNoSelectionAlert && (
+        {alertModal && (
           <AlertModal
-            title="No Selection"
-            message="You have not selected any advertisements to delete."
-            onClose={() => setShowNoSelectionAlert(false)}
+            title={alertModal.title}
+            message={alertModal.message}
+            onClose={() => setAlertModal(null)}
           />
         )}
       </AnimatePresence>
-
-      <AnimatePresence>
-        {alertModal && (
-          <AlertModal title={alertModal.title} message={alertModal.message} onClose={closeAlert} />
-        )}
-      </AnimatePresence>
-
-      {showViewRequisition && (
-        <JobDetails
-          job={selectedJob}
-          onClose={handleCloseViewRequisition}
-          onShowEditRequisition={handleShowEditRequisition}
-        />
-      )}
-
-      {showEditRequisition && (
-        <EditRequisition job={selectedJob} onHideEditRequisition={handleHideEditRequisition} />
-      )}
     </div>
   );
 };
 
-export default JobAdvert;
+export default JobApplication;

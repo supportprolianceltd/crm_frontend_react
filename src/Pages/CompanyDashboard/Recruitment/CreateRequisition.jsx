@@ -20,7 +20,6 @@ const CreateRequisition = ({ onClose }) => {
   const [isSending, setIsSending] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [focusedInput, setFocusedInput] = useState(null);
-
   const textareaRef = useRef(null);
   const recognitionRef = useRef(null);
   const timerRef = useRef(null);
@@ -76,6 +75,7 @@ const CreateRequisition = ({ onClose }) => {
     }
   };
 
+  
   const handleChange = (e, setter) => {
     const value = e.target.value;
     const words = value.trim().split(/\s+/);
