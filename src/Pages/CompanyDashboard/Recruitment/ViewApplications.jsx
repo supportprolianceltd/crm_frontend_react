@@ -1,146 +1,12 @@
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, useMotionValue, useTransform, animate, AnimatePresence } from 'framer-motion';
 import { ArrowTrendingUpIcon, MagnifyingGlassIcon, AdjustmentsHorizontalIcon, CheckCircleIcon, CheckIcon, TrashIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import PDFICON from '../../../assets/Img/pdf-icon.png';
 import ApplicantDetails from './ApplicantDetails';
-import { Link } from 'react-router-dom';
-
-// Generate static applicant data once
-const staticApplicantData = (() => {
-  const baseApplicants = [
-    {
-      id: 'APP-001',
-      name: 'John Doe',
-      jobTitle: 'UI Designer',
-      dateApplied: 'Jun 11, 2025',
-      status: 'Rejected',
-      source: 'Website',
-    },
-    {
-      id: 'APP-002',
-      name: 'Jane Smith',
-      jobTitle: 'Product Manager',
-      dateApplied: 'Jun 10, 2025',
-      status: 'Shortlisted',
-      source: 'LinkedIn',
-    },
-    {
-      id: 'APP-003',
-      name: 'Alex Chuka',
-      jobTitle: 'Frontend Developer',
-      dateApplied: 'Jun 9, 2025',
-      status: 'Rejected',
-      source: 'Referral',
-    },
-    {
-      id: 'APP-004',
-      name: 'Emma Wilson',
-      jobTitle: 'Backend Developer',
-      dateApplied: 'Jun 8, 2025',
-      status: 'Rejected',
-      source: 'Website',
-    },
-    {
-      id: 'APP-005',
-      name: 'Michael Brown',
-      jobTitle: 'Full Stack Developer',
-      dateApplied: 'Jun 7, 2025',
-      status: 'Shortlisted',
-      source: 'Website',
-    },
-  ];
-
-  const jobTitles = [
-    'UI Designer', 'Product Manager', 'Frontend Developer', 
-    'Backend Developer', 'Full Stack Developer', 'UX Designer',
-    'DevOps Engineer', 'Data Scientist', 'Mobile Developer'
-  ];
-  
-  const sources = ['Website', 'LinkedIn', 'Referral', 'Indeed', 'Glassdoor'];
-
-  // Define status distribution for remaining applicants (100 - 5 = 95)
-  // Base applicants have: 3 Rejected, 2 Shortlisted
-  // Need: 80 - 3 = 77 Rejected, 20 - 2 = 18 Shortlisted, 0 Hired
-  const statusDistribution = [
-    ...Array(77).fill('Rejected'),
-    ...Array(18).fill('Shortlisted'),
-  ];
-
-  // Shuffle the status distribution
-  const shuffleArray = (array) => {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-  };
-
-  const shuffledStatuses = shuffleArray([...statusDistribution]);
-
-  const additionalApplicants = Array.from({ length: 95 }, (_, i) => {
-    const id = `APP-${(i + 6).toString().padStart(3, '0')}`;
-    const baseIndex = i % baseApplicants.length;
-    const baseDate = new Date(2025, 5, 14 - Math.floor(i/10));
-    
-    return {
-      id,
-      name: `${baseApplicants[baseIndex].name.split(' ')[0]} ${String.fromCharCode(65 + (i % 10))}`,
-      jobTitle: jobTitles[Math.floor(Math.random() * jobTitles.length)],
-      dateApplied: baseDate.toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: 'numeric', 
-        year: 'numeric' 
-      }),
-      status: shuffledStatuses[i],
-      source: sources[Math.floor(Math.random() * sources.length)],
-    };
-  });
-
-  // Combine base and additional applicants
-  const allApplicants = [...baseApplicants, ...additionalApplicants];
-
-  // Verify status counts
-  const statusCounts = allApplicants.reduce((acc, { status }) => {
-    acc[status] = (acc[status] || 0) + 1;
-    return acc;
-  }, {});
-
-  // Ensure exact counts: 80 Rejected, 20 Shortlisted, 0 Hired
-  if (statusCounts.Rejected !== 80 || statusCounts.Shortlisted !== 20 || statusCounts.Hired !== 0) {
-    console.warn('Status counts mismatch:', statusCounts);
-    // Adjust statuses if necessary
-    const targetCounts = { Rejected: 80, Shortlisted: 20, Hired: 0 };
-    let adjustedApplicants = [...allApplicants];
-    let availableIndices = adjustedApplicants.map((_, i) => i).slice(5); // Skip base applicants
-
-    for (const [status, target] of Object.entries(targetCounts)) {
-      let currentCount = statusCounts[status] || 0;
-      while (currentCount > target && availableIndices.length > 0) {
-        const randomIndex = availableIndices.splice(Math.floor(Math.random() * availableIndices.length), 1)[0];
-        adjustedApplicants[randomIndex].status = 'Placeholder';
-        currentCount--;
-        statusCounts[status] = (statusCounts[status] || 0) - 1;
-      }
-    }
-
-    for (let i = 5; i < adjustedApplicants.length; i++) {
-      if (adjustedApplicants[i].status === 'Placeholder') {
-        if (statusCounts.Rejected < 80) {
-          adjustedApplicants[i].status = 'Rejected';
-          statusCounts.Rejected = (statusCounts.Rejected || 0) + 1;
-        } else if (statusCounts.Shortlisted < 20) {
-          adjustedApplicants[i].status = 'Shortlisted';
-          statusCounts.Shortlisted = (statusCounts.Shortlisted || 0) + 1;
-        }
-      }
-    }
-
-    return adjustedApplicants;
-  }
-
-  return allApplicants;
-})();
+import { Link, useLocation } from 'react-router-dom';
+import { fetchJobApplicationsByRequisition, updateJobApplicationStatus, bulkDeleteJobApplications } from './ApiService';
 
 const Modal = ({ title, message, onConfirm, onCancel, confirmText = 'Confirm', cancelText = 'Cancel' }) => (
   <AnimatePresence>
@@ -315,9 +181,6 @@ const ApplicationStatsChart = ({ data }) => (
 );
 
 const ViewApplications = () => {
-  const [applicantData, setApplicantData] = useState(staticApplicantData);
-
-  const [applicantData, setApplicantData] = useState(generateApplicantData());
   const [selectedIds, setSelectedIds] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -328,6 +191,54 @@ const ViewApplications = () => {
   const [showNoSelectionAlert, setShowNoSelectionAlert] = useState(false);
   const [selectedApplicant, setSelectedApplicant] = useState(null);
   const [showApplicantDetails, setShowApplicantDetails] = useState(false);
+  const [applicantData, setApplicantData] = useState([]);
+  const [jobTitle, setJobTitle] = useState('Loading...');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const location = useLocation();
+  const { jobId } = location.state || {};
+
+  const masterCheckboxRef = useRef(null);
+
+  const fetchApplications = useCallback(async () => {
+    if (!jobId) {
+      setError('No job ID provided');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await fetchJobApplicationsByRequisition(jobId);
+
+      // Transform API data to match component's expected format
+      const transformedData = response.map(app => ({
+        id: app.id,
+        name: app.full_name,
+        jobTitle: app.job_requisition?.title || 'Unknown',
+        dateApplied: new Date(app.applied_at).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        }),
+        status: app.status.charAt(0).toUpperCase() + app.status.slice(1),
+        source: app.source || 'Unknown',
+        resumeUrl: app.documents.find(doc => doc.document_type === 'resume')?.file_url || '#',
+      }));
+
+      setApplicantData(transformedData);
+      setJobTitle(transformedData[0]?.jobTitle || 'Job Applications');
+      setLoading(false);
+    } catch (err) {
+      setError(err.message || 'Failed to fetch applications');
+      setLoading(false);
+    }
+  }, [jobId]);
+
+  useEffect(() => {
+    fetchApplications();
+  }, [fetchApplications]);
 
   const calculateStats = useCallback(() => {
     const total = applicantData.length;
@@ -337,9 +248,9 @@ const ViewApplications = () => {
 
     return [
       { title: 'Total Applications', count: total, percentage: 100, color: '#6DD5FA' },
-      { title: 'Shortlisted', count: shortlisted, percentage: (shortlisted / total) * 100, color: '#FF9770' },
-      { title: 'Hired', count: hired, percentage: (hired / total) * 100, color: '#2DD4BF' },
-      { title: 'Rejected', count: rejected, percentage: (rejected / total) * 100, color: '#E54BFF' },
+      { title: 'Shortlisted', count: shortlisted, percentage: total ? (shortlisted / total) * 100 : 0, color: '#FF9770' },
+      { title: 'Hired', count: hired, percentage: total ? (hired / total) * 100 : 0, color: '#2DD4BF' },
+      { title: 'Rejected', count: rejected, percentage: total ? (rejected / total) * 100 : 0, color: '#E54BFF' },
     ];
   }, [applicantData]);
 
@@ -364,8 +275,6 @@ const ViewApplications = () => {
   const totalPages = Math.ceil(filteredApplicants.length / rowsPerPage);
   const startIdx = (currentPage - 1) * rowsPerPage;
   const currentApplicants = filteredApplicants.slice(startIdx, startIdx + rowsPerPage);
-
-  const masterCheckboxRef = useRef(null);
 
   useEffect(() => {
     const allVisibleSelected = currentApplicants.every(applicant => selectedIds.includes(applicant.id));
@@ -402,7 +311,7 @@ const ViewApplications = () => {
     }
   };
 
-  const handleDeleteMarked = () => {
+  const handleDeleteMarked = async () => {
     if (selectedIds.length === 0) {
       setShowNoSelectionAlert(true);
       return;
@@ -410,14 +319,16 @@ const ViewApplications = () => {
     setShowConfirmDelete(true);
   };
 
-  const confirmDelete = () => {
-    const newApplicants = applicantData.filter(applicant => !selectedIds.includes(applicant.id));
-    setApplicantData(newApplicants);
-    setSelectedIds([]);
-    if (currentPage > Math.ceil(newApplicants.length / rowsPerPage)) {
-      setCurrentPage(prev => Math.max(prev - 1, 1));
+  const confirmDelete = async () => {
+    try {
+      await bulkDeleteJobApplications(selectedIds);
+      await fetchApplications();
+      setSelectedIds([]);
+      setShowConfirmDelete(false);
+    } catch (err) {
+      setError(err.message || 'Failed to delete applications');
+      setShowConfirmDelete(false);
     }
-    setShowConfirmDelete(false);
   };
 
   const toggleSection = () => {
@@ -434,12 +345,13 @@ const ViewApplications = () => {
     setSelectedApplicant(null);
   };
 
-  const handleStatusChange = (id, newStatus) => {
-    setApplicantData(prev => 
-      prev.map(applicant => 
-        applicant.id === id ? {...applicant, status: newStatus} : applicant
-      )
-    );
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      await updateJobApplicationStatus(id, newStatus.toLowerCase());
+      await fetchApplications();
+    } catch (err) {
+      setError(err.message || 'Failed to update status');
+    }
   };
 
   const handleCardClick = (title) => {
@@ -452,6 +364,20 @@ const ViewApplications = () => {
     setStatusFilter(filterMap[title] || 'All');
     setCurrentPage(1);
   };
+
+  if (loading) {
+    return <div>Loading applications...</div>;
+  }
+
+  if (error) {
+    return (
+      <AlertModal
+        title="Error"
+        message={error}
+        onClose={() => setError(null)}
+      />
+    );
+  }
 
   return (
     <div className="YUa-Opal-sec ViewApplications-PPGA">
@@ -470,12 +396,12 @@ const ViewApplications = () => {
                   <h3><CountUpNumber target={item.count} /></h3>
                   <h4>
                     <span><ArrowTrendingUpIcon className="w-4 h-4 inline" /></span>
-                    {item.percentage}% from Start
+                    {item.percentage.toFixed(1)}% from Start
                   </h4>
                 </div>
                 <div className="Gllla-SUboopaCard-2">
                   <div className="circular-section">
-                    <CircularProgress percentage={item.percentage} color={item.color} />
+                    <CircularProgress percentage={item.percentage.toFixed(1)} color={item.color} />
                   </div>
                 </div>
               </div>
@@ -484,7 +410,7 @@ const ViewApplications = () => {
         </div>
 
         <div className="Gllla-Toopa">
-          <h3>Frontend Website Developer</h3>
+          <h3>{jobTitle}</h3>
         </div>
 
         <div className="Dash-OO-Boas Gen-Boxshadow">
@@ -579,7 +505,7 @@ const ViewApplications = () => {
                       </td>
                       <td>{applicant.source}</td>
                       <td>
-                        <a href="#" target='_blank' className="resume-link">
+                        <a href={applicant.resumeUrl} target="_blank" rel="noopener noreferrer" className="resume-link">
                           <img src={PDFICON} alt="PDF Resume" className="pdf-icon" />
                           View
                         </a>
@@ -683,7 +609,7 @@ const ViewApplications = () => {
 
       <div className="YUa-Opal-Part-2">
         <div className="Top-GHY-s">
-          <Link to='/job-application' className='link-btn btn-primary-bg'>
+          <Link to="/job-application" className="link-btn btn-primary-bg">
             Visit Site
           </Link>
           <p>Created on <span>2025-06-02 ✦ 9:21 AM</span></p>
@@ -694,8 +620,8 @@ const ViewApplications = () => {
       </div>
 
       {showApplicantDetails && selectedApplicant && (
-        <ApplicantDetails 
-          job={{ title: 'Frontend Website Developer' }}
+        <ApplicantDetails
+          job={{ title: jobTitle }}
           applicant={selectedApplicant}
           onClose={handleCloseDetails}
           onStatusChange={handleStatusChange}

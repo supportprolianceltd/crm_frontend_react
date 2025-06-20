@@ -468,8 +468,15 @@ const JobApplication = () => {
                     </td>
                     <td>
                       <div className="gen-td-btns">
+                        {/* <Link
+                          to={`/company/recruitment/view-applications/`}
+                          className="view-btn"
+                        >
+                          View Applications
+                        </Link> */}
                         <Link
                           to={`/company/recruitment/view-applications/`}
+                          state={{ jobId: job.id }}
                           className="view-btn"
                         >
                           View Applications
