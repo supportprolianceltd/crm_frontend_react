@@ -69,6 +69,7 @@ const generateMockSchedules = () => {
       meetingMode,
       meetingLink,
       interviewAddress,
+      cancellationReason: statuses[i % statuses.length] === 'Cancelled' ? 'Sample cancellation reason' : '', // Add default cancellation reason for mock data
     });
   }
   return schedules;
@@ -145,10 +146,10 @@ const AlertModal = ({ title, message, onClose }) => (
 );
 
 const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReject }) => {
-  const [meetingMode, setMeetingMode] = useState(schedule.meetingMode);
-  const [meetingLink, setMeetingLink] = useState(schedule.meetingLink);
-  const [interviewAddress, setInterviewAddress] = useState(schedule.interviewAddress);
-  const [tempSelectedApplicants, setTempSelectedApplicants] = useState(schedule.candidateIds);
+  const [meetingMode, setMeetingMode] = useState(schedule.meetingMode || '');
+  const [meetingLink, setMeetingLink] = useState(schedule.meetingLink || '');
+  const [interviewAddress, setInterviewAddress] = useState(schedule.interviewAddress || '');
+  const [tempSelectedApplicants, setTempSelectedApplicants] = useState(schedule.candidateIds || []);
   const [tempSelectedDate, setTempSelectedDate] = useState(new Date(schedule.interviewDateTime));
   const [tempStartTime, setTempStartTime] = useState(new Date(schedule.interviewDateTime));
   const [tempEndTime, setTempEndTime] = useState(new Date(new Date(schedule.interviewDateTime).getTime() + 30 * 60000));
@@ -158,6 +159,9 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
   const [isSaving, setIsSaving] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
+  const [showCancelReasonSection, setShowCancelReasonSection] = useState(false);
+  const [cancelReason, setCancelReason] = useState('');
+  const [isSubmittingReason, setIsSubmittingReason] = useState(false);
   const modalTimeDropdownRef = useRef(null);
   const modalContentRef = useRef(null);
 
@@ -295,6 +299,7 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
       meetingMode,
       meetingLink: meetingMode === 'Virtual' ? meetingLink : '',
       interviewAddress: meetingMode === 'Physical' ? interviewAddress : '',
+      cancellationReason: schedule.cancellationReason || '',
     };
 
     onSave(updatedSchedule);
@@ -314,13 +319,31 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
     }, 1000);
   };
 
-  const handleCancelReject = () => {
-    setIsCancelling(true);
-    onCancelReject(schedule.id);
+  const handleCancelInitiate = () => {
+    setShowCancelReasonSection(true);
+  };
+
+  const handleGoBack = () => {
+    setShowCancelReasonSection(false);
+    setCancelReason('');
+  };
+
+  const handleSubmitCancelReason = () => {
+    if (!cancelReason.trim()) {
+      setErrorMessage('Please provide a reason for cancellation.');
+      setTimeout(() => setErrorMessage(''), 3000);
+      return;
+    }
+
+    setIsSubmittingReason(true);
+
     setTimeout(() => {
+      setIsCancelling(true);
+      onCancelReject(schedule.id, cancelReason); // Pass cancellation reason
+      setIsSubmittingReason(false);
       setIsCancelling(false);
       onClose();
-    }, 1000);
+    }, 3000);
   };
 
   const isEditable = schedule.status === 'Scheduled';
@@ -388,309 +411,367 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
             exit={{ scale: 0.8, opacity: 0 }}
             style={{
               background: '#fff',
-              padding: '2rem',
-              borderRadius: '8px',
+              padding: '1.5rem',
               maxWidth: '600px',
-              width: '100%',
+              width: '90%',
               maxHeight: '80vh',
               overflowY: 'auto',
             }}
           >
-            <h3>{isEditable ? 'Edit Schedule Details' : 'View Schedule Details'}</h3>
+            {!showCancelReasonSection ? (
+              <>
+                <h3>{isEditable ? 'Edit Schedule Details' : 'View Schedule Details'}</h3>
 
-            {isEditable && (
-              <div
-                className="modal-top-buttons-OlaD"
-              >
-                <button
-                  onClick={handleCancelReject}
-                  disabled={isCancelling || isCompleting || isSaving}
-                  className="btn-cancel-bg"
-                  style={{
-                    cursor: (isCancelling || isCompleting || isSaving) ? 'not-allowed' : 'pointer',
-                  }}
-                >
-                  {isCancelling ? (
-                    <>
-                      <motion.div
-                        initial={{ rotate: 0 }}
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                        style={{
-                          width: 16,
-                          height: 16,
-                          borderRadius: '50%',
-                          border: '3px solid #fff',
-                          borderTopColor: '#d32e2e',
-                          marginRight: '5px',
-                          display: 'inline-block',
-                        }}
-                      />
-                      Processing...
-                    </>
-                  ) : (
-                    'Cancel Interview'
-                  )}
-                </button>
-                <button
-                  onClick={handleCompleteSchedule}
-                  disabled={isCompleting || isCancelling || isSaving}
-                  className="btn-complete-bg"
-                  style={{
-                    cursor: (isCompleting || isCancelling || isSaving) ? 'not-allowed' : 'pointer',
-                  }}
-                >
-                  {isCompleting ? (
-                    <>
-                      <motion.div
-                        initial={{ rotate: 0 }}
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                        style={{
-                          width: 16,
-                          height: 16,
-                          borderRadius: '50%',
-                          border: '3px solid #fff',
-                          borderTopColor: '#199534',
-                          marginRight: '5px',
-                          display: 'inline-block',
-                        }}
-                      />
-                      Processing...
-                    </>
-                  ) : (
-                    'Complete Interview'
-                  )}
-                </button>
-              </div>
-            )}
-
-            <div className="GGtg-DDDVa" style={{ marginBottom: '1rem' }}>
-              <h4>Meeting Mode:</h4>
-              <select
-                value={meetingMode}
-                onChange={(e) => {
-                  setMeetingMode(e.target.value);
-                  setMeetingLink('');
-                  setInterviewAddress('');
-                }}
-                className="oujka-Inpuauy"
-                style={{
-                  width: '100%',
-                  padding: '0.5rem',
-                  borderRadius: '4px',
-                  border: '1px solid #ccc',
-                  marginTop: '0.5rem',
-                }}
-                disabled={!isEditable}
-              >
-                <option value="Virtual">Virtual</option>
-                <option value="Physical">Physical</option>
-              </select>
-
-              {meetingMode === 'Virtual' && (
-                <div className="GGtg-DDDVa" style={{ marginTop: '1rem' }}>
-                  <label>Meeting Link:</label>
-                  <input
-                    type="text"
-                    value={meetingLink}
-                    onChange={(e) => setMeetingLink(e.target.value)}
-                    placeholder="Enter meeting link (e.g., https://zoom.us/j/123456789)"
-                    className="oujka-Inpuauy"
-                    style={{
-                      width: '100%',
-                      padding: '0.5rem',
-                      borderRadius: '4px',
-                      border: '1px solid #ccc',
-                      marginTop: '0.5rem',
-                    }}
-                    disabled={!isEditable}
-                  />
-                </div>
-              )}
-
-              {meetingMode === 'Physical' && (
-                <div className="GGtg-DDDVa" style={{ marginTop: '1rem' }}>
-                  <label>Interview Address:</label>
-                  <input
-                    type="text"
-                    value={interviewAddress}
-                    onChange={(e) => setInterviewAddress(e.target.value)}
-                    placeholder="Enter interview address"
-                    className="oujka-Inpuauy"
-                    style={{
-                      width: '100%',
-                      padding: '0.5rem',
-                      borderRadius: '4px',
-                      border: '1px solid #ccc',
-                      marginTop: '0.5rem',
-                    }}
-                    disabled={!isEditable}
-                  />
-                </div>
-              )}
-            </div>
-
-            <div className="GGtg-DDDVa" style={{ marginBottom: '1rem' }}>
-              <h4>Select Candidates ({tempSelectedApplicants.length} selected):</h4>
-              <ul
-                className="UUl-Uuja Gen-Boxshadow"
-              >
-                {dummyCandidates.map((applicant) => (
-                  <li
-                    key={applicant.id}
-                    className={tempSelectedApplicants.includes(applicant.id) ? 'active-OLI-O' : ''}
-                    onClick={() => isEditable && handleTempApplicantClick(applicant.id)}
-                    style={{
-                      cursor: isEditable ? 'pointer' : 'default',
-                      backgroundColor: tempSelectedApplicants.includes(applicant.id)
-                        ? '#ebe6ff'
-                        : '#f7f5ff',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      padding: '0.5rem',
-                      marginBottom: '0.5rem',
-                      borderRadius: '4px',
-                    }}
-                  >
-                    <span>{applicant.name}</span>
-                    <span
-                      className="oaikks-Ioks"
-                      style={{
-                        color: tempSelectedApplicants.includes(applicant.id) ? '#7226FF' : '#666',
-                      }}
-                    >
-                      {tempSelectedApplicants.includes(applicant.id) ? 'Selected' : '+ Add'}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="ouksks-pola">
-              <h4>Schedule Details:</h4>
-              <p>
-                <span>
-                  <CalendarDaysIcon style={{ width: '20px', marginRight: '0.5rem' }} />
-                  Date:
-                </span>{' '}
-                {formatFullDate(tempSelectedDate)}
-              </p>
-              <p>
-                <span>
-                  <ClockIcon style={{ width: '20px', marginRight: '0.5rem' }} />
-                  Time:
-                </span>{' '}
-                {formatTime(tempStartTime)} - {formatTime(tempEndTime)}
-              </p>
-
-              {isEditable && (
-                <div className="ppol-Btns" style={{ marginTop: '1rem' }}>
-                  <div className="time-select-container" ref={modalTimeDropdownRef}>
+                {isEditable && (
+                  <div className="modal-top-buttons-OlaD">
                     <button
-                      onClick={handleModalTimeButtonClick}
+                      onClick={handleCancelInitiate}
+                      disabled={isCancelling || isCompleting || isSaving}
+                      className="btn-cancel-bg"
                       style={{
-                        padding: '0.5rem 1rem',
-                        borderRadius: '4px',
-                        border: '1px solid #ccc',
-                        background: '#fff',
-                        display: 'flex',
-                        alignItems: 'center',
-                        cursor: 'pointer',
+                        cursor: (isCancelling || isCompleting || isSaving) ? 'not-allowed' : 'pointer',
                       }}
                     >
-                      {timeSelectionMode === 'start' ? 'Start Time' : 'End Time'}
-                      <ChevronDownIcon
-                        className={`icon ${modalShowTimeDropdown ? 'rotate-180' : ''}`}
-                        style={{ width: '20px', marginLeft: '0.5rem' }}
-                      />
+                      {isCancelling ? (
+                        <>
+                          <motion.div
+                            initial={{ rotate: 0 }}
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                            style={{
+                              width: 16,
+                              height: 16,
+                              borderRadius: '50%',
+                              border: '3px solid #fff',
+                              borderTopColor: '#d32e2e',
+                              marginRight: '5px',
+                              display: 'inline-block',
+                            }}
+                          />
+                          Processing...
+                        </>
+                      ) : (
+                        'Cancel Interview'
+                      )}
                     </button>
+                    <button
+                      onClick={handleCompleteSchedule}
+                      disabled={isCompleting || isCancelling || isSaving}
+                      className="btn-complete-bg"
+                      style={{
+                        cursor: (isCompleting || isCancelling || isSaving) ? 'not-allowed' : 'pointer',
+                      }}
+                    >
+                      {isCompleting ? (
+                        <>
+                          <motion.div
+                            initial={{ rotate: 0 }}
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                            style={{
+                              width: 16,
+                              height: 16,
+                              borderRadius: '50%',
+                              border: '3px solid #fff',
+                              borderTopColor: '#199534',
+                              marginRight: '5px',
+                              display: 'inline-block',
+                            }}
+                          />
+                          Processing...
+                        </>
+                      ) : (
+                        'Complete Interview'
+                      )}
+                    </button>
+                  </div>
+                )}
 
-                    {modalShowTimeDropdown && (
-                      <div
-                        className="time-dropdown custom-scroll-bar"
+                <div className="GGtg-DDDVa">
+                  <h4>Meeting Mode:</h4>
+                  <select
+                    value={meetingMode}
+                    onChange={(e) => {
+                      setMeetingMode(e.target.value);
+                      setMeetingLink('');
+                      setInterviewAddress('');
+                    }}
+                    className="oujka-Inpuauy"
+                    style={{
+                      width: '100%',
+                      padding: '0.5rem',
+                      borderRadius: '4px',
+                      border: '1px solid #ccc',
+                      marginTop: '0.5rem',
+                    }}
+                    disabled={!isEditable}
+                  >
+                    <option value="Virtual">Virtual</option>
+                    <option value="Physical">Physical</option>
+                  </select>
+
+                  {meetingMode === 'Virtual' && (
+                    <div className="GGtg-DDDVa">
+                      <label>Meeting Link:</label>
+                      <input
+                        type="text"
+                        value={meetingLink}
+                        onChange={(e) => setMeetingLink(e.target.value)}
+                        placeholder="Enter meeting link (e.g., https://zoom.us/j/123456789)"
+                        className="oujka-Inpuauy"
                         style={{
-                          maxHeight: '150px',
-                          overflowY: 'auto',
-                          border: '1px solid #ccc',
+                          width: '100%',
+                          padding: '0.5rem',
                           borderRadius: '4px',
-                          background: '#fff',
-                          position: 'absolute',
-                          zIndex: 10,
-                          width: '150px',
+                          border: '1px solid #ccc',
+                          marginTop: '0.5rem',
+                        }}
+                        disabled={!isEditable}
+                      />
+                    </div>
+                  )}
+
+                  {meetingMode === 'Physical' && (
+                    <div className="GGtg-DDDVa" style={{ marginTop: '1rem' }}>
+                      <label>Interview Address:</label>
+                      <input
+                        type="text"
+                        value={interviewAddress}
+                        onChange={(e) => setInterviewAddress(e.target.value)}
+                        placeholder="Enter interview address"
+                        className="oujka-Inpuauy"
+                        style={{
+                          width: '100%',
+                          padding: '0.5rem',
+                          borderRadius: '4px',
+                          border: '1px solid #ccc',
+                          marginTop: '0.5rem',
+                        }}
+                        disabled={!isEditable}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="GGtg-DDDVa">
+                  <h4>Select Candidates ({tempSelectedApplicants.length} selected):</h4>
+                  <ul className="UUl-Uuja Gen-Boxshadow">
+                    {dummyCandidates.map((applicant) => (
+                      <li
+                        key={applicant.id}
+                        className={tempSelectedApplicants.includes(applicant.id) ? 'active-OLI-O' : ''}
+                        onClick={() => isEditable && handleTempApplicantClick(applicant.id)}
+                        style={{
+                          cursor: isEditable ? 'pointer' : 'default',
+                          backgroundColor: tempSelectedApplicants.includes(applicant.id)
+                            ? '#ebe6ff'
+                            : '#f7f5ff',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          padding: '0.5rem',
+                          marginBottom: '0.5rem',
+                          borderRadius: '4px',
                         }}
                       >
-                        {timeOptions.map((time, index) => (
+                        <span>{applicant.name}</span>
+                        <span
+                          className="oaikks-Ioks"
+                          style={{
+                            color: tempSelectedApplicants.includes(applicant.id) ? '#7226FF' : '#666',
+                          }}
+                        >
+                          {tempSelectedApplicants.includes(applicant.id) ? 'Selected' : '+ Add'}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="ouksks-pola">
+                  <h4>Schedule Details:</h4>
+                  <p>
+                    <span>
+                      <CalendarDaysIcon style={{ width: '20px', marginRight: '0.5rem' }} />
+                      Date:
+                    </span>{' '}
+                    {formatFullDate(tempSelectedDate)}
+                  </p>
+                  <p>
+                    <span>
+                      <ClockIcon style={{ width: '20px', marginRight: '0.5rem' }} />
+                      Time:
+                    </span>{' '}
+                    {formatTime(tempStartTime)} - {formatTime(tempEndTime)}
+                  </p>
+
+                  {!isEditable && schedule.status === 'Cancelled' && schedule.cancellationReason && (
+                    <div className="GGtg-DDDVa">
+                      <h4>Cancellation Reason:</h4>
+                      <p className='aoiiksjs-OKka'>
+                        {schedule.cancellationReason}
+                      </p>
+                    </div>
+                  )}
+
+                  {isEditable && (
+                    <div className="ppol-Btns" style={{ marginTop: '1rem' }}>
+                      <div className="time-select-container" ref={modalTimeDropdownRef}>
+                        <button
+                          onClick={handleModalTimeButtonClick}
+                          style={{
+                            padding: '0.5rem 1rem',
+                            borderRadius: '4px',
+                            border: '1px solid #ccc',
+                            background: '#fff',
+                            display: 'flex',
+                            alignItems: 'center',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {timeSelectionMode === 'start' ? 'Start Time' : 'End Time'}
+                          <ChevronDownIcon
+                            className={`icon ${modalShowTimeDropdown ? 'rotate-180' : ''}`}
+                            style={{ width: '20px', marginLeft: '0.5rem' }}
+                          />
+                        </button>
+
+                        {modalShowTimeDropdown && (
                           <div
-                            key={index}
-                            className="time-option"
-                            onClick={() => handleTimeSelect(time)}
+                            className="time-dropdown custom-scroll-bar"
                             style={{
-                              padding: '0.5rem',
-                              cursor: 'pointer',
+                              maxHeight: '150px',
+                              overflowY: 'auto',
+                              border: '1px solid #ccc',
+                              borderRadius: '4px',
+                              background: '#fff',
+                              position: 'absolute',
+                              zIndex: 10,
+                              width: '150px',
                             }}
                           >
-                            {formatTime(time)}
+                            {timeOptions.map((time, index) => (
+                              <div
+                                key={index}
+                                className="time-option"
+                                onClick={() => handleTimeSelect(time)}
+                                style={{
+                                  padding: '0.5rem',
+                                  cursor: 'pointer',
+                                }}
+                              >
+                                {formatTime(time)}
+                              </div>
+                            ))}
                           </div>
-                        ))}
+                        )}
                       </div>
-                    )}
-                  </div>
-                </div>
-              )}
+                    </div>
+                  )}
 
-              {isEditable && (
-                <div className="realTime-Calendar-wrapper" style={{ marginTop: '1rem' }}>
-                  <DatePicker
-                    selected={tempSelectedDate}
-                    onChange={(date) => handleDateChange(date)}
-                    inline
+                  {isEditable && (
+                    <div className="realTime-Calendar-wrapper" style={{ marginTop: '1rem' }}>
+                      <DatePicker
+                        selected={tempSelectedDate}
+                        onChange={(date) => handleDateChange(date)}
+                        inline
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="oioak-POldj-BTn">
+                  <button
+                    onClick={onClose}
+                    className="CLCLCjm-BNtn"
+                  >
+                    Close
+                  </button>
+                  {isEditable && (
+                    <button
+                      onClick={handleSaveChanges}
+                      disabled={isSaving || isCompleting || isCancelling}
+                      className="btn-primary-bg"
+                      style={{
+                        cursor: (isSaving || isCompleting || isCancelling) ? 'not-allowed' : 'pointer',
+                      }}
+                    >
+                      {isSaving ? (
+                        <>
+                          <motion.div
+                            initial={{ rotate: 0 }}
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                            style={{
+                              width: 20,
+                              height: 20,
+                              borderRadius: '50%',
+                              border: '3px solid rgba(255,255,255,0.3)',
+                              borderTopColor: '#fff',
+                              marginRight: '8px',
+                              display: 'inline-block',
+                            }}
+                          />
+                          Saving...
+                        </>
+                      ) : (
+                        'Save Changes'
+                      )}
+                    </button>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                <h3>Cancel Interview</h3>
+                <div className="GGtg-DDDVa">
+                  <label htmlFor="cancelReason">Reason for Cancellation:</label>
+                  <textarea
+                    id="cancelReason"
+                    value={cancelReason}
+                    onChange={(e) => setCancelReason(e.target.value)}
+                    placeholder="Enter the reason for cancelling the interview..."
+                    className='oujka-Inpuauy OIUja-Tettxa'
                   />
                 </div>
-              )}
-            </div>
+                 <div className="oioak-POldj-BTn">
+                  <button
+                    onClick={handleGoBack}
+                    className="CLCLCjm-BNtn"
+                  >
 
-          <div className='oioak-POldj-BTn'>
-              <button
-                onClick={onClose}
-                className="CLCLCjm-BNtn"
-              >
-                Close
-              </button>
-              {isEditable && (
-                <button
-                  onClick={handleSaveChanges}
-                  disabled={isSaving || isCompleting || isCancelling}
-                  className="btn-primary-bg"
-                  style={{
-                    cursor: (isSaving || isCompleting || isCancelling) ? 'not-allowed' : 'pointer',
-                  }}
-                >
-                  {isSaving ? (
-                    <>
-                      <motion.div
-                        initial={{ rotate: 0 }}
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                        style={{
-                          width: 20,
-                          height: 20,
-                          borderRadius: '50%',
-                          border: '3px solid rgba(255,255,255,0.3)',
-                          borderTopColor: '#fff',
-                          marginRight: '8px',
-                          display: 'inline-block',
-                        }}
-                      />
-                      Saving...
-                    </>
-                  ) : (
-                    'Save Changes'
-                  )}
-                </button>
-              )}
-            </div>
+                    Go Back
+                  </button>
+                  <button
+                    onClick={handleSubmitCancelReason}
+                    disabled={isSubmittingReason}
+                    className='btn-primary-bg'
+                  >
+                    {isSubmittingReason ? (
+                      <>
+                        <motion.div
+                          initial={{ rotate: 0 }}
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                          style={{
+                            width: 16,
+                            height: 16,
+                            borderRadius: '50%',
+                            border: '3px solid rgba(255,255,255,0.3)',
+                            borderTopColor: '#fff',
+                            marginRight: '5px',
+                            display: 'inline-block',
+                          }}
+                        />
+                        Submitting...
+                      </>
+                    ) : (
+                      'Submit'
+                    )}
+                  </button>
+                </div>
+              </>
+            )}
           </motion.div>
         </motion.div>
       </AnimatePresence>
@@ -782,10 +863,10 @@ const ScheduleList = () => {
     );
   };
 
-  const handleCancelReject = (scheduleId) => {
+  const handleCancelReject = (scheduleId, cancellationReason) => {
     setSchedules((prev) =>
       prev.map((item) =>
-        item.id === scheduleId ? { ...item, status: 'Cancelled' } : item
+        item.id === scheduleId ? { ...item, status: 'Cancelled', cancellationReason } : item
       )
     );
   };

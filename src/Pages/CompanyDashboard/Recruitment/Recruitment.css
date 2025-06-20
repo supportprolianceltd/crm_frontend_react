@@ -3547,14 +3547,14 @@ background: linear-gradient(135deg, #FF6FD8 0%, #FF42A1 50%, #FF9770 100%) !impo
     position: relative;
     width: 100%;
     height: auto;
-    margin-top: 15px;
+    margin-top: 20px;
 }
 
 .okauj-MOadad label,
 .okauj-MOadad h4{
     font-size: 13px;
     font-weight: 500;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
     display: block;
 }
 
@@ -3578,6 +3578,12 @@ background: linear-gradient(135deg, #FF6FD8 0%, #FF42A1 50%, #FF9770 100%) !impo
 
 .oujka-Inpuauy::placeholder{
   color: #9995ac;
+}
+
+.OIUja-Tettxa{
+    padding: 10px !important;
+    resize: none;
+    height: 150px;
 }
 
 .UUl-Uuja{
@@ -3614,7 +3620,10 @@ background: linear-gradient(135deg, #FF6FD8 0%, #FF42A1 50%, #FF9770 100%) !impo
     position: relative;
     width: 100%;
     height: auto;
+    margin-top: 20px;
 }
+
+
 
 .ouksks-pola p{
     position: relative;
@@ -3765,4 +3774,17 @@ background: linear-gradient(135deg, #FF6FD8 0%, #FF42A1 50%, #FF9770 100%) !impo
 }
 .btn-complete-bg:hover{
     background-color: #e2fae7 !important;
+}
+
+
+
+
+
+.aoiiksjs-OKka{
+    color: #372580 !important;
+    font-size: 12px !important;
+    background-color: #f8f7fd;
+    padding: 20px;
+    border: 1.5px solid #dcdae3;
+    border-radius: 8px;
 }
