@@ -1,0 +1,42 @@
+/* Applicant-Dashboard */
+
+.Applicant-Dashboard{
+    position: relative;
+    width: 100%;
+    height: auto;
+    min-height: 100vh;
+}
+
+.GHT-Header{
+    position: relative;
+    width: 100%;
+    height: auto;
+    min-height: 200px;
+    background: linear-gradient(135deg, #450CD5 0%, #7226FF 50%, #F042FF 100%);
+    padding: 50px 0px;
+}
+
+
+.OKuj-NNAb{
+    background-color: transparent !important;
+    color: #fff !important;
+}
+
+
+.OKuj-NNAb .Frs-Url li a:hover{
+    text-decoration: underline !important;
+}
+
+.ooown-AOpls{
+    position: relative;
+    width: auto;
+}
+.ooown-AOpls h3{
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.ooown-AOpls p{
+    font-size: 10px;
+    font-weight: 400;
+}

@@ -421,7 +421,7 @@ const JobAdvert = () => {
                 <th>Location</th>
                 <th>Deadline for Applications</th>
                 <th>Status</th>
-                <th>Advert Link</th>
+                <th>Application Link</th>
                 <th>Actions</th>
               </tr>
             </thead>
