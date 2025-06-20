@@ -2930,7 +2930,7 @@ background: linear-gradient(135deg, #FF6FD8 0%, #FF42A1 50%, #FF9770 100%) !impo
     align-items: center;
     justify-content: center;
     text-align: center;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 600;
     text-transform: uppercase;
     border-radius: inherit;
@@ -2939,7 +2939,11 @@ background: linear-gradient(135deg, #FF6FD8 0%, #FF42A1 50%, #FF9770 100%) !impo
 }
 
 .OOl_AGtg_Sec_1_main ul li.active-OLI-O .LLia_DV_1 span{
-    border-color: #7226FF;
+    border-color: rgba(255,255,255,0.3);
+}
+.OOl_AGtg_Sec_1_main ul li.active-OLI-O .LLia_DV_1{
+    background-color: #7226FF;
+    color: #fff;
 }
 .LLia_DV_2{
     position: relative;
@@ -3517,3 +3521,248 @@ background: linear-gradient(135deg, #FF6FD8 0%, #FF42A1 50%, #FF9770 100%) !impo
 
 
 
+
+
+
+
+/* okauj-MOadad */
+
+.okauj-MOadad{
+    position: relative;
+    background-color: #fff;
+    padding: 30px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.okauj-MOadad h3{
+    font-size: 15px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.GGtg-DDDVa{
+    position: relative;
+    width: 100%;
+    height: auto;
+    margin-top: 15px;
+}
+
+.okauj-MOadad label,
+.okauj-MOadad h4{
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 10px;
+    display: block;
+}
+
+
+.oujka-Inpuauy{
+      width: 100%;
+  font-size: 14px;
+  border: 1.5px solid #dcdae3;
+  outline: none;
+  background: transparent;
+  transition: border-color 0.3s;
+  border-radius: 5px;
+  height: 50px;
+  padding: 0px 10px;
+  font-size: 12px;
+}
+.oujka-Inpuauy:focus {
+    border: 2px solid #cfb8fa !important;
+    background-color: #fff;
+}
+
+.oujka-Inpuauy::placeholder{
+  color: #9995ac;
+}
+
+.UUl-Uuja{
+    position: relative;
+    width: 100%;
+    height: auto;
+    padding:10px;
+    border-radius: 8px;
+    border: 1.5px solid #dcdae3;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 12px;
+}
+
+.UUl-Uuja li{
+    border-radius: 10px;
+    padding: 10px 20px;
+    transition: all 0.3s ease-in-out;
+}
+
+.oaikks-Ioks{
+    font-size: 9px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.UUl-Uuja li:hover{
+    background-color: #ebe6ff !important;
+}
+
+
+.ouksks-pola{
+    position: relative;
+    width: 100%;
+    height: auto;
+}
+
+.ouksks-pola p{
+    position: relative;
+    width: 100%;
+    height: auto;
+    margin-top: 5px;
+    font-size: 13px;
+    display:flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+    color: #7226FF;
+}
+
+.ouksks-pola p span{
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+     color: #372580;
+}
+
+.ouksks-pola span svg{
+    width: 13px;
+}
+
+
+.oioak-POldj-BTn{
+    position: relative;
+    width: 100%;
+    height: auto;
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.oioak-POldj-BTn button{
+     position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 8px 20px;
+    border-radius: 30px;
+    user-select: none;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.3s ease-in-out;
+}
+
+.oioak-POldj-BTn button.CLCLCjm-BNtn{
+    background-color: #f7f5ff;
+}
+
+.oioak-POldj-BTn button.CLCLCjm-BNtn:hover{
+    background-color: #ebe6ff;
+}
+
+.error-notification{
+    font-size: 12px;
+      transform: translateX(-50%) !important;
+    left: 50%;
+    background-color: rgba(229, 62, 62, 0.9) !important;
+}
+
+
+
+
+
+
+
+
+
+
+/* oLIk-STatus */
+
+.oLIk-STatus{
+    position: relative;
+    width:83px !important;
+    display: flex;
+    flex-direction: row-reverse;
+    gap: 5px;
+}
+
+.oLIk-STatus svg{
+    width: 10px !important;
+}
+
+.status-scheduled{
+    color: #7226FF !important;
+    background-color: #f2eef9 !important;
+}
+
+.status-completed{
+    color: #199534 !important;
+    background-color: #edfef0  !important;
+}
+
+
+.status-cancelled{
+    color: #d32e2e !important;
+    background-color: #fff2f2 !important;
+}
+
+
+
+.modal-top-buttons-OlaD{
+    position: relative;
+    width: 100%;
+    height: auto;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.modal-top-buttons-OlaD button{
+     position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 5px 15px;
+    border-radius: 30px;
+    user-select: none;
+    cursor: pointer;
+    font-size: 10px;
+    transition: all 0.3s ease-in-out;
+    border:1px solid transparent;
+}
+
+.btn-cancel-bg{
+     color: #d32e2e !important;
+    background-color: #fff2f2 !important;
+    border-color: #fccaca !important;
+}
+.btn-complete-bg{
+      color: #199534 !important;
+    background-color: #edfef0  !important;
+    border-color: #b0febe !important;
+}
+
+.btn-cancel-bg:hover{
+    background-color: #fbe4e4 !important;
+}
+.btn-complete-bg:hover{
+    background-color: #e2fae7 !important;
+}

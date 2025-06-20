@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { ArrowPathIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
+import { ArrowPathIcon, ChevronDownIcon, ClockIcon, CalendarDaysIcon  } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const jobList = [
   { 
@@ -103,6 +103,7 @@ const jobList = [
   }
 ];
 
+
 const Schedule = () => {
   const [activeJobId, setActiveJobId] = useState(jobList[0].id);
   const [selectedApplicants, setSelectedApplicants] = useState([]);
@@ -110,30 +111,23 @@ const Schedule = () => {
   const [showTimeDropdown, setShowTimeDropdown] = useState(false);
   const [modalShowTimeDropdown, setModalShowTimeDropdown] = useState(false);
   const [timeSelectionMode, setTimeSelectionMode] = useState('start');
-  const [modalTimeSelectionMode, setModalTimeSelectionMode] = useState('start');
-  
-  // Set default start time to current system time rounded to nearest 30 minutes
-  const getDefaultStartTime = () => {
-    const now = new Date();
-    const minutes = now.getMinutes();
-    const roundedMinutes = Math.round(minutes / 30) * 30;
-    now.setMinutes(roundedMinutes);
-    now.setSeconds(0);
-    return new Date(now);
-  };
-
-  const [startTime, setStartTime] = useState(getDefaultStartTime());
+  const [startTime, setStartTime] = useState(null);
   const [endTime, setEndTime] = useState(null);
   const [jobs, setJobs] = useState(jobList);
   const [errorMessage, setErrorMessage] = useState('');
-  const [showSuccess, setShowSuccess] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [tempSelectedApplicants, setTempSelectedApplicants] = useState([]);
   const [tempSelectedDate, setTempSelectedDate] = useState(new Date());
-  const [tempStartTime, setTempStartTime] = useState(getDefaultStartTime());
+  const [tempStartTime, setTempStartTime] = useState(null);
   const [tempEndTime, setTempEndTime] = useState(null);
+  const [meetingMode, setMeetingMode] = useState('Virtual');
+  const [meetingLink, setMeetingLink] = useState('');
+  const [interviewAddress, setInterviewAddress] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const timeDropdownRef = useRef(null);
   const modalTimeDropdownRef = useRef(null);
+  const modalContentRef = useRef(null);
+  const navigate = useNavigate();
 
   const activeJob = jobs.find(job => job.id === activeJobId);
   const currentApplicants = activeJob ? activeJob.applicants : [];
@@ -146,13 +140,16 @@ const Schedule = () => {
       if (modalTimeDropdownRef.current && !modalTimeDropdownRef.current.contains(event.target)) {
         setModalShowTimeDropdown(false);
       }
+      if (modalContentRef.current && !modalContentRef.current.contains(event.target) && showModal) {
+        setShowModal(false);
+      }
     };
     
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, []);
+  }, [showModal]);
 
   const handleJobClick = (jobId) => {
     setActiveJobId(jobId);
@@ -223,7 +220,7 @@ const Schedule = () => {
 
   const handleTimeButtonClick = () => {
     if (startTime && endTime) {
-      setStartTime(getDefaultStartTime());
+      setStartTime(null);
       setEndTime(null);
       setTimeSelectionMode('start');
     }
@@ -232,21 +229,21 @@ const Schedule = () => {
 
   const handleModalTimeButtonClick = () => {
     if (tempStartTime && tempEndTime) {
-      setTempStartTime(getDefaultStartTime());
+      setTempStartTime(null);
       setTempEndTime(null);
-      setModalTimeSelectionMode('start');
+      setTimeSelectionMode('start');
     }
     setModalShowTimeDropdown(!modalShowTimeDropdown);
   };
 
   const handleTimeSelect = (time, isModal) => {
     if (isModal) {
-      if (modalTimeSelectionMode === 'start') {
+      if (timeSelectionMode === 'start') {
         setTempStartTime(time);
-        setModalTimeSelectionMode('end');
+        setTimeSelectionMode('end');
       } else {
         setTempEndTime(time);
-        setModalTimeSelectionMode('start');
+        setTimeSelectionMode('start');
         setModalShowTimeDropdown(false);
       }
     } else {
@@ -272,63 +269,84 @@ const Schedule = () => {
     }
     
     setTempSelectedApplicants(selectedApplicants.length > 0 ? selectedApplicants : currentApplicants.map(applicant => applicant.id));
-    setTempSelectedDate(new Date(selectedDate));
-    setTempStartTime(new Date(startTime));
-    setTempEndTime(endTime ? new Date(endTime) : null);
-    setModalTimeSelectionMode(timeSelectionMode);
+    setTempSelectedDate(selectedDate);
+    setTempStartTime(startTime);
+    setTempEndTime(endTime);
+    setTimeSelectionMode('start');
     setShowModal(true);
   };
 
-  const confirmSchedule = () => {
-    if (!tempStartTime) {
-      setErrorMessage('Please select a start time for the interview.');
-      setTimeout(() => {
-        setErrorMessage('');
-      }, 3000);
-      return;
-    }
-
-    const scheduleString = `${formatFullDate(tempSelectedDate)} - ${formatTime(tempStartTime)}`;
-    
-    const applicantsToUpdate = tempSelectedApplicants;
-
-    setJobs(prevJobs => {
-      return prevJobs.map(job => {
-        if (job.id === activeJobId) {
-          return {
-            ...job,
-            applicants: job.applicants.map(applicant => {
-              if (applicantsToUpdate.includes(applicant.id)) {
-                return {
-                  ...applicant,
-                  schedule: scheduleString,
-                  hasSchedule: true
-                };
-              }
-              return applicant;
-            })
-          };
-        }
-        return job;
-      });
-    });
-
-    setShowSuccess(true);
+const confirmSchedule = () => {
+  if (!tempStartTime) {
+    setErrorMessage('Please select a start time for the interview.');
     setTimeout(() => {
-      setShowSuccess(false);
+      setErrorMessage('');
     }, 3000);
+    return;
+  }
 
-    // Reset selection
-    setStartTime(getDefaultStartTime());
-    setEndTime(null);
-    setTimeSelectionMode('start');
-    setShowTimeDropdown(false);
-    setModalShowTimeDropdown(false);
-    setSelectedApplicants([]);
-    setTempSelectedApplicants([]);
+  if (tempSelectedApplicants.length === 0) {
+    setErrorMessage('Please select at least one candidate for the interview.');
+    setTimeout(() => {
+      setErrorMessage('');
+    }, 3000);
+    return;
+  }
+
+  if (meetingMode === 'Virtual' && !meetingLink.trim()) {
+    setErrorMessage('Please provide a meeting link for the virtual interview.');
+    setTimeout(() => {
+      setErrorMessage('');
+    }, 3000);
+    return;
+  }
+
+  if (meetingMode === 'Physical' && !interviewAddress.trim()) {
+    setErrorMessage('Please provide an address for the physical interview.');
+    setTimeout(() => {
+      setErrorMessage('');
+    }, 3000);
+    return;
+  }
+
+  setIsLoading(true);
+
+  const scheduleString = `${formatFullDate(tempSelectedDate)} - ${formatTime(tempStartTime)}${meetingMode === 'Virtual' ? ` | ${meetingLink}` : ` | ${interviewAddress}`}`;
+  
+  const applicantsToUpdate = tempSelectedApplicants;
+
+  setJobs(prevJobs => {
+    return prevJobs.map(job => {
+      if (job.id === activeJobId) {
+        return {
+          ...job,
+          applicants: job.applicants.map(applicant => {
+            if (applicantsToUpdate.includes(applicant.id)) {
+              return {
+                ...applicant,
+                schedule: scheduleString,
+                hasSchedule: true
+              };
+            }
+            return applicant;
+          })
+        };
+      }
+      return job;
+    });
+  });
+
+  // Hide modal after 0.3s before navigating
+  setTimeout(() => {
     setShowModal(false);
-    setErrorMessage('');
-  };
+    
+    // Navigate after another short delay to ensure modal closes first
+    setTimeout(() => {
+      setIsLoading(false);
+      navigate('/company/recruitment/schedule-list');
+    }, 100);
+  }, 3000);
+};
 
   const handleClearSchedule = (applicantId, e) => {
     e.stopPropagation();
@@ -356,16 +374,15 @@ const Schedule = () => {
 
   const handleDateChange = (date, isModal) => {
     if (isModal) {
-      setTempSelectedDate(new Date(date));
-      setTempStartTime(getDefaultStartTime());
+      setTempSelectedDate(date);
+      setTempStartTime(null);
       setTempEndTime(null);
-      setModalTimeSelectionMode('start');
     } else {
-      setSelectedDate(new Date(date));
-      setStartTime(getDefaultStartTime());
+      setSelectedDate(date);
+      setStartTime(null);
       setEndTime(null);
-      setTimeSelectionMode('start');
     }
+    setTimeSelectionMode('start');
     setShowTimeDropdown(false);
     setModalShowTimeDropdown(false);
     setErrorMessage('');
@@ -374,20 +391,32 @@ const Schedule = () => {
   return (
     <div className='Schedule-MMAin-Pais'>
       <AnimatePresence>
-        {showSuccess && (
+        {errorMessage && (
           <motion.div
-            className="success-notification"
+            className="error-notification"
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -50 }}
             transition={{ duration: 0.3 }}
+            style={{
+              position: 'fixed',
+              top: '20px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              background: '#fee2e2',
+              padding: '1rem',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              zIndex: 4001,
+              maxWidth: '500px',
+              boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+            }}
           >
-            <div className="success-content">
-              <svg viewBox="0 0 24 24" className="success-icon">
-                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
-              </svg>
-              <span>Interview scheduled successfully!</span>
-            </div>
+            <svg viewBox="0 0 24 24" style={{ width: '20px', height: '20px', marginRight: '0.5rem', fill: '#fff' }}>
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+            </svg>
+            <span style={{ color: '#fff' }}>{errorMessage}</span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -516,12 +545,6 @@ const Schedule = () => {
                     </div>
                   </div>
 
-                  {errorMessage && (
-                    <p className='error OPP-YHag'>
-                      {errorMessage}
-                    </p>
-                  )}
-
                   <div className='PPOli_Sea'>
                     <div className='PPOli_Sea_Card'>
                       <div className='PPOli_Sea_Card_1'>
@@ -532,7 +555,7 @@ const Schedule = () => {
                         <div>
                           <h5>{formatFullDate(selectedDate)}</h5>
                           <h6>
-                            {startTime ? formatTime(startTime) : formatTime(getDefaultStartTime())} 
+                            {startTime ? formatTime(startTime) : '00:00'} 
                             {' - '}
                             {endTime ? formatTime(endTime) : '00:00'}
                           </h6>
@@ -568,55 +591,98 @@ const Schedule = () => {
               left: 0,
               right: 0,
               bottom: 0,
-              background: 'rgba(0,0,0,0.5)',
+              background: 'rgba(0,0,0,0.7)',
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              zIndex: 1000
+              zIndex: 3000
             }}
           >
             <motion.div 
-              className="modal-content"
+              className="modal-content custom-scroll-bar okauj-MOadad"
+              ref={modalContentRef}
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
-              style={{
-                background: 'white',
-                padding: '2rem',
-                borderRadius: '8px',
-                maxWidth: '600px',
-                width: '90%',
-                maxHeight: '80vh',
-                overflowY: 'auto'
-              }}
             >
               <h3>Confirm Schedule Details</h3>
               
-              <div style={{ margin: '1rem 0' }}>
-                <h4>Selected Candidates:</h4>
-                <ul style={{ maxHeight: '200px', overflowY: 'auto' }}>
+              <div className='GGtg-DDDVa'>
+                <h4>Meeting Mode:</h4>
+                <select
+                  value={meetingMode}
+                  onChange={(e) => {
+                    setMeetingMode(e.target.value);
+                    setMeetingLink('');
+                    setInterviewAddress('');
+                  }}
+                  className='oujka-Inpuauy'
+                >
+                  <option value="Virtual">Virtual</option>
+                  <option value="Physical">Physical</option>
+                </select>
+
+                {meetingMode === 'Virtual' && (
+                  <div className='GGtg-DDDVa'>
+                    <label>Meeting Link:</label>
+                    <input
+                      type="text"
+                      value={meetingLink}
+                      onChange={(e) => setMeetingLink(e.target.value)}
+                      placeholder="Enter meeting link (e.g., Zoom, Teams)"
+                      className='oujka-Inpuauy'
+                    />
+                  </div>
+                )}
+
+                {meetingMode === 'Physical' && (
+                  <div className='GGtg-DDDVa'>
+                    <label>Interview Address:</label>
+                    <input
+                      type="text"
+                      value={interviewAddress}
+                      onChange={(e) => setInterviewAddress(e.target.value)}
+                      placeholder="Enter interview address"
+                      className='oujka-Inpuauy'
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className='GGtg-DDDVa'>
+                <h4>Select Candidates ({tempSelectedApplicants.length} selected):</h4>
+                <ul className='UUl-Uuja Gen-Boxshadow'>
                   {currentApplicants.map(applicant => (
                     <li
                       key={`${activeJobId}-${applicant.id}`}
                       className={tempSelectedApplicants.includes(applicant.id) ? 'active-OLI-O' : ''}
                       onClick={() => handleTempApplicantClick(applicant.id)}
-                      style={{ cursor: 'pointer', padding: '0.5rem', borderBottom: '1px solid #eee' }}
+                      style={{
+                        cursor: 'pointer',
+                        backgroundColor: tempSelectedApplicants.includes(applicant.id) ? '#ebe6ff' : '#f7f5ff',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                      }}
                     >
-                      {applicant.name}
+                      <span>{applicant.name}</span>
+                      <span className='oaikks-Ioks' style={{ color: tempSelectedApplicants.includes(applicant.id) ? '#7226FF' : '#666' }}>
+                        {tempSelectedApplicants.includes(applicant.id) ? 'Selected' : '+ Add'}
+                      </span>
                     </li>
                   ))}
                 </ul>
               </div>
 
-              <div style={{ margin: '1rem 0' }}>
+              <div className='ouksks-pola'>
                 <h4>Schedule Details:</h4>
-                <p>Date: {formatFullDate(tempSelectedDate)}</p>
-                <p>Time: {tempStartTime ? formatTime(tempStartTime) : formatTime(getDefaultStartTime())} - {tempEndTime ? formatTime(tempEndTime) : 'Not selected'}</p>
+                <p><span><CalendarDaysIcon />Date:</span> {formatFullDate(tempSelectedDate)}</p>
+                <p><span><ClockIcon /> Time:</span> {tempStartTime ? formatTime(tempStartTime) : 'Not selected'} - {tempEndTime ? formatTime(tempEndTime) : 'Not selected'}</p>
                 
                 <div className='ppol-Btns' style={{ marginTop: '1rem' }}>
                   <div className="time-select-container" ref={modalTimeDropdownRef}>
                     <button onClick={handleModalTimeButtonClick}>
-                      {modalTimeSelectionMode === 'start' ? 'Start Time' : 'End Time'} 
+                      {timeSelectionMode === 'start' ? 'Start Time' : 'End Time'} 
                       <ChevronDownIcon className={`icon ${modalShowTimeDropdown ? 'rotate-180' : ''}`} />
                     </button>
                     
@@ -645,39 +711,44 @@ const Schedule = () => {
                 </div>
               </div>
 
-              {errorMessage && (
-                <p style={{ color: 'red', margin: '1rem 0' }}>
-                  {errorMessage}
-                </p>
-              )}
-
-              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+              <div className='oioak-POldj-BTn'>
                 <button 
                   onClick={() => setShowModal(false)}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    border: '1px solid #ccc',
-                    borderRadius: '4px',
-                    background: 'white',
-                    cursor: 'pointer'
-                  }}
+                  className='CLCLCjm-BNtn'
                 >
-                  Cancel
+                  Close
                 </button>
-                <button 
+              <button 
                   onClick={confirmSchedule}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    border: 'none',
-                    borderRadius: '4px',
-                    background: '#2563eb',
-                    color: 'white',
-                    cursor: 'pointer'
+                  disabled={isLoading}
+                  className='btn-primary-bg'
+                  style={{ 
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minWidth: '120px'
                   }}
                 >
-                  Proceed
+                  {isLoading ? (
+                    <>
+                      <motion.div
+                        initial={{ rotate: 0 }}
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                        style={{
+                          width: 20,
+                          height: 20,
+                          borderRadius: '50%',
+                          border: '3px solid rgba(255,255,255,0.3)',
+                          borderTopColor: '#fff',
+                          marginRight: '8px',
+                        }}
+                      />
+                      Scheduling...
+                    </>
+                  ) : 'Proceed'}
                 </button>
-              </div>
+            </div>
             </motion.div>
           </motion.div>
         )}
@@ -687,4 +758,3 @@ const Schedule = () => {
 };
 
 export default Schedule;
-

@@ -6,15 +6,15 @@ import PDFICON from '../../../assets/Img/pdf-icon.png';
 import ApplicantDetails from './ApplicantDetails';
 import { Link } from 'react-router-dom';
 
-// Generate 100 applicants to match the stats
-const generateApplicantData = () => {
+// Generate static applicant data once
+const staticApplicantData = (() => {
   const baseApplicants = [
     {
       id: 'APP-001',
       name: 'John Doe',
       jobTitle: 'UI Designer',
       dateApplied: 'Jun 11, 2025',
-      status: 'New',
+      status: 'Rejected',
       source: 'Website',
     },
     {
@@ -38,7 +38,7 @@ const generateApplicantData = () => {
       name: 'Emma Wilson',
       jobTitle: 'Backend Developer',
       dateApplied: 'Jun 8, 2025',
-      status: 'Hired',
+      status: 'Rejected',
       source: 'Website',
     },
     {
@@ -58,8 +58,26 @@ const generateApplicantData = () => {
   ];
   
   const sources = ['Website', 'LinkedIn', 'Referral', 'Indeed', 'Glassdoor'];
-  const statuses = ['New', 'Shortlisted', 'Rejected', 'Hired'];
-  
+
+  // Define status distribution for remaining applicants (100 - 5 = 95)
+  // Base applicants have: 3 Rejected, 2 Shortlisted
+  // Need: 80 - 3 = 77 Rejected, 20 - 2 = 18 Shortlisted, 0 Hired
+  const statusDistribution = [
+    ...Array(77).fill('Rejected'),
+    ...Array(18).fill('Shortlisted'),
+  ];
+
+  // Shuffle the status distribution
+  const shuffleArray = (array) => {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  };
+
+  const shuffledStatuses = shuffleArray([...statusDistribution]);
+
   const additionalApplicants = Array.from({ length: 95 }, (_, i) => {
     const id = `APP-${(i + 6).toString().padStart(3, '0')}`;
     const baseIndex = i % baseApplicants.length;
@@ -74,13 +92,55 @@ const generateApplicantData = () => {
         day: 'numeric', 
         year: 'numeric' 
       }),
-      status: statuses[Math.floor(Math.random() * statuses.length)],
+      status: shuffledStatuses[i],
       source: sources[Math.floor(Math.random() * sources.length)],
     };
   });
 
-  return [...baseApplicants, ...additionalApplicants];
-};
+  // Combine base and additional applicants
+  const allApplicants = [...baseApplicants, ...additionalApplicants];
+
+  // Verify status counts
+  const statusCounts = allApplicants.reduce((acc, { status }) => {
+    acc[status] = (acc[status] || 0) + 1;
+    return acc;
+  }, {});
+
+  // Ensure exact counts: 80 Rejected, 20 Shortlisted, 0 Hired
+  if (statusCounts.Rejected !== 80 || statusCounts.Shortlisted !== 20 || statusCounts.Hired !== 0) {
+    console.warn('Status counts mismatch:', statusCounts);
+    // Adjust statuses if necessary
+    const targetCounts = { Rejected: 80, Shortlisted: 20, Hired: 0 };
+    let adjustedApplicants = [...allApplicants];
+    let availableIndices = adjustedApplicants.map((_, i) => i).slice(5); // Skip base applicants
+
+    for (const [status, target] of Object.entries(targetCounts)) {
+      let currentCount = statusCounts[status] || 0;
+      while (currentCount > target && availableIndices.length > 0) {
+        const randomIndex = availableIndices.splice(Math.floor(Math.random() * availableIndices.length), 1)[0];
+        adjustedApplicants[randomIndex].status = 'Placeholder';
+        currentCount--;
+        statusCounts[status] = (statusCounts[status] || 0) - 1;
+      }
+    }
+
+    for (let i = 5; i < adjustedApplicants.length; i++) {
+      if (adjustedApplicants[i].status === 'Placeholder') {
+        if (statusCounts.Rejected < 80) {
+          adjustedApplicants[i].status = 'Rejected';
+          statusCounts.Rejected = (statusCounts.Rejected || 0) + 1;
+        } else if (statusCounts.Shortlisted < 20) {
+          adjustedApplicants[i].status = 'Shortlisted';
+          statusCounts.Shortlisted = (statusCounts.Shortlisted || 0) + 1;
+        }
+      }
+    }
+
+    return adjustedApplicants;
+  }
+
+  return allApplicants;
+})();
 
 const Modal = ({ title, message, onConfirm, onCancel, confirmText = 'Confirm', cancelText = 'Cancel' }) => (
   <AnimatePresence>
@@ -255,7 +315,7 @@ const ApplicationStatsChart = ({ data }) => (
 );
 
 const ViewApplications = () => {
-  const [applicantData, setApplicantData] = useState(generateApplicantData());
+  const [applicantData, setApplicantData] = useState(staticApplicantData);
   const [selectedIds, setSelectedIds] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -275,9 +335,9 @@ const ViewApplications = () => {
 
     return [
       { title: 'Total Applications', count: total, percentage: 100, color: '#6DD5FA' },
-      { title: 'Shortlisted', count: shortlisted, percentage: Math.round((shortlisted/total)*100), color: '#FF9770' },
-      { title: 'Hired', count: hired, percentage: Math.round((hired/total)*100), color: '#2DD4BF' },
-      { title: 'Rejected', count: rejected, percentage: Math.round((rejected/total)*100), color: '#E54BFF' },
+      { title: 'Shortlisted', count: shortlisted, percentage: (shortlisted / total) * 100, color: '#FF9770' },
+      { title: 'Hired', count: hired, percentage: (hired / total) * 100, color: '#2DD4BF' },
+      { title: 'Rejected', count: rejected, percentage: (rejected / total) * 100, color: '#E54BFF' },
     ];
   }, [applicantData]);
 
