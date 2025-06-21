@@ -194,3 +194,13 @@ export const bulkDeleteJobApplications = async (ids) => {
     throw new Error(error.response?.data?.detail || 'Failed to delete job applications. Please try again.');
   }
 };
+
+// API function to screen resumes for a job requisition
+export const screenResumes = async (jobRequisitionId) => {
+  try {
+    const response = await apiClient.post(`/api/talent-engine-job-applications/requisitions/${jobRequisitionId}/screen-resumes/`);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.detail || 'Failed to screen resumes. Please try again.');
+  }
+};
