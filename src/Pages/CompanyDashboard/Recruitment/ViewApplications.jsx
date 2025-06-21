@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, useMotionValue, useTransform, animate, AnimatePresence } from 'framer-motion';
 import { ArrowTrendingUpIcon, MagnifyingGlassIcon, AdjustmentsHorizontalIcon, CheckCircleIcon, CheckIcon, TrashIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
@@ -197,12 +196,13 @@ const ViewApplications = () => {
   const [error, setError] = useState(null);
 
   const location = useLocation();
-  const { jobId } = location.state || {};
+  const job = location.state?.job;
+
 
   const masterCheckboxRef = useRef(null);
 
   const fetchApplications = useCallback(async () => {
-    if (!jobId) {
+    if (!job) {
       setError('No job ID provided');
       setLoading(false);
       return;
@@ -210,7 +210,7 @@ const ViewApplications = () => {
 
     try {
       setLoading(true);
-      const response = await fetchJobApplicationsByRequisition(jobId);
+      const response = await fetchJobApplicationsByRequisition(job.id);
 
       // Transform API data to match component's expected format
       const transformedData = response.map(app => ({
@@ -224,7 +224,24 @@ const ViewApplications = () => {
         }),
         status: app.status.charAt(0).toUpperCase() + app.status.slice(1),
         source: app.source || 'Unknown',
-        resumeUrl: app.documents.find(doc => doc.document_type === 'resume')?.file_url || '#',
+        resumeUrl: app.documents.find(doc => doc.document_type === 'CV')?.file_url || '#',
+        email: app.email || 'Not provided',
+        phone: app.phone || 'Not provided',
+        qualification: app.qualification || 'Not provided',
+        experience: app.experience || 'Not provided',
+        knowledge_skill: app.knowledge_skill || 'Not provided',
+        cover_letter: app.cover_letter || 'No cover letter provided',
+        documents: app.documents.map(doc => ({
+          name: doc.document_type,
+          type: doc.document_type,
+          file_url: doc.file_url,
+          size: doc.size || 'Unknown', // Size not provided in API, so default to 'Unknown'
+        })) || [],
+        jobType: app.job_type || 'Not provided', // Adjust if job_type is available in API
+        location: app.location || 'Not provided', // Adjust if location is available
+        address: app.address || 'Not provided', // Adjust if address is available
+        salary: app.salary || 'Not provided', // Adjust if salary is available
+        company: job.company_name || 'Not provided', // Adjust if company is available
       }));
 
       setApplicantData(transformedData);
@@ -234,7 +251,7 @@ const ViewApplications = () => {
       setError(err.message || 'Failed to fetch applications');
       setLoading(false);
     }
-  }, [jobId]);
+  }, [job]);
 
   useEffect(() => {
     fetchApplications();
@@ -410,7 +427,7 @@ const ViewApplications = () => {
         </div>
 
         <div className="Gllla-Toopa">
-          <h3>{jobTitle}</h3>
+          <h3>{job?.title}</h3>
         </div>
 
         <div className="Dash-OO-Boas Gen-Boxshadow">
@@ -621,7 +638,7 @@ const ViewApplications = () => {
 
       {showApplicantDetails && selectedApplicant && (
         <ApplicantDetails
-          job={{ title: jobTitle }}
+          job={{ job}}
           applicant={selectedApplicant}
           onClose={handleCloseDetails}
           onStatusChange={handleStatusChange}

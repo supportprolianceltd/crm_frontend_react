@@ -165,6 +165,15 @@ const JobApplication = () => {
             id: job.id,
             title: job.title,
             numApplications: job.num_of_applications || 0,
+            company_name: job.company_name || "",
+            job_type: job.job_type || "",
+            location_type: job.location_type || "",
+            salary_range: job.salary_range || "",
+            requested_by: job.requested_by || [],
+            documents_required: job.documents_required || "",
+            job_description: job.job_description || "",
+            company_address: job.company_address || "",
+            start_date: formatDate(job.start_date),
             deadline: formatDate(job.deadline_date),
             lastModified: formatDate(job.updated_at),
             status: job.status.charAt(0).toUpperCase() + job.status.slice(1),
@@ -468,20 +477,15 @@ const JobApplication = () => {
                     </td>
                     <td>
                       <div className="gen-td-btns">
-                        {/* <Link
-                          to={`/company/recruitment/view-applications/`}
-                          className="view-btn"
-                        >
-                          View Applications
-                        </Link> */}
-                        <Link
-                          to={`/company/recruitment/view-applications/`}
-                          state={{ jobId: job.id }}
-                          className="view-btn"
-                        >
-                          View Applications
-                        </Link>
-                      </div>
+                   
+                      <Link
+                        to={`/company/recruitment/view-applications/`}
+                        state={{ job }} // Pass the entire job object
+                        className="view-btn"
+                      >
+                        View Applications
+                      </Link>
+                                            </div>
                     </td>
                   </tr>
                 ))
