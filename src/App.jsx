@@ -6,6 +6,7 @@ import ApplicantDashboard from './Pages/ApplicantDashboard/Dashboard';
 import SocialCallback from './Pages/CRMLandingPages/SocialCallback';
 import ScrollToTop from './assets/ScrollToTop';
 import JobApplication from './Pages/CRMLandingPages/JobApplication';
+import PrivateRoute from './PrivateRoute'; // Import the PrivateRoute component
 
 function App() {
   return (
@@ -13,7 +14,10 @@ function App() {
       <ScrollToTop />
       <Routes>
         <Route path="/*" element={<CRMLandingpage />} />
-        <Route path="/company/*" element={<CompanyDashboard />} />
+        <Route element={<PrivateRoute />}>
+          <Route path="/company/*" element={<CompanyDashboard />} />
+          {/* Add other protected routes here if needed */}
+        </Route>
         <Route path="/api/social/callback/" element={<SocialCallback />} />
         <Route path="/jobs/:unique_link" element={<JobApplication />} />
       </Routes>
