@@ -197,13 +197,7 @@ const SideNavBar = () => {
             SolidIcon={UsersSolid}
             to={`${basePath}/applications`}
           />
-          {/* <MenuItem
-            name="vetting"
-            label="Vetting"
-            OutlineIcon={Cog6ToothOutline}  
-            SolidIcon={Cog6ToothSolid}
-            to={`${basePath}/vetting`}
-          /> */}
+ 
           <MenuItem
             name="schedule"
             label="Interview Schedule"
@@ -218,6 +212,15 @@ const SideNavBar = () => {
             SolidIcon={ClipboardSolid}
             to={`${basePath}/compliance`}
           />
+
+         <MenuItem
+            name="settings"
+            label="API Settings"
+            OutlineIcon={Cog6ToothOutline}  
+            SolidIcon={Cog6ToothSolid}
+            to={`${basePath}/settings`}
+          />
+
         </ul>
       </div>
     </motion.div>

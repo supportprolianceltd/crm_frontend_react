@@ -8,6 +8,7 @@ import Applications from './Applications';
 import ViewApplications from './ViewApplications';
 import Schedule from './Schedule';
 import ScheduleList from './ScheduleList';
+import Settings from './Settings';
 
 
 const Recruitment = () => {
@@ -24,6 +25,7 @@ const Recruitment = () => {
           <Route path="/view-applications" element={<ViewApplications />} />
           <Route path="/schedule" element={<Schedule />} />
           <Route path="/schedule-list" element={<ScheduleList />} />
+          <Route path="/settings" element={<Settings />} />
         </Routes>
       </div>
       </div>

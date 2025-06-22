@@ -502,7 +502,6 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
                       padding: '0.5rem',
                       borderRadius: '4px',
                       border: '1px solid #ccc',
-                      marginTop: '0.5rem',
                     }}
                     disabled={!isEditable}
                   >
@@ -524,7 +523,6 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
                           padding: '0.5rem',
                           borderRadius: '4px',
                           border: '1px solid #ccc',
-                          marginTop: '0.5rem',
                         }}
                         disabled={!isEditable}
                       />
@@ -545,13 +543,19 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
                           padding: '0.5rem',
                           borderRadius: '4px',
                           border: '1px solid #ccc',
-                          marginTop: '0.5rem',
                         }}
                         disabled={!isEditable}
                       />
                     </div>
                   )}
                 </div>
+
+                    <div className='GGtg-DDDVa'>
+                <label>Message:</label>
+                <textarea className='oujka-Inpuauy OIUja-Tettxa'>
+                  {`Dear Applicant, your interview has been scheduled for ${formatFullDate(tempSelectedDate)} at ${formatTime(tempStartTime)}. Please check your email for further details. We look forward to speaking with you!`}
+                </textarea>
+              </div>
 
                 <div className="GGtg-DDDVa">
                   <h4>Select Candidates ({tempSelectedApplicants.length} selected):</h4>
