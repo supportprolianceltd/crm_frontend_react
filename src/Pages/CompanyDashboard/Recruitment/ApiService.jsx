@@ -196,11 +196,28 @@ export const bulkDeleteJobApplications = async (ids) => {
 };
 
 // API function to screen resumes for a job requisition
-export const screenResumes = async (jobRequisitionId) => {
-  try {
-    const response = await apiClient.post(`/api/talent-engine-job-applications/requisitions/${jobRequisitionId}/screen-resumes/`);
-    return response.data;
-  } catch (error) {
-    throw new Error(error.response?.data?.detail || 'Failed to screen resumes. Please try again.');
-  }
+export const screenResumes = async (jobRequisitionId, payload) => {
+    try {
+        const response = await apiClient.post(
+            `/api/talent-engine-job-applications/requisitions/${jobRequisitionId}/screen-resumes/`,
+            { document_type: payload.document_type },
+            {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
+        console.debug('screenResumes: Success', { response: response.data });
+        return response.data;
+    } catch (error) {
+        console.error('screenResumes: Error', {
+            message: error.response?.data?.detail || error.message,
+            status: error.response?.status,
+            data: error.response?.data,
+            payload,
+            jobRequisitionId,
+        });
+        throw new Error(error.response?.data?.detail || 'Failed to screen resumes');
+    }
 };

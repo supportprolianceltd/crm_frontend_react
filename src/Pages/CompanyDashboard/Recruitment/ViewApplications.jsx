@@ -77,6 +77,59 @@ const AlertModal = ({ title, message, onClose }) => (
   </AnimatePresence>
 );
 
+const DocumentSelectionModal = ({ documentsRequired, onConfirm, onCancel }) => {
+  const [selectedDocumentType, setSelectedDocumentType] = useState(documentsRequired[0] || '');
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        className="fixed inset-0 bg-black bg-opacity-50 z-40"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.5 }}
+        exit={{ opacity: 0 }}
+        onClick={onCancel}
+      />
+      <motion.div
+        className="fixed top-1/2 left-1/2 z-50 w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-md bg-white p-6 shadow-lg"
+        initial={{ opacity: 0, scale: 0.75 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.75 }}
+        role="dialog"
+        aria-modal="true"
+      >
+        <h3 className="mb-4 text-lg font-semibold">Select Document for Screening</h3>
+        <p className="mb-4">Choose the document type to use for resume screening:</p>
+        <select
+          value={selectedDocumentType}
+          onChange={(e) => setSelectedDocumentType(e.target.value)}
+          className="w-full p-2 mb-4 border rounded"
+        >
+          {documentsRequired.map((doc) => (
+            <option key={doc} value={doc}>
+              {doc}
+            </option>
+          ))}
+        </select>
+        <div className="flex justify-end gap-3">
+          <button
+            className="rounded bg-gray-300 px-4 py-2 font-semibold hover:bg-gray-400"
+            onClick={onCancel}
+          >
+            Cancel
+          </button>
+          <button
+            className="rounded bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700"
+            onClick={() => onConfirm(selectedDocumentType)}
+            autoFocus
+          >
+            Confirm
+          </button>
+        </div>
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
 const CountUpNumber = ({ target, duration = 1 }) => {
   const count = useMotionValue(0);
   const [current, setCurrent] = useState(0);
@@ -196,6 +249,8 @@ const ViewApplications = () => {
   const [error, setError] = useState(null);
   const [screeningResults, setScreeningResults] = useState(null);
   const [showScreeningAlert, setShowScreeningAlert] = useState(false);
+  const [showDocumentSelectionModal, setShowDocumentSelectionModal] = useState(false);
+  const [documentsRequired, setDocumentsRequired] = useState([]);
 
   const location = useLocation();
   const job = location.state?.job;
@@ -245,6 +300,7 @@ const ViewApplications = () => {
 
       setApplicantData(transformedData);
       setJobTitle(transformedData[0]?.jobTitle || 'Job Applications');
+      setDocumentsRequired(job.documents_required || []);
       setLoading(false);
     } catch (err) {
       setError(err.message || 'Failed to fetch applications');
@@ -252,19 +308,33 @@ const ViewApplications = () => {
     }
   }, [job]);
 
-  const handleScreenResumes = async () => {
-    try {
-      setLoading(true);
-      const response = await screenResumes(job.id);
-      setScreeningResults(response);
-      setShowScreeningAlert(true);
-      await fetchApplications(); // Refresh data to reflect updated statuses
-    } catch (err) {
-      setError(err.message || 'Failed to screen resumes');
-    } finally {
-      setLoading(false);
+  const initiateScreening = () => {
+    if (documentsRequired.length === 0) {
+      setError('No documents required for this job requisition.');
+      return;
     }
+    setShowDocumentSelectionModal(true);
   };
+
+const handleScreenResumes = async (documentType) => {
+    try {
+        setLoading(true);
+        console.debug('handleScreenResumes: Initiating screening', { jobId: job.id, documentType: documentType });
+        const response = await screenResumes(job.id, { document_type: documentType.toLowerCase() });
+        setScreeningResults(response);
+        setShowScreeningAlert(true);
+        setApplicantData([]);
+        await fetchApplications();
+        setShowDocumentSelectionModal(false);
+    } catch (err) {
+        const errorMessage = err.response?.data?.detail || 'Failed to screen resumes.';
+        console.error('handleScreenResumes: Error', { error: errorMessage, documentType });
+        setError(errorMessage);
+        setShowDocumentSelectionModal(false);
+    } finally {
+        setLoading(false);
+    }
+};
 
   useEffect(() => {
     fetchApplications();
@@ -442,7 +512,7 @@ const ViewApplications = () => {
 
         <div className="Gllla-Toopa">
           <h3>{job?.title}</h3>
-          <button className="screen-resumes-btn" onClick={handleScreenResumes}>
+          <button className="screen-resumes-btn" onClick={initiateScreening}>
             <DocumentCheckIcon className="h-6 w-6 inline mr-1" />
             Screen Resumes
           </button>
@@ -673,9 +743,17 @@ const ViewApplications = () => {
                 message={screeningResults.detail}
                 onClose={() => {
                   setShowScreeningAlert(false);
-                  // Optionally clear results after viewing
-                  // setScreeningResults(null);
                 }}
+              />
+            )}
+          </AnimatePresence>
+
+          <AnimatePresence>
+            {showDocumentSelectionModal && (
+              <DocumentSelectionModal
+                documentsRequired={documentsRequired}
+                onConfirm={handleScreenResumes}
+                onCancel={() => setShowDocumentSelectionModal(false)}
               />
             )}
           </AnimatePresence>

@@ -258,6 +258,16 @@ function JobApplication() {
     return;
   }
 
+  // Validate character limits for qualification and experience fields
+  if (formData.qualification.length > 255) {
+    setErrorMessage('Qualification field must not exceed 255 characters.');
+    return;
+  }
+  if (formData.experience.length > 255) {
+    setErrorMessage('Experience field must not exceed 255 characters.');
+    return;
+  }
+
   setErrorMessage('');
   setIsSubmitting(true);
 
@@ -307,15 +317,6 @@ function JobApplication() {
       }
     });
 
-    //console.log('FormData contents:');
-    // for (const [key, value] of formDataToSend.entries()) {
-    //   if (value instanceof File) {
-    //     console.log(`${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
-    //   } else {
-    //     console.log(`${key}: ${value}`);
-    //   }
-    // }
-
     const response = await fetch(`${API_BASE_URL}/api/talent-engine-job-applications/applications/`, {
       method: 'POST',
       body: formDataToSend,
@@ -325,7 +326,7 @@ function JobApplication() {
       const errorData = await response.json();
       console.error('Backend error response:', errorData);
 
-      // Check for duplicate application error
+      // Handle duplicate application error
       if (
         errorData.detail &&
         errorData.detail.includes('duplicate key value violates unique constraint')
@@ -333,7 +334,18 @@ function JobApplication() {
         setErrorMessage(
           'You have already applied for this job. Please check your application status or contact support for assistance.'
         );
+      } else if (errorData.qualification || errorData.experience) {
+        // Handle specific validation errors for qualification and experience
+        const errors = [];
+        if (errorData.qualification) {
+          errors.push('Qualification field must not exceed 255 characters.');
+        }
+        if (errorData.experience) {
+          errors.push('Experience field must not exceed 255 characters.');
+        }
+        setErrorMessage(errors.join(' '));
       } else if (errorData.errors) {
+        // Handle other validation errors
         const errorMessages = Object.entries(errorData.errors)
           .map(([field, errors]) => {
             if (Array.isArray(errors)) {
@@ -346,7 +358,7 @@ function JobApplication() {
           .join('; ');
         setErrorMessage(errorMessages || errorData.detail || 'Failed to submit application');
       } else {
-       UNO: setErrorMessage(errorData.detail || 'Failed to submit application');
+        setErrorMessage(errorData.detail || 'Failed to submit application');
       }
       setIsSubmitting(false);
       return;
@@ -368,6 +380,152 @@ function JobApplication() {
     setIsSubmitting(false);
   }
 };
+//   const handleSubmit = async () => {
+//   if (!job.id) {
+//     setErrorMessage('Job details not loaded. Please try again.');
+//     return;
+//   }
+
+//   const requiredFields = ['fullName', 'email', 'phone', 'qualification', 'experience'];
+//   const isFormValid = requiredFields.every((field) => formData[field].trim() !== '');
+//   const isResumeUploaded = activeTab === 'noresume' || !!uploadedFile;
+
+//   const requiredDocs = job.documents_required || [];
+//   const uploadedDocTypes = [
+//     ...new Set([
+//       ...(selectedResumeType && uploadedFile && activeTab === 'upload' ? [selectedResumeType] : []),
+//       ...documents.map((doc) => doc.type),
+//     ]),
+//   ];
+//   const missingDocs = requiredDocs.filter((docType) => !uploadedDocTypes.includes(docType));
+
+//   if (!isFormValid) {
+//     setErrorMessage(
+//       'Please fill all required fields: Full Name, Email, Phone, Qualification, and Experience.'
+//     );
+//     return;
+//   }
+
+//   if (!isResumeUploaded) {
+//     setErrorMessage('Please upload your resume or select "Don\'t have Resume" option.');
+//     return;
+//   }
+
+//   if (requiredDocs.length > 0 && missingDocs.length > 0) {
+//     setErrorMessage(`Missing required documents: ${missingDocs.join(', ')}.`);
+//     return;
+//   }
+
+//   setErrorMessage('');
+//   setIsSubmitting(true);
+
+//   try {
+//     const formDataToSend = new FormData();
+//     formDataToSend.append('unique_link', unique_link);
+//     formDataToSend.append('job_requisition', job.id);
+//     formDataToSend.append('full_name', formData.fullName);
+//     formDataToSend.append('email', formData.email);
+//     formDataToSend.append('phone', formData.phone);
+//     formDataToSend.append('qualification', formData.qualification);
+//     formDataToSend.append('experience', formData.experience);
+//     formDataToSend.append('knowledge_skill', formData.knowledgeSkill);
+//     formDataToSend.append('cover_letter', formData.coverLetter);
+//     formDataToSend.append('resume_status', activeTab === 'upload');
+
+//     if (uploadedFile && activeTab === 'upload' && !selectedResumeType) {
+//       setErrorMessage('Please select a document type for the resume.');
+//       setIsSubmitting(false);
+//       return;
+//     }
+
+//     let docIndex = 0;
+//     const providedDocTypes = [];
+
+//     if (uploadedFile && activeTab === 'upload' && selectedResumeType) {
+//       if (job.documents_required.includes(selectedResumeType)) {
+//         formDataToSend.append(`documents[${docIndex}][document_type]`, selectedResumeType);
+//         formDataToSend.append(`documents[${docIndex}][file]`, uploadedFile.file, uploadedFile.name);
+//         providedDocTypes.push(selectedResumeType);
+//         docIndex++;
+//       } else {
+//         setErrorMessage(
+//           `Invalid resume type: ${selectedResumeType}. Must be one of ${job.documents_required.join(', ')}.`
+//         );
+//         setIsSubmitting(false);
+//         return;
+//       }
+//     }
+
+//     documents.forEach((doc) => {
+//       if (!providedDocTypes.includes(doc.type)) {
+//         formDataToSend.append(`documents[${docIndex}][document_type]`, doc.type);
+//         formDataToSend.append(`documents[${docIndex}][file]`, doc.file, doc.name);
+//         providedDocTypes.push(doc.type);
+//         docIndex++;
+//       }
+//     });
+
+//     //console.log('FormData contents:');
+//     // for (const [key, value] of formDataToSend.entries()) {
+//     //   if (value instanceof File) {
+//     //     console.log(`${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
+//     //   } else {
+//     //     console.log(`${key}: ${value}`);
+//     //   }
+//     // }
+
+//     const response = await fetch(`${API_BASE_URL}/api/talent-engine-job-applications/applications/`, {
+//       method: 'POST',
+//       body: formDataToSend,
+//     });
+
+//     if (!response.ok) {
+//       const errorData = await response.json();
+//       console.error('Backend error response:', errorData);
+
+//       // Check for duplicate application error
+//       if (
+//         errorData.detail &&
+//         errorData.detail.includes('duplicate key value violates unique constraint')
+//       ) {
+//         setErrorMessage(
+//           'You have already applied for this job. Please check your application status or contact support for assistance.'
+//         );
+//       } else if (errorData.errors) {
+//         const errorMessages = Object.entries(errorData.errors)
+//           .map(([field, errors]) => {
+//             if (Array.isArray(errors)) {
+//               return `${field}: ${errors.join(', ')}`;
+//             } else if (typeof errors === 'object' && errors.length > 0) {
+//               return `${field}: ${errors.map((err) => err.detail || JSON.stringify(err)).join(', ')}`;
+//             }
+//             return `${field}: ${errors}`;
+//           })
+//           .join('; ');
+//         setErrorMessage(errorMessages || errorData.detail || 'Failed to submit application');
+//       } else {
+//        UNO: setErrorMessage(errorData.detail || 'Failed to submit application');
+//       }
+//       setIsSubmitting(false);
+//       return;
+//     }
+
+//     setIsSubmitting(false);
+//     setShowSuccess(true);
+//     setTimeout(() => {
+//       setShowSuccess(false);
+//       window.location.reload();
+//     }, 3000);
+//   } catch (err) {
+//     console.error('Submission error:', err);
+//     setErrorMessage(
+//       err.message.includes('duplicate key value')
+//         ? 'You have already applied for this job. Please check your application status or contact support for assistance.'
+//         : err.message || 'An unexpected error occurred. Please try again later.'
+//     );
+//     setIsSubmitting(false);
+//   }
+// };
   const renderResponsibilities = () => {
     try {
       const responsibilities = job.responsibilities
