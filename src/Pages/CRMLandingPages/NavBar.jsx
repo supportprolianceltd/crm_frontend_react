@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import LOGO from '../../assets/Img/logo.png';
 import RecruitmentIcon from '../../assets/Img/CRMPack/Recruitment.svg';
@@ -15,8 +15,20 @@ import PayrollIcon from '../../assets/Img/CRMPack/Payroll.svg';
 function NavBar() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [isScrolling, setIsScrolling] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const dropdownRef = useRef(null);
+  const navigate = useNavigate();
 
+  // Check authentication status on mount
+  useEffect(() => {
+    const checkAuth = () => {
+      const accessToken = localStorage.getItem('accessToken');
+      setIsAuthenticated(!!accessToken);
+    };
+    checkAuth();
+  }, []);
+
+  // Handle click outside to close dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -27,6 +39,7 @@ function NavBar() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Handle scroll for nav styling
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 10) {
@@ -41,51 +54,63 @@ function NavBar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const toggleDropdown = () => setShowDropdown(prev => !prev);
+  // Toggle dropdown visibility
+  const toggleDropdown = () => setShowDropdown((prev) => !prev);
+
+  // Handle logout
+  const handleLogout = () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('tenantId');
+    localStorage.removeItem('tenantSchema');
+    localStorage.removeItem('user');
+    setIsAuthenticated(false);
+    navigate('/');
+  };
 
   return (
     <nav className={`Fritop-Nav ${isScrolling ? 'scrolling-nav' : ''}`}>
-      <div className='large-container'>
-        <div className='Fritop-Nav-content'>
-          <Link to='/' className='Nav-Brand'>
+      <div className="large-container">
+        <div className="Fritop-Nav-content">
+          <Link to="/" className="Nav-Brand">
             <img src={LOGO} alt="logo" />
             <span>crm</span>
           </Link>
 
-          <ul className='Frs-Url'>
+          <ul className="Frs-Url">
             <li ref={dropdownRef}>
-              <span onClick={toggleDropdown} className='cursor-pointer flex items-center gap-1'>
+              <span onClick={toggleDropdown} className="cursor-pointer flex items-center gap-1">
                 Features <ChevronDownIcon className={`chevron-icon ${showDropdown ? 'rotate' : ''}`} />
               </span>
 
               <AnimatePresence>
                 {showDropdown && (
                   <motion.div
-                    className='All-NAv-DropDown Gen-Boxshadow'
+                    className="All-NAv-DropDown Gen-Boxshadow"
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <Link to='/recruitment' onClick={() => setShowDropdown(false)}>
+                    <Link to="/recruitment" onClick={() => setShowDropdown(false)}>
                       <img src={RecruitmentIcon} alt="Recruitment" /> Recruitment
                     </Link>
-                    <Link to='/compliance' onClick={() => setShowDropdown(false)}>
+                    <Link to="/compliance" onClick={() => setShowDropdown(false)}>
                       <img src={ComplianceIcon} alt="Compliance" /> Compliance
                     </Link>
-                    <Link to='/training' onClick={() => setShowDropdown(false)}>
+                    <Link to="/training" onClick={() => setShowDropdown(false)}>
                       <img src={TrainingIcon} alt="Training" /> Training
                     </Link>
-                    <Link to='/assets-management' onClick={() => setShowDropdown(false)}>
+                    <Link to="/assets-management" onClick={() => setShowDropdown(false)}>
                       <img src={AssetmanagementIcon} alt="Asset Management" /> Assets management
                     </Link>
-                    <Link to='/rostering' onClick={() => setShowDropdown(false)}>
+                    <Link to="/rostering" onClick={() => setShowDropdown(false)}>
                       <img src={RosteringIcon} alt="Rostering" /> Rostering
                     </Link>
-                    <Link to='/hr' onClick={() => setShowDropdown(false)}>
+                    <Link to="/hr" onClick={() => setShowDropdown(false)}>
                       <img src={HRIcon} alt="HR" /> HR
                     </Link>
-                    <Link to='/payroll' onClick={() => setShowDropdown(false)}>
+                    <Link to="/payroll" onClick={() => setShowDropdown(false)}>
                       <img src={PayrollIcon} alt="Payroll" /> Payroll
                     </Link>
                   </motion.div>
@@ -93,9 +118,23 @@ function NavBar() {
               </AnimatePresence>
             </li>
 
-            <li><Link to='/contact-sales'>Contact sales</Link></li>
-            <li><Link to='/register' className='btn-primary-bg'>Create account</Link></li>
-            <li><Link to='/login'>Sign in</Link></li>
+            <li>
+              <Link to="/contact-sales">Contact sales</Link>
+            </li>
+            <li>
+              <Link to="/register" className="btn-primary-bg">
+                Create account
+              </Link>
+            </li>
+            <li>
+              {isAuthenticated ? (
+                <button onClick={handleLogout}>
+                  Sign out
+                </button>
+              ) : (
+                <Link to="/login">Sign in</Link>
+              )}
+            </li>
           </ul>
         </div>
       </div>

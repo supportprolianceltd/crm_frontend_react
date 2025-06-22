@@ -234,3 +234,9 @@ p.error,
 p.error{
   margin-top: 0px !important;
 }
+.oooi-Cuup-LinkD p {
+  max-width: 200px; /* Adjust as needed */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

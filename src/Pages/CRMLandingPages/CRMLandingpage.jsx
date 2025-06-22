@@ -10,43 +10,30 @@ import RegisterPage from './Register';
 import CodeVerificationPage from './CodeVerification';
 import ForgotPasswordPage from './ForgotPassword';
 import NewPasswordPage from './NewPassword';
-import JobApplicationPage from './JobApplication';
-
-
-// Features
-
+import JobApplication from './JobApplication';
 import Recruitment from './Features/Recruitment';
-
 
 const CRMLandingpage = () => {
   const location = useLocation();
-
-  // Paths where you want to add the 'Reg_Page' class
   const regPagePaths = ['/login', '/register', '/code-verification'];
-
   const isRegPage = regPagePaths.includes(location.pathname);
 
   return (
     <SelectedFeaturesProvider>
-    <div className={`CRMLandingpagee ${isRegPage ? 'Reg_Page' : ''}`}>
-      <NavBar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/request-for-demo" element={<RequestDemo />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-         <Route path="/code-verification" element={<CodeVerificationPage />} />
-         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-         <Route path="/new-password" element={<NewPasswordPage />} />
-         <Route path="/job-application" element={<JobApplicationPage />} />
-
-         {/* Features */}
-
-         <Route path="/recruitment" element={<Recruitment />} />
-
-
-      </Routes>
-    </div>
+      <div className={`CRMLandingpagee ${isRegPage ? 'Reg_Page' : ''}`}>
+        <NavBar />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/request-for-demo" element={<RequestDemo />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/code-verification" element={<CodeVerificationPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/new-password" element={<NewPasswordPage />} />
+          <Route path="/jobs/:unique_link" element={<JobApplication />} />
+          <Route path="/recruitment" element={<Recruitment />} />
+        </Routes>
+      </div>
     </SelectedFeaturesProvider>
   );
 };

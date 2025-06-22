@@ -17,6 +17,8 @@ import {
   ClockIcon,
   Cog6ToothIcon,
 } from '@heroicons/react/24/outline';
+import CountUp from 'react-countup';
+import { fetchAllRequisitions, bulkDeleteRequisitions } from './ApiService';
 
 // Modal component for confirmation dialogs
 const Modal = ({ title, message, onConfirm, onCancel, confirmText = 'Confirm', cancelText = 'Cancel' }) => (
@@ -90,41 +92,25 @@ const AlertModal = ({ title, message, onClose }) => (
   </AnimatePresence>
 );
 
-// Function to generate mock job data
-const generateMockJobs = () => {
-  const titles = [
-    'Frontend Developer', 'Backend Engineer', 'UI/UX Designer', 'DevOps Engineer', 'Data Scientist',
-    'Full Stack Developer', 'QA Engineer', 'Product Manager', 'Mobile Developer', 'Security Analyst',
-    'Cloud Architect', 'Database Administrator', 'Machine Learning Engineer', 'Technical Writer',
-    'Business Analyst', 'Software Engineer', 'Systems Analyst', 'Network Engineer', 'Data Analyst',
-    'Project Manager'
-  ];
-  const statuses = ['Open', 'Closed'];
-  const jobs = [];
-  for (let i = 1; i <= 50; i++) {
-    const deadlineMonth = (i % 3) + 5; // Spread deadlines in May, June, July
-    const deadline = `2025-${String(deadlineMonth).padStart(2, '0')}-${String((i % 28) + 1).padStart(2, '0')}`;
-    // Generate lastModified datetime: 2025-04-01 + 1 to 10 days, with random time
-    const baseDate = new Date(`2025-04-01`);
-    baseDate.setDate(baseDate.getDate() + Math.floor(Math.random() * 10) + 1);
-    baseDate.setHours(Math.floor(Math.random() * 24)); // Random hours (0-23)
-    baseDate.setMinutes(Math.floor(Math.random() * 60)); // Random minutes (0-59)
-    const lastModified = `${baseDate.toISOString().split('T')[0]} ${String(baseDate.getHours()).padStart(2, '0')}:${String(baseDate.getMinutes()).padStart(2, '0')}`; // Format as YYYY-MM-DD HH:MM
-    jobs.push({
-      id: `JOB-${String(i).padStart(3, '0')}`,
-      title: titles[i % titles.length],
-      numApplications: Math.floor(Math.random() * 40) + 5, // Random between 5 and 45
-      deadline,
-      lastModified,
-      status: statuses[i % 2] // Alternates between Open and Closed (25 each)
-    });
-  }
-  return jobs;
+// Mapping for job_type and location_type
+const reverseJobTypeMap = {
+  full_time: 'Full-Time',
+  part_time: 'Part-Time',
+  contract: 'Contract',
+  freelance: 'Freelance',
+  internship: 'Internship',
+};
+
+const reverseLocationTypeMap = {
+  on_site: 'On-site',
+  remote: 'Remote',
+  hybrid: 'Hybrid',
 };
 
 // Main JobApplication component
 const JobApplication = () => {
   // State declarations
+  const [jobData, setJobData] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [isVisible, setIsVisible] = useState(false);
@@ -133,21 +119,97 @@ const JobApplication = () => {
   const [selectedIds, setSelectedIds] = useState([]);
   const [showNoSelectionAlert, setShowNoSelectionAlert] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [alertModal, setAlertModal] = useState(null);
+  const [trigger, setTrigger] = useState(0);
+  const [lastUpdateTime, setLastUpdateTime] = useState(new Date());
+  const [stats, setStats] = useState({
+    total: 0,
+    open: 0,
+    closed: 0,
+  });
+  const [isLoading, setIsLoading] = useState(true);
   const masterCheckboxRef = useRef(null);
 
-  const statuses = ['All', 'Open', 'Closed'];
+  const statuses = ['All', ...new Set(jobData.map((job) => job.status))];
 
-  // Function to toggle filter dropdown visibility
-  const toggleSection = () => {
-    setIsVisible(prev => !prev);
+  // Format date for display
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-GB', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).split('/').join('-');
   };
 
-  // Initialize jobs with mock data
-  const [jobs, setJobs] = useState(generateMockJobs());
+  // Format time for last update
+  const formatTime = (date) => {
+    return date.toLocaleTimeString([], {
+      hour: 'numeric',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true,
+    });
+  };
+
+  // Fetch jobs from API
+  useEffect(() => {
+    const fetchJobs = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetchAllRequisitions();
+        const publishedJobs = response
+          .filter((job) => job.publish_status === true)
+          .map((job) => ({
+            id: job.id,
+            title: job.title,
+            numApplications: job.num_of_applications || 0,
+            company_name: job.company_name || "",
+            job_type: job.job_type || "",
+            location_type: job.location_type || "",
+            salary_range: job.salary_range || "",
+            requested_by: job.requested_by || [],
+            documents_required: job.documents_required || "",
+            job_description: job.job_description || "",
+            company_address: job.company_address || "",
+            start_date: formatDate(job.start_date),
+            deadline: formatDate(job.deadline_date),
+            lastModified: formatDate(job.updated_at),
+            status: job.status.charAt(0).toUpperCase() + job.status.slice(1),
+          }));
+        setJobData(publishedJobs);
+        setStats({
+          total: publishedJobs.length,
+          open: publishedJobs.filter((job) => job.status === 'Open').length,
+          closed: publishedJobs.filter((job) => job.status === 'Closed' || job.status === 'Rejected').length,
+        });
+      } catch (error) {
+        setAlertModal({
+          title: 'Error',
+          message: error.message || 'Failed to fetch job requisitions.',
+        });
+        console.error('Error fetching job requisitions:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchJobs();
+  }, [trigger]);
+
+  // Polling for updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTrigger((prev) => prev + 1);
+      setLastUpdateTime(new Date());
+    }, 50000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Filter jobs based on search term and status
-  const filteredJobs = jobs.filter((job) => {
-    const matchesSearch = 
+  const filteredJobs = jobData.filter((job) => {
+    const matchesSearch =
       job.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       job.title.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'All' || job.status === statusFilter;
@@ -168,13 +230,12 @@ const JobApplication = () => {
 
   // Handle select all visible jobs
   const handleSelectAllVisible = () => {
-    if (currentJobs.every((job) => selectedIds.includes(job.id))) {
-      setSelectedIds((prev) => prev.filter((id) => !currentJobs.some((job) => job.id === id)));
+    const allVisibleIds = currentJobs.map((job) => job.id);
+    const areAllVisibleSelected = allVisibleIds.every((id) => selectedIds.includes(id));
+    if (areAllVisibleSelected) {
+      setSelectedIds((prev) => prev.filter((id) => !allVisibleIds.includes(id)));
     } else {
-      setSelectedIds((prev) => [
-        ...prev,
-        ...currentJobs.filter((job) => !prev.includes(job.id)).map((job) => job.id),
-      ]);
+      setSelectedIds((prev) => [...new Set([...prev, ...allVisibleIds])]);
     }
   };
 
@@ -188,10 +249,23 @@ const JobApplication = () => {
   };
 
   // Confirm deletion of selected jobs
-  const confirmDelete = () => {
-    setJobs((prev) => prev.filter((job) => !selectedIds.includes(job.id)));
-    setSelectedIds([]);
-    setShowConfirmDelete(false);
+  const confirmDelete = async () => {
+    try {
+      await bulkDeleteRequisitions(selectedIds);
+      setJobData((prev) => prev.filter((job) => !selectedIds.includes(job.id)));
+      setSelectedIds([]);
+      if (currentPage > Math.ceil(filteredJobs.length / rowsPerPage)) {
+        setCurrentPage((prev) => Math.max(prev - 1, 1));
+      }
+      setShowConfirmDelete(false);
+    } catch (error) {
+      setShowConfirmDelete(false);
+      setAlertModal({
+        title: 'Error',
+        message: error.message || 'Failed to delete job requisitions.',
+      });
+      console.error('Error deleting job requisitions:', error);
+    }
   };
 
   // Reset master checkbox when page or rows change
@@ -202,20 +276,70 @@ const JobApplication = () => {
     setSelectedIds([]);
   }, [currentPage, rowsPerPage]);
 
+  // Update master checkbox state
+  useEffect(() => {
+    const allVisibleSelected = currentJobs.every((job) => selectedIds.includes(job.id));
+    const someSelected = currentJobs.some((job) => selectedIds.includes(job.id));
+    if (masterCheckboxRef.current) {
+      masterCheckboxRef.current.indeterminate = !allVisibleSelected && someSelected;
+    }
+  }, [selectedIds, currentJobs]);
+
+  // Adjust page if rowsPerPage or filters change
+  useEffect(() => {
+    const maxPage = Math.ceil(filteredJobs.length / rowsPerPage);
+    if (currentPage > maxPage) {
+      setCurrentPage(maxPage || 1);
+    }
+  }, [rowsPerPage, filteredJobs.length, currentPage]);
+
+  // Reset page on filter change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter, rowsPerPage]);
+
+  // Toggle filter dropdown visibility
+  const toggleSection = () => {
+    setIsVisible((prev) => !prev);
+  };
+
   return (
     <div className="JobApplication-sec">
-      <div className="Dash-OO-Boas OOOP-LOa">
+      <div className="Dash-OO-Boas TTTo-POkay">
+        <div className="glo-Top-Cards">
+          {[
+            { icon: BriefcaseIcon, label: 'Total Job Requisitions', value: stats.total },
+            { icon: LockOpenIcon, label: 'Open Requisitions', value: stats.open },
+            { icon: LockClosedIcon, label: 'Closed Requisitions', value: stats.closed },
+          ].map((item, idx) => (
+            <div key={idx} className={`glo-Top-Card card-${idx + 1}`}>
+              <div className="ffl-TOp">
+                <span>
+                  <item.icon />
+                </span>
+                <p>{item.label}</p>
+              </div>
+              <h3>
+                <CountUp key={trigger + `-${idx}`} end={item.value} duration={2} />{' '}
+                <span className="ai-check-span">Last checked - {formatTime(lastUpdateTime)}</span>
+              </h3>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="Dash-OO-Boas Gen-Boxshadow">
         <div className="Dash-OO-Boas-Top">
           <div className="Dash-OO-Boas-Top-1">
             <span onClick={toggleSection}><AdjustmentsHorizontalIcon className="h-6 w-6" /></span>
-            <h3>Job Applications</h3>
+            <h3>Job Requisitions</h3>
           </div>
           <div className="Dash-OO-Boas-Top-2">
             <div className="genn-Drop-Search">
               <span><MagnifyingGlassIcon className="h-6 w-6" /></span>
               <input 
                 type="text" 
-                placeholder="Search applications..." 
+                placeholder="Search requisitions..." 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -246,12 +370,10 @@ const JobApplication = () => {
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
 
-      <div className="Dash-OO-Boas Gen-Boxshadow">
         <div className="table-container">
           <table className="Gen-Sys-table">
-         <thead>
+            <thead>
               <tr>
                 <th>
                   <input
@@ -259,6 +381,7 @@ const JobApplication = () => {
                     ref={masterCheckboxRef}
                     onChange={handleSelectAllVisible}
                     checked={currentJobs.length > 0 && currentJobs.every((job) => selectedIds.includes(job.id))}
+                    disabled={isLoading}
                   />
                 </th>
                 <th>
@@ -306,10 +429,25 @@ const JobApplication = () => {
               </tr>
             </thead>
             <tbody>
-              {currentJobs.length === 0 ? (
+              {isLoading ? (
                 <tr>
                   <td colSpan={8} style={{ textAlign: 'center', padding: '20px', fontStyle: 'italic' }}>
-                    No matching job applications found
+                    <ul className="tab-Loadding-AniMMA">
+                      <li></li>
+                      <li></li>
+                      <li></li>
+                      <li></li>
+                      <li></li>
+                      <li></li>
+                      <li></li>
+                      <li></li>
+                    </ul>
+                  </td>
+                </tr>
+              ) : filteredJobs.length === 0 ? (
+                <tr>
+                  <td colSpan={8} style={{ textAlign: 'center', padding: '20px', fontStyle: 'italic' }}>
+                    No job requisitions found
                   </td>
                 </tr>
               ) : (
@@ -339,13 +477,15 @@ const JobApplication = () => {
                     </td>
                     <td>
                       <div className="gen-td-btns">
-                        <Link
-                          to='/company/recruitment/view-applications'
-                          className="view-btn"
-                        >
-                          View Applications
-                        </Link>
-                      </div>
+                   
+                      <Link
+                        to={`/company/recruitment/view-applications/`}
+                        state={{ job }} // Pass the entire job object
+                        className="view-btn"
+                      >
+                        View Applications
+                      </Link>
+                                            </div>
                     </td>
                   </tr>
                 ))
@@ -354,7 +494,7 @@ const JobApplication = () => {
           </table>
         </div>
 
-  {filteredJobs.length > 0 && (
+        {!isLoading && filteredJobs.length > 0 && (
           <div className="pagination-controls">
             <div className="Dash-OO-Boas-foot">
               <div className="Dash-OO-Boas-foot-1">
@@ -408,25 +548,31 @@ const JobApplication = () => {
             </div>
           </div>
         )}
-
       </div>
 
       <AnimatePresence>
         {showNoSelectionAlert && (
           <AlertModal
             title="No Selection"
-            message="You have not selected any applications to delete."
+            message="You have not selected any requisitions to delete."
             onClose={() => setShowNoSelectionAlert(false)}
           />
         )}
         {showConfirmDelete && (
           <Modal
             title="Confirm Delete"
-            message={`Are you sure you want to delete ${selectedIds.length} selected application(s)? This action cannot be undone.`}
+            message={`Are you sure you want to delete ${selectedIds.length} selected requisition(s)? This action cannot be undone.`}
             onConfirm={confirmDelete}
             onCancel={() => setShowConfirmDelete(false)}
             confirmText="Delete"
             cancelText="Cancel"
+          />
+        )}
+        {alertModal && (
+          <AlertModal
+            title={alertModal.title}
+            message={alertModal.message}
+            onClose={() => setAlertModal(null)}
           />
         )}
       </AnimatePresence>

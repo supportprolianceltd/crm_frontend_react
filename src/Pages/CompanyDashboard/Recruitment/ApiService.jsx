@@ -11,7 +11,7 @@ const apiClient = axios.create({
   },
 });
 
-// Function to refresh token
+// Function to refresh access token
 const refreshAccessToken = async () => {
   try {
     const refreshToken = localStorage.getItem('refreshToken');
@@ -28,16 +28,22 @@ const refreshAccessToken = async () => {
     return newAccessToken;
   } catch (error) {
     console.error('Error refreshing token:', error);
+    // Clear all authentication-related localStorage items
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
+    localStorage.removeItem('tenantId');
+    localStorage.removeItem('tenantSchema');
+    localStorage.removeItem('user');
+    // Redirect to login page
+    window.location.href = '/';
     throw new Error('Session expired. Please log in again.');
   }
 };
 
-// Add a request interceptor to include the token and handle token refresh
+// Request interceptor to include access token
 apiClient.interceptors.request.use(
   async (config) => {
-    let token = localStorage.getItem('accessToken');
+    const token = localStorage.getItem('accessToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -46,7 +52,7 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Add a response interceptor to handle token expiration
+// Response interceptor to handle token expiration
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -71,7 +77,7 @@ export const createRequisition = async (requisitionData) => {
     const response = await apiClient.post('/api/talent-engine/requisitions/', requisitionData);
     return response.data;
   } catch (error) {
-    throw error.response?.data?.detail || 'Failed to create job requisition. Please try again.';
+    throw new Error(error.response?.data?.detail || 'Failed to create job requisition. Please try again.');
   }
 };
 
@@ -81,7 +87,7 @@ export const fetchRequisition = async (id) => {
     const response = await apiClient.get(`/api/talent-engine/requisitions/${id}/`);
     return response.data;
   } catch (error) {
-    throw error.response?.data?.detail || 'Failed to fetch requisition data.';
+    throw new Error(error.response?.data?.detail || 'Failed to fetch requisition data.');
   }
 };
 
@@ -91,7 +97,7 @@ export const fetchAllRequisitions = async (params = {}) => {
     const response = await apiClient.get('/api/talent-engine/requisitions/', { params });
     return response.data;
   } catch (error) {
-    throw error.response?.data?.detail || 'Failed to load job requisitions. Please try again.';
+    throw new Error(error.response?.data?.detail || 'Failed to load job requisitions. Please try again.');
   }
 };
 
@@ -105,7 +111,7 @@ export const updateRequisition = async (id, requisitionData) => {
     });
     return response.data;
   } catch (error) {
-    throw error.response?.data?.detail || 'Failed to update requisition. Please try again.';
+    throw new Error(error.response?.data?.detail || 'Failed to update requisition. Please try again.');
   }
 };
 
@@ -115,7 +121,7 @@ export const deleteRequisition = async (id) => {
     await apiClient.delete(`/api/talent-engine/requisitions/${id}/`);
     return true;
   } catch (error) {
-    throw error.response?.data?.detail || 'Failed to delete requisition. Please try again.';
+    throw new Error(error.response?.data?.detail || 'Failed to delete requisition. Please try again.');
   }
 };
 
@@ -125,7 +131,7 @@ export const bulkDeleteRequisitions = async (ids) => {
     const response = await apiClient.post('/api/talent-engine/requisitions/bulk-delete/', { ids });
     return response.data;
   } catch (error) {
-    throw error.response?.data?.detail || 'Failed to delete requisitions. Please try again.';
+    throw new Error(error.response?.data?.detail || 'Failed to delete requisitions. Please try again.');
   }
 };
 
@@ -135,7 +141,7 @@ export const updateRequisitionStatus = async (id, status) => {
     const response = await apiClient.patch(`/api/talent-engine/requisitions/${id}/`, { status });
     return response.data;
   } catch (error) {
-    throw error.response?.data?.detail || `Failed to ${status} requisition.`;
+    throw new Error(error.response?.data?.detail || `Failed to update requisition status to ${status}.`);
   }
 };
 
@@ -145,6 +151,56 @@ export const togglePublishRequisition = async (id, publishStatus) => {
     const response = await apiClient.patch(`/api/talent-engine/requisitions/${id}/`, { publish_status: publishStatus });
     return response.data;
   } catch (error) {
-    throw error.response?.data || 'Failed to toggle publish status.';
+    throw new Error(error.response?.data?.detail || 'Failed to toggle publish status.');
+  }
+};
+
+// API function to fetch all job applications
+export const fetchAllJobApplications = async () => {
+  try {
+    const response = await apiClient.get('/api/talent-engine-job-applications/applications/');
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.detail || 'Failed to load job applications. Please try again.');
+  }
+};
+
+// API function to fetch job applications by requisition
+export const fetchJobApplicationsByRequisition = async (jobId) => {
+  try {
+    const response = await apiClient.get(`/api/talent-engine-job-applications/applications/job-requisitions/${jobId}/applications/`);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.detail || 'Failed to load job applications for requisition. Please try again.');
+  }
+};
+
+// API function to update job application status
+export const updateJobApplicationStatus = async (id, status) => {
+  try {
+    const response = await apiClient.put(`/api/talent-engine-job-applications/${id}/`, { status });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.detail || 'Failed to update job application status. Please try again.');
+  }
+};
+
+// API function to bulk delete job applications
+export const bulkDeleteJobApplications = async (ids) => {
+  try {
+    const response = await apiClient.post('/api/talent-engine-job-applications/bulk-delete/', { ids });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.detail || 'Failed to delete job applications. Please try again.');
+  }
+};
+
+// API function to screen resumes for a job requisition
+export const screenResumes = async (jobRequisitionId) => {
+  try {
+    const response = await apiClient.post(`/api/talent-engine-job-applications/requisitions/${jobRequisitionId}/screen-resumes/`);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.detail || 'Failed to screen resumes. Please try again.');
   }
 };
