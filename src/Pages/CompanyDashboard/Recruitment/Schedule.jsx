@@ -103,7 +103,6 @@ const jobList = [
   }
 ];
 
-
 const Schedule = () => {
   const [activeJobId, setActiveJobId] = useState(jobList[0].id);
   const [selectedApplicants, setSelectedApplicants] = useState([]);
@@ -276,77 +275,75 @@ const Schedule = () => {
     setShowModal(true);
   };
 
-const confirmSchedule = () => {
-  if (!tempStartTime) {
-    setErrorMessage('Please select a start time for the interview.');
-    setTimeout(() => {
-      setErrorMessage('');
-    }, 3000);
-    return;
-  }
+  const confirmSchedule = () => {
+    if (!tempStartTime) {
+      setErrorMessage('Please select a start time for the interview.');
+      setTimeout(() => {
+        setErrorMessage('');
+      }, 3000);
+      return;
+    }
 
-  if (tempSelectedApplicants.length === 0) {
-    setErrorMessage('Please select at least one candidate for the interview.');
-    setTimeout(() => {
-      setErrorMessage('');
-    }, 3000);
-    return;
-  }
+    if (tempSelectedApplicants.length === 0) {
+      setErrorMessage('Please select at least one candidate for the interview.');
+      setTimeout(() => {
+        setErrorMessage('');
+      }, 3000);
+      return;
+    }
 
-  if (meetingMode === 'Virtual' && !meetingLink.trim()) {
-    setErrorMessage('Please provide a meeting link for the virtual interview.');
-    setTimeout(() => {
-      setErrorMessage('');
-    }, 3000);
-    return;
-  }
+    if (meetingMode === 'Virtual' && !meetingLink.trim()) {
+      setErrorMessage('Please provide a meeting link for the virtual interview.');
+      setTimeout(() => {
+        setErrorMessage('');
+      }, 3000);
+      return;
+    }
 
-  if (meetingMode === 'Physical' && !interviewAddress.trim()) {
-    setErrorMessage('Please provide an address for the physical interview.');
-    setTimeout(() => {
-      setErrorMessage('');
-    }, 3000);
-    return;
-  }
+    if (meetingMode === 'Physical' && !interviewAddress.trim()) {
+      setErrorMessage('Please provide an address for the physical interview.');
+      setTimeout(() => {
+        setErrorMessage('');
+      }, 3000);
+      return;
+    }
 
-  setIsLoading(true);
+    setIsLoading(true);
 
-  const scheduleString = `${formatFullDate(tempSelectedDate)} - ${formatTime(tempStartTime)}${meetingMode === 'Virtual' ? ` | ${meetingLink}` : ` | ${interviewAddress}`}`;
-  
-  const applicantsToUpdate = tempSelectedApplicants;
-
-  setJobs(prevJobs => {
-    return prevJobs.map(job => {
-      if (job.id === activeJobId) {
-        return {
-          ...job,
-          applicants: job.applicants.map(applicant => {
-            if (applicantsToUpdate.includes(applicant.id)) {
-              return {
-                ...applicant,
-                schedule: scheduleString,
-                hasSchedule: true
-              };
-            }
-            return applicant;
-          })
-        };
-      }
-      return job;
-    });
-  });
-
-  // Hide modal after 0.3s before navigating
-  setTimeout(() => {
-    setShowModal(false);
+    const scheduleString = `${formatFullDate(tempSelectedDate)} - ${formatTime(tempStartTime)}${meetingMode === 'Virtual' ? ` | ${meetingLink}` : ` | ${interviewAddress}`}`;
     
-    // Navigate after another short delay to ensure modal closes first
+    const applicantsToUpdate = tempSelectedApplicants;
+
+    setJobs(prevJobs => {
+      return prevJobs.map(job => {
+        if (job.id === activeJobId) {
+          return {
+            ...job,
+            applicants: job.applicants.map(applicant => {
+              if (applicantsToUpdate.includes(applicant.id)) {
+                return {
+                  ...applicant,
+                  schedule: scheduleString,
+                  hasSchedule: true
+                };
+              }
+              return applicant;
+            })
+          };
+        }
+        return job;
+      });
+    });
+
     setTimeout(() => {
-      setIsLoading(false);
-      navigate('/company/recruitment/schedule-list');
-    }, 100);
-  }, 3000);
-};
+      setShowModal(false);
+      
+      setTimeout(() => {
+        setIsLoading(false);
+        navigate('/company/recruitment/schedule-list');
+      }, 100);
+    }, 3000);
+  };
 
   const handleClearSchedule = (applicantId, e) => {
     e.stopPropagation();
@@ -650,6 +647,13 @@ const confirmSchedule = () => {
               </div>
 
               <div className='GGtg-DDDVa'>
+                <label>Message:</label>
+                <textarea className='oujka-Inpuauy OIUja-Tettxa'>
+                  {`Dear Applicant, your interview has been scheduled for ${formatFullDate(tempSelectedDate)} at ${formatTime(tempStartTime)}. Please check your email for further details. We look forward to speaking with you!`}
+                </textarea>
+              </div>
+
+              <div className='GGtg-DDDVa'>
                 <h4>Select Candidates ({tempSelectedApplicants.length} selected):</h4>
                 <ul className='UUl-Uuja Gen-Boxshadow'>
                   {currentApplicants.map(applicant => (
@@ -718,16 +722,10 @@ const confirmSchedule = () => {
                 >
                   Close
                 </button>
-              <button 
+                <button 
                   onClick={confirmSchedule}
                   disabled={isLoading}
                   className='btn-primary-bg'
-                  style={{ 
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    minWidth: '120px'
-                  }}
                 >
                   {isLoading ? (
                     <>
@@ -748,7 +746,7 @@ const confirmSchedule = () => {
                     </>
                   ) : 'Proceed'}
                 </button>
-            </div>
+              </div>
             </motion.div>
           </motion.div>
         )}

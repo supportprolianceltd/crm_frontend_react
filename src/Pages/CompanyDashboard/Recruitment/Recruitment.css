@@ -325,12 +325,16 @@
 .haggsb-status svg{
     width: 10px;
 }
+
+.status.active,
 .status.hired,
 .status.open {
   background-color: rgba(75, 192, 192, 0.2);
   color: #065f46;
 }
 
+
+.status.inactive,
 .status.rejected,
 .status.closed {
   background-color: rgba(255, 99, 132, 0.2);
@@ -3787,4 +3791,22 @@ background: linear-gradient(135deg, #FF6FD8 0%, #FF42A1 50%, #FF9770 100%) !impo
     padding: 20px;
     border: 1.5px solid #dcdae3;
     border-radius: 8px;
+}
+
+
+.oujah-Oujka{
+    position: relative;
+    width: 100%;
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.oujah-Oujka h3{
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
 }
