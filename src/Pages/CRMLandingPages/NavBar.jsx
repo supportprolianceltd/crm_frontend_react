@@ -128,9 +128,9 @@ function NavBar() {
             </li>
             <li>
               {isAuthenticated ? (
-                <button onClick={handleLogout}>
-                  Sign out
-                </button>
+                <Link to="/company">
+                  Account
+                </Link>
               ) : (
                 <Link to="/login">Sign in</Link>
               )}

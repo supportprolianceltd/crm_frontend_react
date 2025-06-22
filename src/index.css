@@ -240,3 +240,8 @@ p.error{
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.search-container svg.search-icon {
+  width: 20px;
+  height: 20px;
+}
