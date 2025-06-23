@@ -256,7 +256,8 @@ const ViewApplications = () => {
   const job = location.state?.job;
   const masterCheckboxRef = useRef(null);
 
-  const fetchApplications = useCallback(async () => {
+  const fetchApplications = useCallback(async () => 
+  {
     if (!job) {
       setError('No job ID provided');
       setLoading(false);
@@ -320,6 +321,7 @@ const handleScreenResumes = async (documentType) => {
     try {
         setLoading(true);
         console.debug('handleScreenResumes: Initiating screening', { jobId: job.id, documentType: documentType });
+        //console.log('handleScreenResumes: Initiating screening', { jobId: job.id, documentType: documentType });
         const response = await screenResumes(job.id, { document_type: documentType.toLowerCase() });
         setScreeningResults(response);
         setShowScreeningAlert(true);
