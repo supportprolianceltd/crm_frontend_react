@@ -70,7 +70,7 @@ function JobApplication() {
           throw new Error(errorData.detail || 'Job not found or not published');
         }
         const data = await response.json();
-        console.log('Fetched job data:', data);
+        //console.log('Fetched job data:', data);
         setJob({
           id: data.id,
           title: data.title,
