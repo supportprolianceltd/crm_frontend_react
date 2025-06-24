@@ -6,6 +6,7 @@ import PDFICON from '../../../assets/Img/pdf-icon.png';
 import ApplicantDetails from './ApplicantDetails';
 import { Link, useLocation } from 'react-router-dom';
 import { fetchJobApplicationsByRequisition, updateJobApplicationStatus, bulkDeleteJobApplications, screenResumes } from './ApiService';
+import SampleCV from '../../../assets/resume.pdf';
 
 const Modal = ({ title, message, onConfirm, onCancel, confirmText = 'Confirm', cancelText = 'Cancel' }) => (
   <AnimatePresence>
@@ -642,7 +643,7 @@ const handleScreenResumes = async (documentType) => {
                       </td>
                       <td>{applicant.source}</td>
                       <td>
-                        <a href={applicant.resumeUrl} target="_blank" rel="noopener noreferrer" className="resume-link">
+                        <a href={SampleCV} target="_blank" rel="noopener noreferrer" className="resume-link">
                           <img src={PDFICON} alt="PDF Resume" className="pdf-icon" />
                           View
                         </a>
