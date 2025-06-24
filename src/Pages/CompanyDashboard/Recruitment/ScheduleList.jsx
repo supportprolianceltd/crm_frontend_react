@@ -17,7 +17,7 @@ import {
 } from '@heroicons/react/24/outline';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { fetchSchedules, updateSchedule, completeSchedule, cancelSchedule, deleteSchedule } from './ApiService'; // Adjust path as needed
+import { fetchSchedules, updateSchedule, completeSchedule, cancelSchedule, bulkDeleteSchedules } from './ApiService'; // Adjust path as needed
 
 const Modal = ({ title, message, onConfirm, onCancel, confirmText = 'Confirm', cancelText = 'Cancel' }) => (
   <AnimatePresence>
@@ -229,7 +229,7 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
         interview_address: meetingMode === 'Physical' ? interviewAddress : '',
         message: message,
       };
-      await onSave(schedule.id, updatedSchedule);
+      await onSave(schedule.tenant_unique_id, updatedSchedule);
       setIsSaving(false);
       onClose();
     } catch (error) {
@@ -243,7 +243,7 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
   const handleCompleteSchedule = async () => {
     setIsCompleting(true);
     try {
-      await onComplete(schedule.id);
+      await onComplete(schedule.tenant_unique_id);
       setIsCompleting(false);
       onClose();
     } catch (error) {
@@ -273,7 +273,7 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
     setIsSubmittingReason(true);
 
     try {
-      await onCancelReject(schedule.id, cancelReason);
+      await onCancelReject(schedule.tenant_unique_id, cancelReason);
       setIsSubmittingReason(false);
       setIsCancelling(false);
       onClose();
@@ -346,7 +346,7 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
           className="modal-content custom-scroll-bar okauj-MOadad"
           ref={modalContentRef}
           initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
+          animate = {{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.8, opacity: 0 }}
           style={{
             background: '#fff',
@@ -368,7 +368,7 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
                     disabled={isCancelling || isCompleting || isSaving}
                     className="btn-cancel-bg"
                     style={{
-                      cursor: (isCancelling || isCompleting || isSaving) ? 'not-allowed' : 'pointer',
+                      cursor: 'pointer',
                     }}
                   >
                     {isCancelling ? (
@@ -398,7 +398,7 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
                     disabled={isCompleting || isCancelling || isSaving}
                     className="btn-complete-bg"
                     style={{
-                      cursor: (isCompleting || isCancelling || isSaving) ? 'not-allowed' : 'pointer',
+                      cursor: 'pointer',
                     }}
                   >
                     {isCompleting ? (
@@ -716,7 +716,8 @@ const ScheduleList = () => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        const data = await fetchSchedules();
+        const params = statusFilter !== 'All' ? { status: statusFilter } : {};
+        const data = await fetchSchedules(params);
         setSchedules(data);
         setIsLoading(false);
       } catch (error) {
@@ -727,7 +728,7 @@ const ScheduleList = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [statusFilter]);
 
   const toggleSection = () => {
     setIsVisible((prev) => !prev);
@@ -735,11 +736,10 @@ const ScheduleList = () => {
 
   const filteredSchedules = schedules.filter((item) => {
     const matchesSearch =
-      item.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.tenant_unique_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.job_requisition_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.candidate_name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'All' || item.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    return matchesSearch;
   });
 
   const totalPages = Math.ceil(filteredSchedules.length / rowsPerPage);
@@ -753,17 +753,17 @@ const ScheduleList = () => {
   };
 
   const handleSelectAllVisible = () => {
-    if (currentSchedules.every((item) => selectedIds.includes(item.id))) {
-      setSelectedIds((prev) => prev.filter((id) => !currentSchedules.some((item) => item.id === id)));
+    if (currentSchedules.every((item) => selectedIds.includes(item.tenant_unique_id))) {
+      setSelectedIds((prev) => prev.filter((id) => !currentSchedules.some((item) => item.tenant_unique_id === id)));
     } else {
       setSelectedIds((prev) => [
         ...prev,
-        ...currentSchedules.filter((item) => !prev.includes(item.id)).map((item) => item.id),
+        ...currentSchedules.filter((item) => !prev.includes(item.tenant_unique_id)).map((item) => item.tenant_unique_id),
       ]);
     }
   };
 
-  const handleDeleteMarked = async () => {
+  const handleDeleteMarked = () => {
     if (selectedIds.length === 0) {
       setShowNoSelectionAlert(true);
       return;
@@ -774,10 +774,8 @@ const ScheduleList = () => {
   const confirmDelete = async () => {
     try {
       setIsLoading(true);
-      for (const id of selectedIds) {
-        await deleteSchedule(id);
-      }
-      setSchedules((prev) => prev.filter((item) => !selectedIds.includes(item.id)));
+      await bulkDeleteSchedules(selectedIds);
+      setSchedules((prev) => prev.filter((item) => !selectedIds.includes(item.tenant_unique_id)));
       setSelectedIds([]);
       setShowConfirmDelete(false);
       setIsLoading(false);
@@ -798,12 +796,10 @@ const ScheduleList = () => {
     try {
       const response = await updateSchedule(id, updatedSchedule);
       setSchedules((prev) =>
-        prev.map((item) => (item.id === id ? { ...item, ...response } : item))
+        prev.map((item) => (item.tenant_unique_id === id ? { ...item, ...response } : item))
       );
     } catch (error) {
-      setErrorMessage(error.message || 'Failed to update schedule. Please try again.');
-      setTimeout(() => setErrorMessage(''), 3000);
-      console.error('Error updating schedule:', error);
+      throw new Error(error.message || 'Failed to update schedule.');
     }
   };
 
@@ -811,12 +807,10 @@ const ScheduleList = () => {
     try {
       const response = await completeSchedule(id);
       setSchedules((prev) =>
-        prev.map((item) => (item.id === id ? { ...item, ...response } : item))
+        prev.map((item) => (item.tenant_unique_id === id ? { ...item, ...response } : item))
       );
     } catch (error) {
-      setErrorMessage(error.message || 'Failed to complete schedule. Please try again.');
-      setTimeout(() => setErrorMessage(''), 3000);
-      console.error('Error completing schedule:', error);
+      throw new Error(error.message || 'Failed to complete schedule.');
     }
   };
 
@@ -824,12 +818,10 @@ const ScheduleList = () => {
     try {
       const response = await cancelSchedule(id, cancellationReason);
       setSchedules((prev) =>
-        prev.map((item) => (item.id === id ? { ...item, ...response } : item))
+        prev.map((item) => (item.tenant_unique_id === id ? { ...item, ...response } : item))
       );
     } catch (error) {
-      setErrorMessage(error.message || 'Failed to cancel schedule. Please try again.');
-      setTimeout(() => setErrorMessage(''), 3000);
-      console.error('Error cancelling schedule:', error);
+      throw new Error(error.message || 'Failed to cancel schedule.');
     }
   };
 
@@ -952,7 +944,7 @@ const ScheduleList = () => {
                     type="checkbox"
                     ref={masterCheckboxRef}
                     onChange={handleSelectAllVisible}
-                    checked={currentSchedules.length > 0 && currentSchedules.every((item) => selectedIds.includes(item.id))}
+                    checked={currentSchedules.length > 0 && currentSchedules.every((item) => selectedIds.includes(item.tenant_unique_id))}
                   />
                 </th>
                 <th>Schedule ID</th>
@@ -973,15 +965,15 @@ const ScheduleList = () => {
                 </tr>
               ) : (
                 currentSchedules.map((item) => (
-                  <tr key={item.id}>
+                  <tr key={item.tenant_unique_id}>
                     <td>
                       <input
                         type="checkbox"
-                        checked={selectedIds.includes(item.id)}
-                        onChange={() => handleCheckboxChange(item.id)}
+                        checked={selectedIds.includes(item.tenant_unique_id)}
+                        onChange={() => handleCheckboxChange(item.tenant_unique_id)}
                       />
                     </td>
-                    <td>{item.id}</td>
+                    <td>{item.tenant_unique_id}</td>
                     <td>{item.job_requisition_title}</td>
                     <td>{item.candidate_name}</td>
                     <td>
@@ -1060,7 +1052,7 @@ const ScheduleList = () => {
               <div className="Dash-OO-Boas-foot-2">
                 <button onClick={handleSelectAllVisible} className="mark-all-btn">
                   <CheckCircleIcon className="h-6 w-6" />
-                  {currentSchedules.every((item) => selectedIds.includes(item.id)) ? 'Unmark All' : 'Mark All'}
+                  {currentSchedules.every((item) => selectedIds.includes(item.tenant_unique_id)) ? 'Unmark All' : 'Mark All'}
                 </button>
                 <button onClick={handleDeleteMarked} className="delete-marked-btn">
                   <TrashIcon className="h-6 w-6" />

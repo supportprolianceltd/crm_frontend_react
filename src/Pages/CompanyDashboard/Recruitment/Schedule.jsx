@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -76,7 +75,7 @@ const Schedule = () => {
                 name: app.full_name,
                 schedule: scheduleString,
                 hasSchedule: !!schedule,
-                scheduleId: schedule?.id,
+                scheduleId: schedule?.tenant_unique_id,
               };
             }),
           };
@@ -296,50 +295,6 @@ const Schedule = () => {
         await createSchedule(scheduleData);
       }
 
-      // Refresh jobs to reflect new schedules
-      const data = await fetchPublishedRequisitionsWithShortlisted();
-      const transformedJobs = data.map((item, index) => {
-        const postedDate = new Date(item.job_requisition.created_at);
-        const now = new Date();
-        const diffTime = Math.abs(now - postedDate);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        const postedText = diffDays === 1 ? '1 day ago' : `${diffDays} days ago`;
-
-        return {
-          id: index + 1,
-          title: item.job_requisition.title,
-          posted: postedText,
-          applicants: item.shortlisted_applications.map((app, appIndex) => {
-            const schedule = app.schedules?.[0];
-            const scheduleString = schedule
-              ? `${new Date(schedule.interview_date_time).toLocaleDateString('en-GB', {
-                  day: '2-digit',
-                  month: 'short',
-                  year: 'numeric',
-                })} - ${new Date(schedule.interview_date_time).toLocaleTimeString('en-US', {
-                  hour: 'numeric',
-                  minute: '2-digit',
-                  hour12: true,
-                })} | ${schedule.meeting_mode === 'Virtual' ? schedule.meeting_link : schedule.interview_address}`
-              : '';
-            return {
-              id: app.id,
-              initials: app.full_name
-                .split(' ')
-                .map((n) => n[0])
-                .join('')
-                .toUpperCase()
-                .slice(0, 2),
-              name: app.full_name,
-              schedule: scheduleString,
-              hasSchedule: !!schedule,
-              scheduleId: schedule?.id,
-            };
-          }),
-        };
-      });
-
-      setJobs(transformedJobs);
       setShowModal(false);
       setIsLoading(false);
       navigate('/company/recruitment/schedule-list');

@@ -178,7 +178,7 @@ export const fetchJobApplicationsByRequisition = async (jobId) => {
 // API function to update job application status
 export const updateJobApplicationStatus = async (id, status) => {
   try {
-    const response = await apiClient.put(`/api/talent-engine-job-applications/${id}/`, { status });
+    const response = await apiClient.put(`/api/talent-engine-job-applications/applications/${id}/`, { status });
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.detail || 'Failed to update job application status. Please try again.');
@@ -188,7 +188,7 @@ export const updateJobApplicationStatus = async (id, status) => {
 // API function to bulk delete job applications
 export const bulkDeleteJobApplications = async (ids) => {
   try {
-    const response = await apiClient.post('/api/talent-engine-job-applications/bulk-delete/', { ids });
+    const response = await apiClient.post('/api/talent-engine-job-applications/applications/bulk-delete/', { ids });
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.detail || 'Failed to delete job applications. Please try again.');
@@ -197,16 +197,17 @@ export const bulkDeleteJobApplications = async (ids) => {
 
 // API function to screen resumes for a job requisition
 export const screenResumes = async (jobRequisitionId, data) => {
-    try {
-        const response = await apiClient.post(
-            `/api/talent-engine-job-applications/requisitions/${jobRequisitionId}/screen-resumes/`,
-            data
-        );
-        return response.data;
-    } catch (error) {
-        throw new Error(error.response?.data?.detail || 'Failed to screen resumes. Please try again.');
-    }
+  try {
+    const response = await apiClient.post(
+      `/api/talent-engine-job-applications/requisitions/${jobRequisitionId}/screen-resumes/`,
+      data
+    );
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.detail || 'Failed to screen resumes. Please try again.');
+  }
 };
+
 // API function to fetch published requisitions with shortlisted applications
 export const fetchPublishedRequisitionsWithShortlisted = async () => {
   try {
@@ -220,7 +221,7 @@ export const fetchPublishedRequisitionsWithShortlisted = async () => {
 // API function to create a schedule
 export const createSchedule = async (scheduleData) => {
   try {
-    const response = await apiClient.post('/api/talent-engine-job-applications/schedules/create/', scheduleData);
+    const response = await apiClient.post('/api/talent-engine-job-applications/schedules/', scheduleData);
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.detail || 'Failed to create schedule. Please try again.');
@@ -250,7 +251,9 @@ export const updateSchedule = async (id, scheduleData) => {
 // API function to complete a schedule
 export const completeSchedule = async (id) => {
   try {
-    const response = await apiClient.put(`/api/talent-engine-job-applications/schedules/${id}/complete/`);
+    const response = await apiClient.put(`/api/talent-engine-job-applications/schedules/${id}/`, {
+      status: 'completed',
+    });
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.detail || 'Failed to complete schedule. Please try again.');
@@ -260,7 +263,8 @@ export const completeSchedule = async (id) => {
 // API function to cancel a schedule
 export const cancelSchedule = async (id, cancellationReason) => {
   try {
-    const response = await apiClient.put(`/api/talent-engine-job-applications/schedules/${id}/cancel/`, {
+    const response = await apiClient.put(`/api/talent-engine-job-applications/schedules/${id}/`, {
+      status: 'cancelled',
       cancellation_reason: cancellationReason,
     });
     return response.data;
@@ -279,5 +283,11 @@ export const deleteSchedule = async (id) => {
   }
 };
 
-
-// pluralsight
+export const bulkDeleteSchedules = async (ids) => {
+  try {
+    const response = await apiClient.post('/api/talent-engine-job-applications/schedules/bulk-delete/', { ids });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.detail || 'Failed to delete schedules. Please try again.');
+  }
+};
