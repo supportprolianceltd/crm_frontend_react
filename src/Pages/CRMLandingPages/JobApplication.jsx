@@ -570,10 +570,9 @@ function JobApplication() {
 
   if (isLoading) {
     return (
-      <div className="ool-Apply-Seco">
-        <div className="site-container" style={{ textAlign: 'center', padding: '50px' }}>
+      <div className="Alll_OOo_LODer">
+        <div className="loader"></div>
           <p>Loading job details...</p>
-        </div>
       </div>
     );
   }

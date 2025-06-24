@@ -43,7 +43,10 @@ const PrivateRoute = () => {
 
   // Show loading state while validating token
   if (isAuthenticated === null) {
-    return <div>Loading...</div>;
+    return   <div className="Alll_OOo_LODer">
+        <div className="loader"></div>
+          <p>Loading job details...</p>
+      </div>;
   }
 
   return isAuthenticated ? <Outlet /> : <Navigate to="/" replace />;
