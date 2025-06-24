@@ -218,16 +218,26 @@ export const fetchPublishedRequisitionsWithShortlisted = async () => {
   }
 };
 
-// API function to create a schedule
 export const createSchedule = async (scheduleData) => {
   try {
     const response = await apiClient.post('/api/talent-engine-job-applications/schedules/', scheduleData);
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.detail || 'Failed to create schedule. Please try again.');
+    // Check if the error response contains validation errors
+    if (error.response?.data) {
+      // Handle field-specific and non-field errors
+      const errorDetails = error.response.data;
+      if (errorDetails.meeting_link) {
+        throw new Error(errorDetails.meeting_link[0] || 'Invalid meeting link provided.');
+      } else if (errorDetails.non_field_errors) {
+        throw new Error(errorDetails.non_field_errors[0] || 'Invalid schedule data.');
+      } else if (errorDetails.detail) {
+        throw new Error(errorDetails.detail);
+      }
+    }
+    throw new Error('Failed to create schedule. Please try again.');
   }
 };
-
 // API function to fetch all schedules
 export const fetchSchedules = async (params = {}) => {
   try {
@@ -283,11 +293,51 @@ export const deleteSchedule = async (id) => {
   }
 };
 
+// API function to bulk delete schedules
 export const bulkDeleteSchedules = async (ids) => {
   try {
     const response = await apiClient.post('/api/talent-engine-job-applications/schedules/bulk-delete/', { ids });
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.detail || 'Failed to delete schedules. Please try again.');
+  }
+};
+
+
+// API function to fetch tenant email configuration
+export const fetchTenantConfig = async () => {
+  try {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      throw new Error('No access token available');
+    }
+    // Decode JWT token to extract tenant_id (assuming JWT format)
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const payload = JSON.parse(atob(base64));
+    const tenantId = payload.tenant_id;
+    const response = await apiClient.get(`api/tenant/tenants/${tenantId}/`);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.detail || 'Failed to fetch tenant configuration.');
+  }
+};
+
+// API function to update tenant email configuration
+export const updateTenantConfig = async (id, configData) => {
+  try {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      throw new Error('No access token available');
+    }
+    // Decode JWT token to extract tenant_id (assuming JWT format)
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const payload = JSON.parse(atob(base64));
+    const tenantId = payload.tenant_id;
+    const response = await apiClient.patch(`api/tenant/tenants/${tenantId}/`, configData);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.detail || 'Failed to update tenant configuration.');
   }
 };

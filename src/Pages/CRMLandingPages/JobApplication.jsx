@@ -51,6 +51,7 @@ function JobApplication() {
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
+     confirmEmail: '', 
     phone: '',
     qualification: '',
     experience: '',
@@ -224,6 +225,7 @@ function JobApplication() {
     setFormData((prev) => ({ ...prev, [name]: value }));
     setErrorMessage('');
   };
+  
 
   const handleDocTypeChange = (e) => {
     const selectedType = e.target.value;
@@ -240,6 +242,12 @@ function JobApplication() {
     setErrorMessage('Job details not loaded. Please try again.');
     return;
   }
+    // Add email match validation
+  if (formData.email !== formData.confirmEmail) {
+    setErrorMessage('Email addresses do not match');
+    return;
+  }
+
 
   const requiredFields = ['fullName', 'email', 'phone', 'qualification', 'experience'];
   const isFormValid = requiredFields.every((field) => formData[field].trim() !== '');
@@ -707,7 +715,7 @@ function JobApplication() {
                     <h4>Deadline for Applications</h4>
                     <p>{job.deadline || 'N/A'}</p>
                   </div>
-
+{/* 
                   <div className="gtht-secs-IIjah-Box-Ddfa">
                     <h4>Start Date</h4>
                     <p>
@@ -722,7 +730,7 @@ function JobApplication() {
                             .join('-')
                         : 'N/A'}
                     </p>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>
@@ -834,6 +842,12 @@ function JobApplication() {
                           {
                             label: 'Email Address',
                             placeholder: 'Enter your email address',
+                            name: 'email',
+                            required: true,
+                          },
+                          {
+                            label: 'Confirm Email Address',
+                            placeholder: 'Enter your confirm email address',
                             name: 'email',
                             required: true,
                           },
