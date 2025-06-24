@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { XMarkIcon, EyeIcon, TrashIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import PDFICON from '../../../assets/Img/pdf-icon.png';
-
+import config from '../../../config';
 const ApplicantDetails = ({ job, applicant, onClose, onStatusChange }) => {
 
   // console.log("job")
@@ -53,6 +53,10 @@ const ApplicantDetails = ({ job, applicant, onClose, onStatusChange }) => {
     documents = [],
     screening_score = 0,
   } = applicant;
+
+  console.log("applicant")
+  console.log(applicant)
+  console.log("applicant")
 
   // Extract job fields with fallbacks
   const {
@@ -134,9 +138,19 @@ const ApplicantDetails = ({ job, applicant, onClose, onStatusChange }) => {
             </div>
             <div className="preview-buttons">
               <div>
-                <a href={resumeUrl} target="_blank" rel="noopener noreferrer" className="publish-btn btn-primary-bg">
+                <a
+                  href={`${config.API_BASE_URL}/${applicant.resumeUrl}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="publish-btn btn-primary-bg"
+              >
+               <EyeIcon className="w-5 h-5 inline mr-1" /> View Resume
+              </a>
+
+
+                {/* <a href={resumeUrl} target="_blank" rel="noopener noreferrer" className="publish-btn btn-primary-bg">
                   <EyeIcon className="w-5 h-5 inline mr-1" /> View Resume
-                </a>
+                </a> */}
               </div>
               <div>
                 <button className="delete-btn" onClick={() => onStatusChange(applicant.id, 'Deleted')}>

@@ -5,6 +5,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import PDFICON from '../../../assets/Img/pdf-icon.png';
 import ApplicantDetails from './ApplicantDetails';
 import { Link, useLocation } from 'react-router-dom';
+import config from '../../../config';
+
 import { fetchJobApplicationsByRequisition, updateJobApplicationStatus, bulkDeleteJobApplications, screenResumes } from './ApiService';
 import SampleCV from '../../../assets/resume.pdf';
 
@@ -304,6 +306,11 @@ const ViewApplications = () => {
       setJobTitle(transformedData[0]?.jobTitle || 'Job Applications');
       setDocumentsRequired(job.documents_required || []);
       setLoading(false);
+
+      console.log("transformedData")
+      console.log(transformedData)
+      console.log("transformedData")
+      
     } catch (err) {
       setError(err.message || 'Failed to fetch applications');
       setLoading(false);
@@ -643,10 +650,17 @@ const handleScreenResumes = async (documentType) => {
                       </td>
                       <td>{applicant.source}</td>
                       <td>
-                        <a href={SampleCV} target="_blank" rel="noopener noreferrer" className="resume-link">
+                        <a
+                          href={`${config.API_BASE_URL}/${applicant.documents[0].file_url}`}
+                          
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="resume-link"
+                        >
                           <img src={PDFICON} alt="PDF Resume" className="pdf-icon" />
                           View
                         </a>
+
                       </td>
                       <td>{applicant.screening_score ? `${applicant.screening_score}%` : 'Not Screened'}</td>
                       <td>
