@@ -1,95 +1,83 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import {
-  HomeIcon as HomeOutline,
   ClipboardDocumentIcon as ClipboardOutline,
-  UserGroupIcon as UserGroupOutline,
-  CalendarDaysIcon as CalendarOutline,
   UsersIcon as UsersOutline,
-  ClockIcon as ClockOutline,
+  CalendarDaysIcon as CalendarOutline,
   BriefcaseIcon as BriefcaseOutline,
-  BanknotesIcon as BanknotesOutline,
   ChartBarIcon as ChartBarOutline,
-  Cog6ToothIcon as Cog6ToothOutline,  // FIXED import name
-  LifebuoyIcon as HelpOutline,
+  Cog6ToothIcon as Cog6ToothOutline,
 } from '@heroicons/react/24/outline';
 
 import {
-  HomeIcon as HomeSolid,
   ClipboardDocumentIcon as ClipboardSolid,
-  UserGroupIcon as UserGroupSolid,
-  CalendarDaysIcon as CalendarSolid,
   UsersIcon as UsersSolid,
-  ClockIcon as ClockSolid,
+  CalendarDaysIcon as CalendarSolid,
   BriefcaseIcon as BriefcaseSolid,
-  BanknotesIcon as BanknotesSolid,
   ChartBarIcon as ChartBarSolid,
   Cog6ToothIcon as Cog6ToothSolid,
-  LifebuoyIcon as HelpSolid,
   ChevronDownIcon,
   ChevronUpIcon,
 } from '@heroicons/react/24/solid';
 
 const iconClass = 'w-5 h-5';
-
-// Updated basePath here:
 const basePath = '/company/recruitment';
 
 const SideNavBar = () => {
   const location = useLocation();
-
-  // Remove the basePath from location pathname to get relative path
   let relativePath = location.pathname.startsWith(basePath)
     ? location.pathname.slice(basePath.length)
     : location.pathname;
-
-  // Normalize relativePath - remove leading slash if any
   if (relativePath.startsWith('/')) relativePath = relativePath.slice(1);
 
-  // Default active is 'job-requisition' when relative path is empty
-  const initialActive = relativePath.startsWith('project/')
+  const initialActive = relativePath.startsWith('settings/')
     ? relativePath
     : relativePath === '' ? 'job-requisition' : relativePath.split('/')[0];
 
   const [active, setActive] = useState(initialActive);
-  const [projectOpen, setProjectOpen] = useState(initialActive.startsWith('project'));
-  const projectRef = useRef(null);
+  const [settingsOpen, setSettingsOpen] = useState(initialActive.startsWith('settings/'));
 
-  // Close dropdown if clicking outside
+  const settingsRef = useRef(null);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (projectRef.current && !projectRef.current.contains(event.target)) {
-        setProjectOpen(false);
+      // Ignore clicks on submenu items
+      if (event.target.closest('.SubMenu-Settings')) {
+        return;
+      }
+      
+      if (settingsRef.current && !settingsRef.current.contains(event.target)) {
+        setSettingsOpen(false);
       }
     };
+    
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Update active and dropdown when location changes
   useEffect(() => {
     let relPath = location.pathname.startsWith(basePath)
       ? location.pathname.slice(basePath.length)
       : location.pathname;
     if (relPath.startsWith('/')) relPath = relPath.slice(1);
 
-    if (relPath.startsWith('project/')) {
+    if (relPath.startsWith('settings/')) {
       setActive(relPath);
-      setProjectOpen(true);
+      setSettingsOpen(true);
     } else if (relPath === '') {
-      setActive('job-requisition');  // default active when no route after base
-      setProjectOpen(false);
+      setActive('job-requisition');
+      setSettingsOpen(false);
     } else {
       setActive(relPath.split('/')[0]);
-      setProjectOpen(false);
+      setSettingsOpen(false);
     }
   }, [location]);
 
   const renderIcon = (name, OutlineIcon, SolidIcon) => {
-    if (name === 'project') {
-      return active.startsWith('project') ? (
+    if (name === 'settings') {
+      return active.startsWith('settings/') ? (
         <SolidIcon className={iconClass} />
       ) : (
         <OutlineIcon className={iconClass} />
@@ -105,19 +93,23 @@ const SideNavBar = () => {
   const MenuItem = ({ name, label, OutlineIcon, SolidIcon, extraIcon, onClick, to }) => (
     <li
       className={
-        active === name || (name === 'project' && active.startsWith('project'))
+        active === name || (name === 'settings' && active.startsWith('settings/'))
           ? 'active'
           : ''
       }
-      ref={name === 'project' ? projectRef : null}
+      ref={name === 'settings' ? settingsRef : null}
     >
       {to ? (
         <Link
           to={to}
           className="flex items-center justify-between"
-          onClick={() => {
-            if (onClick) onClick();
-            else setActive(name);
+          onClick={(e) => {
+            if (onClick) {
+              e.preventDefault();
+              onClick();
+            } else {
+              setActive(name);
+            }
           }}
         >
           <span className="LefB-Icon">{renderIcon(name, OutlineIcon, SolidIcon)}</span>
@@ -146,13 +138,15 @@ const SideNavBar = () => {
     </li>
   );
 
-  // SubMenuItem (for project submenu) - you can add this if you have project submenu links
   const SubMenuItem = ({ name, label, to }) => (
-    <li className={active === `project/${name}` ? 'active' : ''}>
+    <li className={active === `settings/${name}` ? 'active' : ''}>
       <Link
         to={to}
         className="submenu"
-        onClick={() => setActive(`project/${name}`)}
+        onClick={(e) => {
+          e.stopPropagation(); // Prevent event from bubbling up
+          setActive(`settings/${name}`);
+        }}
       >
         {label}
       </Link>
@@ -176,16 +170,9 @@ const SideNavBar = () => {
             SolidIcon={BriefcaseSolid}
             to={`${basePath}/`}
           />
-          {/* <MenuItem
-            name="approval"
-            label="Approval Workflow"
-            OutlineIcon={ClipboardOutline}
-            SolidIcon={ClipboardSolid}
-            to={`${basePath}/approval`}
-          /> */}
           <MenuItem
             name="job-adverts"
-            label="	Job Adverts"
+            label="Job Adverts"
             OutlineIcon={ChartBarOutline}
             SolidIcon={ChartBarSolid}
             to={`${basePath}/job-adverts`}
@@ -197,7 +184,6 @@ const SideNavBar = () => {
             SolidIcon={UsersSolid}
             to={`${basePath}/applications`}
           />
- 
           <MenuItem
             name="schedule"
             label="Interview Schedule"
@@ -213,13 +199,38 @@ const SideNavBar = () => {
             to={`${basePath}/compliance`}
           />
 
-         <MenuItem
+          <MenuItem
             name="settings"
-            label="API Settings"
-            OutlineIcon={Cog6ToothOutline}  
+            label="Settings"
+            OutlineIcon={Cog6ToothOutline}
             SolidIcon={Cog6ToothSolid}
-            to={`${basePath}/settings`}
+            extraIcon={settingsOpen ? <ChevronUpIcon className="w-4 h-4" /> : <ChevronDownIcon className="w-4 h-4" />}
+            onClick={() => setSettingsOpen(!settingsOpen)}
           />
+
+          <AnimatePresence>
+            {settingsOpen && (
+              <motion.ul
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+                className="SubMenu-Settings"
+              >
+                <SubMenuItem
+                  name="api-settings"
+                  label="API Settings"
+                  to={`${basePath}/api-settings`}
+                />
+                <SubMenuItem
+                  name="email-configuration"
+                  label="Email Configuration"
+                  to={`${basePath}/email-settings`}
+                />
+                
+              </motion.ul>
+            )}
+          </AnimatePresence>
 
         </ul>
       </div>

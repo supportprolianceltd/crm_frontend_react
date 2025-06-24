@@ -192,6 +192,13 @@
     gap: 20px;
 }
 
+.OOOu-KJa{
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 20px;
+}
+
 .Dash-OO-Boas-Top-1{
     position: relative;
     display: inline-flex;
@@ -3809,4 +3816,21 @@ background: linear-gradient(135deg, #FF6FD8 0%, #FF42A1 50%, #FF9770 100%) !impo
     font-size: 12px;
     font-weight: 600;
     text-transform: uppercase;
+}
+
+
+
+
+
+
+
+
+
+
+/* GTha-POka */
+
+.GTha-POka{
+    display: flex !important;
+    align-items: center !important;
+    gap: 5px !important;
 }

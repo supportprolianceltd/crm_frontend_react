@@ -8,6 +8,7 @@ import { Link, useLocation } from 'react-router-dom';
 import config from '../../../config';
 
 import { fetchJobApplicationsByRequisition, updateJobApplicationStatus, bulkDeleteJobApplications, screenResumes } from './ApiService';
+import SampleCV from '../../../assets/resume.pdf';
 
 const Modal = ({ title, message, onConfirm, onCancel, confirmText = 'Confirm', cancelText = 'Cancel' }) => (
   <AnimatePresence>
