@@ -2,6 +2,9 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import usePageTitle from '../../hooks/usePageTitle';
 import { ShareIcon } from '@heroicons/react/20/solid';
+import { Link, useNavigate } from 'react-router-dom';
+
+import LOGO from '../../assets/Img/logo-lite.png';
 import {
   CheckCircleIcon,
   XMarkIcon,
@@ -585,8 +588,13 @@ function JobApplication() {
 
   return (
     <div className="ool-Apply-Seco">
+        <Link to="/" className="Nav-Brand GUK-Loffoa">
+            <img src={LOGO} alt="logo" />
+            <span>Jobs</span>
+          </Link>
       <header className="ool-Apply-Seco-header">
         <div className="site-container">
+         
           <div className="ouoau-Hero">
             <h2>{job.title || 'Job Title'}</h2>
           </div>

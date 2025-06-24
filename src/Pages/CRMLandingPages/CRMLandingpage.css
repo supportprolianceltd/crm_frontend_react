@@ -714,7 +714,25 @@
     position: relative;
     width: 100%;
     height: auto;
-    top: 70px;
+}
+
+.GUK-Loffoa{
+    position: absolute !important;
+    top: 20px;
+    z-index: 100;
+    left: 10%;
+    color: #fff;
+    background-color: rgba(255,255,255,0.1);
+    padding: 7px 15px;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 8px;
+}
+.GUK-Loffoa img{
+    max-width: 50px !important;
+}
+.GUK-Loffoa span{
+  font-size: 12px !important;
+  border-color: rgba(255,255,255,0.5) !important;
 }
 
 .ool-Apply-Seco-header{
@@ -724,10 +742,11 @@
     min-height: 100px;
     background: linear-gradient(135deg, #450CD5 0%, #7226FF 50%, #F042FF 100%);
     padding: 50px 0px;
+    padding-top: 90px !important;
     color: #fff;
 }
 .ouoau-Hero h2{
-    font-size: 30px;
+    font-size: 25px;
     font-weight: 500;
     line-height: 40px;
 }
@@ -760,7 +779,7 @@
     width: 100%;
     height: auto;
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
     gap: 20px;
     flex-wrap: wrap;
     margin-top: 20px;
@@ -861,6 +880,7 @@ background-color: rgba(255,255,255,0.2);
     height: auto;
     background: #f7f5ff;
     padding-bottom: 50px;
+    padding-top: 40px;
 }
 
 .gtht-secs-Main{
@@ -879,7 +899,6 @@ background-color: rgba(255,255,255,0.2);
     display: flex;
     flex-direction: column;
     gap: 10px;
-    padding-top: 30px;
 }
 
 .jjab-Banner{
@@ -1002,13 +1021,12 @@ background-color: rgba(255,255,255,0.2);
 
 .gtht-secs-Part2{
     position: sticky;
-    top: 90px;
+    top: 30px;
     z-index: 1000;
     width: 100%;
     z-index: 100;
     height: auto;
     min-height: 90vh;
-    margin-top: -150px;
 }
 
 .gtht-secs-Part2-Box{
