@@ -352,7 +352,7 @@ const Schedule = () => {
     setErrorMessage('');
   };
 
-  if (isFetching) {
+if (isFetching) {
     return (
       <div className="Schedule-MMAin-Pais" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
         <motion.div
@@ -363,13 +363,13 @@ const Schedule = () => {
             width: 40,
             height: 40,
             borderRadius: '50%',
-            border: '4px solid rgba(114, 38, 255, 0.3)',
+            border: '4px solid rgba(114, 38, 255, 0.2)',
             borderTopColor: '#7226FF',
           }}
         />
       </div>
-    );
-  }
+    );
+  }
 
   return (
     <div className="Schedule-MMAin-Pais">

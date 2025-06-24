@@ -715,13 +715,23 @@
     width: 100%;
     height: auto;
 }
-
-.GUK-Loffoa{
-    position: absolute !important;
-    top: 20px;
+.gggyh-dalik{
+    position: absolute;
     z-index: 100;
-    left: 10%;
+    width: 100%;
+    height: 70px;
+    display: flex;
+    align-items: center;
     color: #fff;
+}
+.gggyh-dalik-main{
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+.GUK-Loffoa{
     background-color: rgba(255,255,255,0.1);
     padding: 7px 15px;
     border: 1px solid rgba(255,255,255,0.3);
@@ -733,6 +743,17 @@
 .GUK-Loffoa span{
   font-size: 12px !important;
   border-color: rgba(255,255,255,0.5) !important;
+}
+.gggyh-dalik-main h4{
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+.gggyh-dalik-main h4 svg{
+    width: 14px;
 }
 
 .ool-Apply-Seco-header{

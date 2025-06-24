@@ -17,6 +17,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import config from '../../config';
 import PDFICON from '../../assets/Img/pdf-icon.png';
 import AdvertBanner from '../../assets/Img/Advert-Banner.jpg';
+import { TagIcon } from '@heroicons/react/24/solid';
 const API_BASE_URL = `${config.API_BASE_URL}`;
 
 function JobApplication() {
@@ -569,10 +570,9 @@ function JobApplication() {
 
   if (isLoading) {
     return (
-      <div className="ool-Apply-Seco">
-        <div className="site-container" style={{ textAlign: 'center', padding: '50px' }}>
+      <div className="Alll_OOo_LODer">
+        <div className="loader"></div>
           <p>Loading job details...</p>
-        </div>
       </div>
     );
   }
@@ -589,14 +589,18 @@ function JobApplication() {
 
   return (
     <div className="ool-Apply-Seco">
+      <div className='gggyh-dalik'>
+        <div className='large-container gggyh-dalik-main'>
         <Link to="/" className="Nav-Brand GUK-Loffoa">
             <img src={LOGO} alt="logo" />
             <span>Jobs</span>
           </Link>
+          <h4><TagIcon /> #JOB ID: POL-00002</h4>
+          </div>
+          </div>
       <header className="ool-Apply-Seco-header">
-        <div className="site-container">
+        <div className="large-container">
           <div className="ouoau-Hero">
-                <h4>#JOB ID: POL-00002</h4>
             <h2>{job.title || 'Job Title'}</h2>
           </div>
           <div className="aoik-fffot">
@@ -636,7 +640,7 @@ function JobApplication() {
       </header>
 
       <section className="gtht-secs">
-        <div className="site-container">
+        <div className="large-container">
           <div className="gtht-secs-Main">
             <div className="gtht-secs-Part1">
               <div className="gtht-secs-IIjah-Box">

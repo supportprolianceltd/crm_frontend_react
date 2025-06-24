@@ -26,7 +26,10 @@ const SocialCallback = () => {
     fetchToken();
   }, [location, navigate]);
 
-  return <div>Loading...</div>;
+  return  <div className="Alll_OOo_LODer">
+        <div className="loader"></div>
+          <p>Loading...</p>
+      </div>;
 };
 
 export default SocialCallback;
