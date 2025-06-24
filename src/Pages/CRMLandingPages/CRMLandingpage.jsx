@@ -12,15 +12,23 @@ import ForgotPasswordPage from './ForgotPassword';
 import NewPasswordPage from './NewPassword';
 import JobApplication from './JobApplication';
 import Recruitment from './Features/Recruitment';
+import ApplicantDashboard from '../ApplicantDashboard/Dashboard';
 
 const CRMLandingpage = () => {
   const location = useLocation();
+
   const regPagePaths = ['/login', '/register', '/code-verification'];
   const isRegPage = regPagePaths.includes(location.pathname);
 
+  const isApplicantDashboard = location.pathname.startsWith('/application-dashboard');
+
   return (
     <SelectedFeaturesProvider>
-      <div className={`CRMLandingpagee ${isRegPage ? 'Reg_Page' : ''}`}>
+      <div
+        className={`CRMLandingpagee 
+          ${isRegPage ? 'Reg_Page' : ''} 
+          ${isApplicantDashboard ? 'application-dashboard-nav' : ''}`}
+      >
         <NavBar />
         <Routes>
           <Route path="/" element={<Home />} />
@@ -32,6 +40,7 @@ const CRMLandingpage = () => {
           <Route path="/new-password" element={<NewPasswordPage />} />
           <Route path="/jobs/:unique_link" element={<JobApplication />} />
           <Route path="/recruitment" element={<Recruitment />} />
+          <Route path="/application-dashboard/*" element={<ApplicantDashboard />} />
         </Routes>
       </div>
     </SelectedFeaturesProvider>

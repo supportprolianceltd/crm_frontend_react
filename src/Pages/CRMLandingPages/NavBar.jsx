@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDownIcon } from '@heroicons/react/24/outline';
+import { ChevronDownIcon, QuestionMarkCircleIcon,Cog6ToothIcon } from '@heroicons/react/24/outline';
 import { Link, useNavigate } from 'react-router-dom';
 
 import LOGO from '../../assets/Img/logo.png';
@@ -14,25 +14,28 @@ import PayrollIcon from '../../assets/Img/CRMPack/Payroll.svg';
 
 function NavBar() {
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [isScrolling, setIsScrolling] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+
   const dropdownRef = useRef(null);
+  const profileDropdownRef = useRef(null);
   const navigate = useNavigate();
 
   // Check authentication status on mount
   useEffect(() => {
-    const checkAuth = () => {
-      const accessToken = localStorage.getItem('accessToken');
-      setIsAuthenticated(!!accessToken);
-    };
-    checkAuth();
+    const accessToken = localStorage.getItem('accessToken');
+    setIsAuthenticated(!!accessToken);
   }, []);
 
-  // Handle click outside to close dropdown
+  // Handle click outside to close dropdowns
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setShowDropdown(false);
+      }
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
+        setShowProfileDropdown(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -42,22 +45,17 @@ function NavBar() {
   // Handle scroll for nav styling
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 10) {
-        setIsScrolling(true);
-      } else {
-        setIsScrolling(false);
-      }
+      setIsScrolling(window.scrollY > 10);
     };
-
     window.addEventListener('scroll', handleScroll);
     handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Toggle dropdown visibility
-  const toggleDropdown = () => setShowDropdown((prev) => !prev);
+  const toggleDropdown = () => setShowDropdown(prev => !prev);
 
-  // Handle logout
+  const toggleProfileDropdown = () => setShowProfileDropdown(prev => !prev);
+
   const handleLogout = () => {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
@@ -136,6 +134,54 @@ function NavBar() {
               )}
             </li>
           </ul>
+
+          <div
+            className='AAPpl-NAvsb'
+            onClick={toggleProfileDropdown}
+            ref={profileDropdownRef}
+          >
+            <div className='AAPpl-NAvsb-Main'>
+              <div className='AAPpl-NAvsb-1'>
+                <span>PG</span>
+              </div>
+              <div className='AAPpl-NAvsb-2'>
+                <h3>Prince Godson</h3>
+                <p>princegodson24@gmail.com</p>
+              </div>
+              <div className='AAPpl-NAvsb-3'>
+                <ChevronDownIcon className={`${showProfileDropdown ? 'rotate' : ''}`} />
+              </div>
+            </div>
+
+            <AnimatePresence>
+              {showProfileDropdown && (
+                <motion.div
+                  className="All_Drop_Down ooaujs-Po Gen-Boxshadow"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Link to="/" onClick={() => setShowProfileDropdown(false)}>
+                    <QuestionMarkCircleIcon /> Help & Support
+                  </Link>
+                  <Link to="/" onClick={() => setShowProfileDropdown(false)}>
+                    <Cog6ToothIcon /> Settimgs
+                  </Link>
+                  <button
+                    className="logout-btn btn-primary-bg"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowProfileDropdown(false);
+                      handleLogout();
+                    }}
+                  >
+                    Logout
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
     </nav>
