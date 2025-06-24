@@ -5,6 +5,7 @@ import { ShareIcon } from '@heroicons/react/20/solid';
 import { Link, useNavigate } from 'react-router-dom';
 
 import LOGO from '../../assets/Img/logo-lite.png';
+import NoAdvert from '../../assets/Img/noAdvert.png';
 import {
   CheckCircleIcon,
   XMarkIcon,
@@ -594,8 +595,8 @@ function JobApplication() {
           </Link>
       <header className="ool-Apply-Seco-header">
         <div className="site-container">
-         
           <div className="ouoau-Hero">
+                <h4>#JOB ID: POL-00002</h4>
             <h2>{job.title || 'Job Title'}</h2>
           </div>
           <div className="aoik-fffot">
@@ -729,7 +730,8 @@ function JobApplication() {
                 </div>
 
                 {isDeadlineExpired ? (
-                  <div className="deadline-expired-message" style={{ textAlign: 'center', padding: '20px', color: 'red' }}>
+                  <div className="deadline-expired-message">
+                    <img src={NoAdvert} />
                     <p>The company has stopped taking applications.</p>
                   </div>
                 ) : (
