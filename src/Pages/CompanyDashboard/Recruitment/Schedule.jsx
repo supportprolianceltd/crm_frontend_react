@@ -638,7 +638,7 @@ if (isFetching) {
                 )}
               </div>
 
-              <div className="GGtg-DDDVa">
+              <div className="GGtg-DDDVa dd-none">
                 <label>Message:</label>
                 <textarea
                   className="oujka-Inpuauy OIUja-Tettxa"

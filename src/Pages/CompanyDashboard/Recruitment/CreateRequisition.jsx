@@ -205,7 +205,7 @@ const CreateRequisition = ({ onClose }) => {
             <label>Job Title</label>
             <input
               type='text'
-              placeholder='Job Title'
+              placeholder='e.g. Senior Software Engineer'
               value={title}
               onChange={(e) => handleChange(e, setTitle)}
               onFocus={() => setFocusedInput('title')}
@@ -217,7 +217,7 @@ const CreateRequisition = ({ onClose }) => {
             <label>Qualification requirement</label>
             <input
               type='text'
-              placeholder='Qualification requirement'
+              placeholder='e.g. B.Sc. in Computer Science, Engineering, or related field; Professional certifications (AWS, Azure, etc.)'
               value={qualification}
               onChange={(e) => handleChange(e, setQualification)}
               onFocus={() => setFocusedInput('qualification')}
@@ -229,7 +229,7 @@ const CreateRequisition = ({ onClose }) => {
             <label>Experience requirement</label>
             <input
               type='text'
-              placeholder='Experience requirement'
+              placeholder='e.g. Minimum of 5 years experience in full-stack software development'
               value={experience}
               onChange={(e) => handleChange(e, setExperience)}
               onFocus={() => setFocusedInput('experience')}
@@ -241,7 +241,7 @@ const CreateRequisition = ({ onClose }) => {
             <label>Knowledge requirement</label>
             <input
               type='text'
-              placeholder='Knowledge requirement'
+              placeholder='e.g. Proficiency in JavaScript, React, Node.js, REST APIs, database design; familiarity with Agile methodologies'
               value={knowledge}
               onChange={(e) => handleChange(e, setKnowledge)}
               onFocus={() => setFocusedInput('knowledge')}
@@ -253,7 +253,7 @@ const CreateRequisition = ({ onClose }) => {
             <label>Reason for request</label>
             <textarea
               ref={textareaRef}
-              placeholder='Reason for request'
+              placeholder='e.g. To expand the development team for upcoming project deadlines; to fill a vacancy due to recent resignation'
               value={text}
               onChange={(e) => handleChange(e, setText)}
               onFocus={() => setFocusedInput('text')}

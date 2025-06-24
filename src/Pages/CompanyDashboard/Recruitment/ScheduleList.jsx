@@ -346,7 +346,7 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
           className="modal-content custom-scroll-bar okauj-MOadad"
           ref={modalContentRef}
           initial={{ scale: 0.8, opacity: 0 }}
-          animate = {{ scale: 1, opacity: 1 }}
+          animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.8, opacity: 0 }}
           style={{
             background: '#fff',
@@ -734,20 +734,19 @@ const ScheduleList = () => {
     setIsVisible((prev) => !prev);
   };
 
-// AFTER (with null checks)
-const filteredSchedules = schedules.filter((item) => {
-  const lowerSearch = searchTerm.toLowerCase();
-  
-  const id = item.tenant_unique_id ? item.tenant_unique_id.toLowerCase() : '';
-  const title = item.job_requisition_title ? item.job_requisition_title.toLowerCase() : '';
-  const name = item.candidate_name ? item.candidate_name.toLowerCase() : '';
+  const filteredSchedules = schedules.filter((item) => {
+    const lowerSearch = searchTerm.toLowerCase();
+    
+    const id = item.tenant_unique_id ? item.tenant_unique_id.toLowerCase() : '';
+    const title = item.job_requisition_title ? item.job_requisition_title.toLowerCase() : '';
+    const name = item.candidate_name ? item.candidate_name.toLowerCase() : '';
 
-  return (
-    id.includes(lowerSearch) || 
-    title.includes(lowerSearch) || 
-    name.includes(lowerSearch)
-  );
-});
+    return (
+      id.includes(lowerSearch) || 
+      title.includes(lowerSearch) || 
+      name.includes(lowerSearch)
+    );
+  });
 
   const totalPages = Math.ceil(filteredSchedules.length / rowsPerPage);
   const startIndex = (currentPage - 1) * rowsPerPage;
@@ -838,28 +837,6 @@ const filteredSchedules = schedules.filter((item) => {
     }
     setSelectedIds([]);
   }, [currentPage, rowsPerPage]);
-
-  if (isLoading) {
-    return (
-      <div
-        className="ScheduleList-sec"
-        style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}
-      >
-        <motion.div
-          initial={{ rotate: 0 }}
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: '50%',
-            border: '4px solid rgba(114, 38, 255, 0.3)',
-            borderTopColor: '#7226FF',
-          }}
-        />
-      </div>
-    );
-  }
 
   return (
     <div className="ScheduleList-sec">
@@ -952,6 +929,7 @@ const filteredSchedules = schedules.filter((item) => {
                     ref={masterCheckboxRef}
                     onChange={handleSelectAllVisible}
                     checked={currentSchedules.length > 0 && currentSchedules.every((item) => selectedIds.includes(item.tenant_unique_id))}
+                    disabled={isLoading}
                   />
                 </th>
                 <th>Schedule ID</th>
@@ -964,7 +942,26 @@ const filteredSchedules = schedules.filter((item) => {
               </tr>
             </thead>
             <tbody>
-              {currentSchedules.length === 0 ? (
+              {isLoading ? (
+                <tr>
+                  <td colSpan="8" style={{ textAlign: 'center', padding: '20px' }}>
+                    <motion.div
+                      initial={{ rotate: 0 }}
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: '50%',
+                        border: '4px solid rgba(114, 38, 255, 0.3)',
+                        borderTopColor: '#7226FF',
+                        margin: '0 auto',
+                      }}
+                    />
+                    <p style={{ marginTop: '10px', color: '#666' }}>Loading schedules...</p>
+                  </td>
+                </tr>
+              ) : currentSchedules.length === 0 ? (
                 <tr>
                   <td colSpan="8" style={{ textAlign: 'center', padding: '20px', fontStyle: 'italic' }}>
                     No matching scheduled interviews found
@@ -978,6 +975,7 @@ const filteredSchedules = schedules.filter((item) => {
                         type="checkbox"
                         checked={selectedIds.includes(item.tenant_unique_id)}
                         onChange={() => handleCheckboxChange(item.tenant_unique_id)}
+                        disabled={isLoading}
                       />
                     </td>
                     <td>{item.tenant_unique_id}</td>
@@ -985,7 +983,6 @@ const filteredSchedules = schedules.filter((item) => {
                     <td>{item.candidate_name}</td>
                     <td>
                       {new Date(item.interview_date_time).toLocaleString('en-GB', {
-                    
                         day: '2-digit',
                         month: 'short',
                         year: 'numeric',
@@ -1027,6 +1024,7 @@ const filteredSchedules = schedules.filter((item) => {
                         <button
                           className="view-btn btn-primary-bg"
                           onClick={() => handleViewSchedule(item)}
+                          disabled={isLoading}
                         >
                           View Schedule
                         </button>
@@ -1038,7 +1036,7 @@ const filteredSchedules = schedules.filter((item) => {
             </tbody>
           </table>
         </div>
-        {filteredSchedules.length > 0 && (
+        {!isLoading && filteredSchedules.length > 0 && (
           <div className="pagination-controls">
             <div className="Dash-OO-Boas-foot">
               <div className="Dash-OO-Boas-foot-1">
@@ -1048,6 +1046,7 @@ const filteredSchedules = schedules.filter((item) => {
                     className="form-select"
                     value={rowsPerPage}
                     onChange={(e) => setRowsPerPage(Number(e.target.value))}
+                    disabled={isLoading}
                   >
                     <option value="5">5</option>
                     <option value="10">10</option>
@@ -1058,11 +1057,11 @@ const filteredSchedules = schedules.filter((item) => {
               </div>
 
               <div className="Dash-OO-Boas-foot-2">
-                <button onClick={handleSelectAllVisible} className="mark-all-btn">
+                <button onClick={handleSelectAllVisible} className="mark-all-btn" disabled={isLoading}>
                   <CheckCircleIcon className="h-6 w-6" />
                   {currentSchedules.every((item) => selectedIds.includes(item.tenant_unique_id)) ? 'Unmark All' : 'Mark All'}
                 </button>
-                <button onClick={handleDeleteMarked} className="delete-marked-btn">
+                <button onClick={handleDeleteMarked} className="delete-marked-btn" disabled={isLoading}>
                   <TrashIcon className="h-6 w-6" />
                   Delete Marked
                 </button>
@@ -1077,14 +1076,14 @@ const filteredSchedules = schedules.filter((item) => {
                 <button
                   className="page-button"
                   onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
+                  disabled={currentPage === 1 || isLoading}
                 >
                   <ChevronLeftIcon className="h-5 w-5" />
                 </button>
                 <button
                   className="page-button"
                   onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
+                  disabled={currentPage === totalPages || isLoading}
                 >
                   <ChevronRightIcon className="h-5 w-5" />
                 </button>
