@@ -734,13 +734,20 @@ const ScheduleList = () => {
     setIsVisible((prev) => !prev);
   };
 
-  const filteredSchedules = schedules.filter((item) => {
-    const matchesSearch =
-      item.tenant_unique_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.job_requisition_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.candidate_name.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesSearch;
-  });
+// AFTER (with null checks)
+const filteredSchedules = schedules.filter((item) => {
+  const lowerSearch = searchTerm.toLowerCase();
+  
+  const id = item.tenant_unique_id ? item.tenant_unique_id.toLowerCase() : '';
+  const title = item.job_requisition_title ? item.job_requisition_title.toLowerCase() : '';
+  const name = item.candidate_name ? item.candidate_name.toLowerCase() : '';
+
+  return (
+    id.includes(lowerSearch) || 
+    title.includes(lowerSearch) || 
+    name.includes(lowerSearch)
+  );
+});
 
   const totalPages = Math.ceil(filteredSchedules.length / rowsPerPage);
   const startIndex = (currentPage - 1) * rowsPerPage;
@@ -978,6 +985,7 @@ const ScheduleList = () => {
                     <td>{item.candidate_name}</td>
                     <td>
                       {new Date(item.interview_date_time).toLocaleString('en-GB', {
+                    
                         day: '2-digit',
                         month: 'short',
                         year: 'numeric',
