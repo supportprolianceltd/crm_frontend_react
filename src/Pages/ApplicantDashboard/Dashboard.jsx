@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import usePageTitle from '../../hooks/useMainPageTitle';
 import { Route, Routes, Link } from 'react-router-dom';
 import { ChevronRightIcon, FolderIcon, PlusCircleIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
+import { CheckIcon } from '@heroicons/react/24/solid';
 import './Dashboard.css';
 
 // CountUp component
@@ -177,6 +178,24 @@ const Dashboard = () => {
                             <CircularProgress percentage={0} color="#7226FF" number={5} isActive={activeCard === 5} />
                         </div>
                         <p><CountUp end={0} /> Decision</p>
+                    </div>
+                </div>
+
+                <div className='OL-Boxas'>
+                    <div className='OL-Boxas-Top'>
+                        <h3>Job Application <span>Progress: 100% <b>Completed <CheckIcon  /></b></span></h3>
+                        <p>You’ve successfully completed the first phase of your application for the Frontend Website Developer role. All required application information has been submitted and confirmed.
+                            Your next step is the Interview phase, which is currently at 50% completion. Please monitor your email and application dashboard for further updates or interview scheduling.
+                        </p>
+                    </div>
+
+                    <div className='OL-Boxas-Body'>
+                        <form className='Ol-Boxxx-Forms'>
+                                 <div className="GHuh-Form-Input">
+                                    <label>Document Uploads (Required)</label>
+                                    <input type='text' />
+                                 </div>
+                        </form>
                     </div>
                 </div>
 

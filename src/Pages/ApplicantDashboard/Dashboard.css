@@ -306,3 +306,76 @@ color: #7226FF !important;
 .GYhh-Card.active::before{
     opacity: 1;
 }
+
+
+
+/* OL-Boxas */
+
+.OL-Boxas{
+    position: relative;
+    width: 100%;
+    height: auto;
+    min-height: 200px;
+    background-color: #f7f5ff;
+    margin-top: -15px;
+    border-radius: 10px;
+    padding: 30px;
+}
+
+.OL-Boxas-Top{
+    position: relative;
+    width: 100%;
+    height: auto;
+}
+
+.OL-Boxas-Top h3{
+    position: relative;
+    width: 100%;
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 20px;
+    font-weight: 500;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.OL-Boxas-Top h3 span{
+    font-size: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.OL-Boxas-Top h3 span b{
+    position: relative;
+    font-size: 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    background-color: #dff9e9;
+    border-radius: 30px;
+    color: #16A34A;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border:1px solid #16A34A;
+}
+
+.OL-Boxas-Top h3 span b svg{
+    width: 13px;
+}
+
+.OL-Boxas-Top p{
+    line-height: 165%;
+}
+
+
+.OL-Boxas-Body{
+    position: relative;
+    width: 100%;
+    height: auto;
+    margin-top: 20px;
+}
