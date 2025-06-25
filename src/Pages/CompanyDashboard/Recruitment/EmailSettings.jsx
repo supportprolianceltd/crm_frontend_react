@@ -686,6 +686,8 @@
 // };
 
 // export default EmailSettings;
+
+
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -1041,11 +1043,6 @@ const EmailSettings = () => {
     setIsLoading(true);
     try {
       const tenant = await fetchTenantConfig();
-      
-      console.log("tenant")
-      console.log(tenant)
-      console.log("tenant")
-      
       if (tenant) {
         setEmailConfig({
           id: tenant.id,
@@ -1151,7 +1148,7 @@ const EmailSettings = () => {
           <table className="Gen-Sys-table">
             <thead>
               <tr>
-                <th><span className="flex items-center gap-1">Config ID</span></th>
+                <th><span className="flex items-center gap-1">S/N</span></th>
                 <th><span className="flex items-center gap-1">Email Host</span></th>
                 <th><span className="flex items-center gap-1">Port</span></th>
                 <th><span className="flex items-center gap-1">SSL</span></th>
@@ -1164,7 +1161,7 @@ const EmailSettings = () => {
             <tbody>
               {isLoading ? (
                 <tr>
-                 <td colSpan={8} style={{ textAlign: 'center', padding: '20px', fontStyle: 'italic' }}>
+                  <td colSpan={8} style={{ textAlign: 'center', padding: '20px', fontStyle: 'italic' }}>
                     <ul className="tab-Loadding-AniMMA">
                       <li></li>
                       <li></li>
@@ -1179,7 +1176,7 @@ const EmailSettings = () => {
                 </tr>
               ) : emailConfig ? (
                 <tr key={emailConfig.id}>
-                  <td>{emailConfig.id}</td>
+                  <td>1</td>
                   <td>{emailConfig.email_host}</td>
                   <td>{emailConfig.email_port}</td>
                   <td>{emailConfig.email_use_ssl ? 'Yes' : 'No'}</td>

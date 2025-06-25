@@ -148,7 +148,8 @@ export const deleteRequisition = async (id) => {
 
 export const fetchSoftDeletedRequisitions = async () => {
   try {
-    const response = await apiClient.get('/api/talent-engine/requisitions/soft-deleted/');
+    const response = await apiClient.get('/api/talent-engine/requisitions/deleted/soft_deleted/');
+    //console.log('Soft-deleted job Requisitions:', response.data);
     return response.data.data || response.data;
   } catch (error) {
     throw new Error(error.response?.data?.detail || 'Failed to load soft-deleted requisitions.');
@@ -157,7 +158,7 @@ export const fetchSoftDeletedRequisitions = async () => {
 
 export const recoverRequisitions = async (ids) => {
   try {
-    const response = await apiClient.post('/api/talent-engine/requisitions/recover/', { ids });
+    const response = await apiClient.post('/api/talent-engine/requisitions/recover/requisition/', { ids });
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.detail || 'Failed to recover requisitions.');
@@ -166,7 +167,7 @@ export const recoverRequisitions = async (ids) => {
 
 export const permanentDeleteRequisitions = async (ids) => {
   try {
-    const response = await apiClient.post('/api/talent-engine/requisitions/permanent-delete/', { ids });
+    const response = await apiClient.post('/api/talent-engine/requisitions/permanent-delete/requisition/', { ids });
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.detail || 'Failed to permanently delete requisitions.');
@@ -212,6 +213,37 @@ export const fetchJobApplicationsByRequisition = async (jobId) => {
   }
 };
 
+// API function to fetch soft-deleted job applications
+export const fetchSoftDeletedJobApplications = async () => {
+  try {
+    const response = await apiClient.get('/api/talent-engine-job-applications/applications/deleted/soft_deleted/');
+   // console.log('Soft-deleted job applications:', response.data);
+    return response.data.data || response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.detail || 'Failed to load soft-deleted job applications.');
+  }
+};
+
+// API function to recover soft-deleted job applications
+export const recoverJobApplications = async (ids) => {
+  try {
+    const response = await apiClient.post('/api/talent-engine-job-applications/applications/recover/application/', { ids });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.detail || 'Failed to recover job applications.');
+  }
+};
+
+// API function to permanently delete job applications
+export const permanentDeleteJobApplications = async (ids) => {
+  try {
+    const response = await apiClient.post('/api/talent-engine-job-applications/applications/permanent-delete/application/', { ids });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.detail || 'Failed to permanently delete job applications.');
+  }
+};
+
 // API function to update job application status
 export const updateJobApplicationStatus = async (id, status) => {
   try {
@@ -225,7 +257,7 @@ export const updateJobApplicationStatus = async (id, status) => {
 // API function to bulk delete job applications
 export const bulkDeleteJobApplications = async (ids) => {
   try {
-    const response = await apiClient.post('/api/talent-engine-job-applications/applications/bulk-delete/', { ids });
+    const response = await apiClient.post('/api/talent-engine-job-applications/applications/bulk-delete/applications/', { ids });
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.detail || 'Failed to delete job applications.');
@@ -348,7 +380,8 @@ export const bulkDeleteSchedules = async (ids) => {
 
 export const fetchSoftDeletedSchedules = async () => {
   try {
-    const response = await apiClient.get('/api/talent-engine-job-applications/schedules/soft-deleted/');
+    const response = await apiClient.get('/api/talent-engine-job-applications/schedules/deleted/soft_deleted/');
+    //console.log('Soft-deleted job Schedule:', response.data);
     return response.data.data || response.data; // Handle response structure
   } catch (error) {
     throw new Error(error.response?.data?.detail || 'Failed to load soft-deleted schedules.');
@@ -357,7 +390,7 @@ export const fetchSoftDeletedSchedules = async () => {
 
 export const recoverSchedules = async (ids) => {
   try {
-    const response = await apiClient.post('/api/talent-engine-job-applications/schedules/recover/', { ids });
+    const response = await apiClient.post('/api/talent-engine-job-applications/schedules/recover/schedule/', { ids });
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.detail || 'Failed to recover schedules.');
@@ -366,7 +399,7 @@ export const recoverSchedules = async (ids) => {
 
 export const permanentDeleteSchedules = async (ids) => {
   try {
-    const response = await apiClient.post('/api/talent-engine-job-applications/schedules/permanent-delete/', { ids });
+    const response = await apiClient.post('/api/talent-engine-job-applications/schedules/permanent-delete/schedule/', { ids });
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.detail || 'Failed to permanently delete schedules.');

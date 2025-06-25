@@ -13,6 +13,32 @@ import EmailSettings from './EmailSettings';
 import RecycleBin from './RecycleBin';
 
 
+// class ErrorBoundary extends React.Component {
+//   state = { hasError: false, errorMessage: '' };
+
+//   static getDerivedStateFromError(error) {
+//     return { hasError: true, errorMessage: error.message };
+//   }
+
+//   render() {
+//     if (this.state.hasError) {
+//       return (
+//         <div>
+//           <h2>Something went wrong.</h2>
+//           <p>{this.state.errorMessage}</p>
+//         </div>
+//       );
+//     }
+//     return this.props.children;
+//   }
+// }
+
+// // Wrap RecycleBin in ErrorBoundary
+// <ErrorBoundary>
+//   <RecycleBin />
+// </ErrorBoundary>
+
+
 const Recruitment = () => {
 
   const [shrinkNav, setShrinkNav] = useState(false);
