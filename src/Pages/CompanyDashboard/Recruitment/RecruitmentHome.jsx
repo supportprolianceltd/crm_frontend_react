@@ -434,6 +434,10 @@ const RecruitmentHome = () => {
   };
 
   const handleViewClick = (job) => {
+
+    // console.log("JOB")
+    // console.log(job)
+    // console.log("JOB")
     setSelectedJob(job);
     setShowViewRequisition(true);
   };

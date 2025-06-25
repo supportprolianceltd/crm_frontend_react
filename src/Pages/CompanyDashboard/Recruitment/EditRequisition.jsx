@@ -18,6 +18,8 @@ import {
   GlobeAltIcon,
 } from '@heroicons/react/24/outline';
 import { fetchRequisition, updateRequisition, deleteRequisition, updateRequisitionStatus, togglePublishRequisition } from './ApiService';
+import config from '../../../config';
+
 
 // Date formatting function
 const formatDisplayDate = (dateString) => {
@@ -152,6 +154,10 @@ const AlertModal = ({ title, message, onClose }) => (
 const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = true }) => {
   const navigate = useNavigate();
 
+  // console.log("job")
+  // console.log(job)
+  // console.log("job")
+
   // Set default dates
   const today = new Date();
   const defaultStartDate = new Date(today);
@@ -187,6 +193,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
     jobType: 'Full-time',
     locationType: 'On-site',
     companyAddress: '',
+    job_location: '',
     salaryRange: '',
     jobDescription: '',
     numberOfCandidates: '',
@@ -228,6 +235,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                 }[data.location_type] || 'On-site'
               : 'On-site',
             companyAddress: data.company_address || '',
+            job_location: data.job_location || '',
             salaryRange: data.salary_range || '',
             jobDescription: data.job_description || '',
             numberOfCandidates: data.number_of_candidates || '',
@@ -241,8 +249,14 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
           setResponsibilities(data.responsibilities || []);
           setDocuments(data.documents_required || ['Resume']);
           setCheckedItems(data.compliance_checklist || ['Right to Work Check']);
-          setAdvertBanner(data.advert_banner ? `${config.API_BASE_URL}${data.advert_banner}` : null);
+          setAdvertBanner(`${data.advert_banner}`);
           setHasUnsavedChanges(false);
+
+          // console.log("data.advert_banner")
+          // console.log(data.advert_banner)
+          // console.log("data.advert_banner")
+
+
         } catch (error) {
           setAlertModal({
             title: 'Error',
@@ -280,6 +294,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
               }[requisitionData.location_type] || 'On-site'
             : 'On-site') ||
         formData.companyAddress !== (requisitionData.company_address || '') ||
+        formData.job_location !== (requisitionData.job_location || '') ||
         formData.salaryRange !== (requisitionData.salary_range || '') ||
         formData.jobDescription !== (requisitionData.job_description || '') ||
         formData.numberOfCandidates !== (requisitionData.number_of_candidates || '') ||
@@ -461,6 +476,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
       }[formData.locationType] || 'on_site'
     );
     formDataToSend.append('company_address', formData.companyAddress);
+    formDataToSend.append('job_location', formData.job_location);
     formDataToSend.append('salary_range', formData.salaryRange);
     formDataToSend.append('job_description', formData.jobDescription);
     formDataToSend.append('number_of_candidates', formData.numberOfCandidates || '');
@@ -697,6 +713,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
         companyName: '',
         jobType: 'Full-time',
         locationType: 'On-site',
+        job_location: '',
         companyAddress: '',
         salaryRange: '',
         jobDescription: '',
@@ -1060,7 +1077,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                           <input
                             name="companyAddress"
                             type='text'
-                            placeholder='e.g. 24 Marina Street, Lagos'
+                            placeholder='e.g. 24 Marina Street, Lagos QWERTY QWERTY'
                             value={formData.companyAddress}
                             onChange={handleInputChange}
                             required
@@ -1415,7 +1432,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                   <div className='advert-banner'>
                     <img
                       src={advertBanner}
-                      alt="Job Advert Banner QWERTY"
+                      alt="Job Advert Banner"
                       className='w-full h-auto object-cover rounded-md mb-4'
                     />
                     <span>

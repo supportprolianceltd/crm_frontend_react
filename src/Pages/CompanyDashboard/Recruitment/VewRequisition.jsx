@@ -216,6 +216,7 @@ const VewRequisition = ({ job, onClose }) => {
     jobType: 'Full-time',
     locationType: 'On-site',
     companyAddress: '',
+    job_location: '',
     salaryRange: '',
     jobDescription: '',
     numberOfCandidates: '',
@@ -242,6 +243,7 @@ const VewRequisition = ({ job, onClose }) => {
             jobType: reverseJobTypeMap[data.job_type] || 'Full-time',
             locationType: reverseLocationTypeMap[data.location_type] || 'On-site',
             companyAddress: data.company_address || '',
+            job_location: data.job_location || '',
             salaryRange: data.salary_range || '',
             jobDescription: data.job_description || '',
             numberOfCandidates: data.number_of_candidates ? String(data.number_of_candidates) : '',
@@ -371,6 +373,7 @@ const VewRequisition = ({ job, onClose }) => {
     formDataToSend.append('location_type', locationTypeMap[formData.locationType] || 'on_site');
     formDataToSend.append('company_name', formData.companyName);
     formDataToSend.append('company_address', formData.companyAddress || '');
+    formDataToSend.append('job_location', formData.job_location || '');
     formDataToSend.append('salary_range', formData.salaryRange || '');
     formDataToSend.append('job_description', formData.jobDescription);
     formDataToSend.append(
@@ -941,7 +944,7 @@ const VewRequisition = ({ job, onClose }) => {
                            <div className='GHuh-Form-Input'>
                           <label>Location</label>
                           <input
-                            name="companyAddress"
+                            name="job_location"
                             type='text'
                             placeholder='Enter Work Location'
                             onChange={handleInputChange}
