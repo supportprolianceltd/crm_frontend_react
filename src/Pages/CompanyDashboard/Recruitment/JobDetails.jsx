@@ -46,6 +46,12 @@ const JobDetails = ({ job, onClose, onShowEditRequisition }) => {
   const [jobDetails, setJobDetails] = useState(null);
   const [alertModal, setAlertModal] = useState(null);
 
+
+  // console.log("job")
+  // console.log(job)
+  // console.log("job")
+
+
   // Format date for display
   const formatDate = (dateString) => {
     if (!dateString) return 'Not Specified';

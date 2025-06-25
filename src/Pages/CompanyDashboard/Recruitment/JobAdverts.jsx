@@ -180,14 +180,34 @@ const JobAdvert = () => {
         const publishedJobs = response
           .filter((job) => job.publish_status === true)
           .map((job) => ({
+
+
             id: job.id,
             title: job.title,
-            unique_link: job.unique_link,
-            company: job.company_name || 'N/A',
+            unique_link: job.unique_link, 
             jobType: reverseJobTypeMap[job.job_type] || job.job_type,
             location: reverseLocationTypeMap[job.location_type] || job.location_type,
             deadline: formatDate(job.deadline_date),
             status: job.status.charAt(0).toUpperCase() + job.status.slice(1),
+            company: job.company_name || 'N/A',
+            requested_by: job.requested_by || 'N/A',
+            role: job.role || 'N/A',
+            location_type: job.location_type || 'N/A',
+            company_address: job.company_address || 'N/A',
+            job_location: job.job_location || 'N/A',
+            salary_range: job.salary_range || 'N/A',
+            job_description: job.job_description || 'N/A',
+            number_of_candidates: job.number_of_candidates || 'N/A',
+            qualification_requirement: job.qualification_requirement || 'N/A',
+            experience_requirement: job.experience_requirement || 'N/A',
+            knowledge_requirement: job.knowledge_requirement || 'N/A',
+            reason: job.reason || 'N/A',
+            responsibilities: job.responsibilities || 'N/A',
+            start_date: job.start_date || 'N/A',
+            documents_required: job.documents_required || [],
+            compliance_checklist: job.compliance_checklist || [],
+            advert_banner: job.advert_banner || [],
+            requested_date: job.requested_date || [],
           }));
         setJobData(publishedJobs);
         setStats({
