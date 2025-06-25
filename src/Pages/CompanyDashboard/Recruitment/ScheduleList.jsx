@@ -25,7 +25,7 @@ import {
   bulkDeleteSchedules,
   fetchSoftDeletedSchedules,
   recoverSchedules,
-} from './ApiService'; // Adjust path as needed
+} from './ApiService';
 
 const Modal = ({ title, message, onConfirm, onCancel, confirmText = 'Confirm', cancelText = 'Cancel' }) => (
   <AnimatePresence>
@@ -265,14 +265,14 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
       if (interviewDateTime <= new Date()) {
         throw new Error('Interview date and time must be in the future.');
       }
-      const updatedSchedule = {
+      const scheduleData = {
         interview_date_time: interviewDateTime.toISOString(),
         meeting_mode: meetingMode,
         meeting_link: meetingMode === 'Virtual' ? meetingLink : '',
         interview_address: meetingMode === 'Physical' ? interviewAddress : '',
-        message: message,
+        message,
       };
-      await onSave(schedule.id, updatedSchedule);
+      await onSave(schedule.id, scheduleData);
       setIsSaving(false);
       onClose();
     } catch (error) {
@@ -333,6 +333,13 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
 
   return (
     <div>
+      <style>
+        {`
+          .time-item:hover {
+            background-color: #f0f0f0;
+          }
+        `}
+      </style>
       <AnimatePresence>
         {errorMessage && (
           <motion.div
@@ -389,7 +396,6 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
           className="modal-content custom-scroll-bar okauj-MOadad"
           ref={modalContentRef}
           initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.8, opacity: 0 }}
           style={{
@@ -629,12 +635,11 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
                           {timeOptions.map((time, index) => (
                             <div
                               key={index}
-                              className="time-option"
+                              className="time-item"
                               onClick={() => handleTimeSelect(time)}
                               style={{
                                 padding: '0.5rem',
                                 cursor: 'pointer',
-                                hover: { backgroundColor: '#f0f0f0' },
                               }}
                             >
                               {formatTime(time)}
@@ -773,8 +778,8 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
                       Submitting...
                     </>
                   ) : (
-                      'Submit'
-                    )}
+                    'Submit'
+                  )}
                 </button>
               </div>
             </>
@@ -830,7 +835,7 @@ const ScheduleList = () => {
 
   const filteredSchedules = schedules.filter((item) => {
     const lowerSearch = searchTerm?.toLowerCase() || '';
-    const id = item.id?.toLowerCase() || '';
+    const id = String(item.id || '').toLowerCase();
     const title = item.job_requisition_title?.toLowerCase() || '';
     const name = item.candidate_name?.toLowerCase() || '';
     return id.includes(lowerSearch) || title.includes(lowerSearch) || name.includes(lowerSearch);
@@ -1065,26 +1070,6 @@ const ScheduleList = () => {
                   </td>
                 </tr>
               ) : currentSchedules.length === 0 ? (
-              {isLoading ? (
-                <tr>
-                  <td colSpan="8" style={{ textAlign: 'center', padding: '20px' }}>
-                    <motion.div
-                      initial={{ rotate: 0 }}
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                      style={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: '50%',
-                        border: '4px solid rgba(114, 38, 255, 0.3)',
-                        borderTopColor: '#7226FF',
-                        margin: '0 auto',
-                      }}
-                    />
-                    <p style={{ marginTop: '10px', color: '#666' }}>Loading schedules...</p>
-                  </td>
-                </tr>
-              ) : currentSchedules.length === 0 ? (
                 <tr>
                   <td colSpan="8" style={{ textAlign: 'center', padding: '20px', fontStyle: 'italic' }}>
                     No matching scheduled interviews found
@@ -1166,7 +1151,6 @@ const ScheduleList = () => {
           </table>
         </div>
         {!isLoading && filteredSchedules.length > 0 && (
-        {!isLoading && filteredSchedules.length > 0 && (
           <div className="pagination-controls">
             <div className="Dash-OO-Boas-foot">
               <div className="Dash-OO-Boas-foot-1">
@@ -1191,11 +1175,21 @@ const ScheduleList = () => {
               </div>
 
               <div className="Dash-OO-Boas-foot-2">
-                <button onClick={handleSelectAllVisible} className="mark-all-btn" disabled={isLoading} style={{ padding: '0.5rem 1rem' }}>
+                <button
+                  onClick={handleSelectAllVisible}
+                  className="mark-all-btn"
+                  disabled={isLoading}
+                  style={{ padding: '0.5rem 1rem' }}
+                >
                   <CheckCircleIcon className="h-6 w-6" />
                   {currentSchedules.every((item) => selectedIds.includes(item.id)) ? 'Unmark All' : 'Mark All'}
                 </button>
-                <button onClick={handleDeleteMarked} className="delete-marked-btn" disabled={isLoading} style={{ padding: '0.5rem 1rem' }}>
+                <button
+                  onClick={handleDeleteMarked}
+                  className="delete-marked-btn"
+                  disabled={isLoading}
+                  style={{ padding: '0.5rem 1rem' }}
+                >
                   <TrashIcon className="h-6 w-6" />
                   Delete Marked
                 </button>
@@ -1262,4 +1256,3 @@ const ScheduleList = () => {
 };
 
 export default ScheduleList;
-
