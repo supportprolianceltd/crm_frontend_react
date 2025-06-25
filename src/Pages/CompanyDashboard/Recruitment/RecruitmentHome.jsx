@@ -35,10 +35,10 @@ const formatDate = (dateString) => {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
-  }); // e.g., "13/06/2025"
+  });
 };
 
-// ISO date formatting (for created_at, updated_at)
+// ISO date formatting
 const formatISODate = (isoString) => {
   if (!isoString) return '-';
   const date = new Date(isoString);
@@ -50,19 +50,13 @@ const formatISODate = (isoString) => {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
-  })}`; // e.g., "13/06/2025 10:37 AM"
+  })}`;
 };
 
 const modalVariants = {
   hidden: { opacity: 0, scale: 0.75 },
   visible: { opacity: 1, scale: 1 },
   exit: { opacity: 0, scale: 0.75 },
-};
-
-const viewRequisitionVariants = {
-  hidden: { x: '-100%', opacity: 0 },
-  visible: { x: 0, opacity: 1 },
-  exit: { x: '-100%', opacity: 0 },
 };
 
 const Backdrop = ({ onClick }) => (
@@ -76,7 +70,7 @@ const Backdrop = ({ onClick }) => (
 );
 
 const Modal = ({ title, message, onConfirm, onCancel, confirmText = 'Confirm', cancelText = 'Cancel' }) => (
-  <AnimatePresence>
+  <>
     <Backdrop onClick={onCancel} />
     <motion.div
       className="fixed top-1/2 left-1/2 z-50 w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-md bg-white p-6 shadow-lg"
@@ -105,11 +99,11 @@ const Modal = ({ title, message, onConfirm, onCancel, confirmText = 'Confirm', c
         </button>
       </div>
     </motion.div>
-  </AnimatePresence>
+  </>
 );
 
 const AlertModal = ({ title, message, onClose }) => (
-  <AnimatePresence>
+  <>
     <Backdrop onClick={onClose} />
     <motion.div
       className="fixed top-1/2 left-1/2 z-50 w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-md bg-white p-6 shadow-lg"
@@ -132,7 +126,34 @@ const AlertModal = ({ title, message, onClose }) => (
         </button>
       </div>
     </motion.div>
-  </AnimatePresence>
+  </>
+);
+
+const SuccessModal = ({ title, message, onClose }) => (
+  <>
+    <Backdrop onClick={onClose} />
+    <motion.div
+      className="fixed top-1/2 left-1/2 z-50 w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-md bg-white p-6 shadow-lg"
+      variants={modalVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      role="alertdialog"
+      aria-modal="true"
+    >
+      <h3 className="mb-4 text-lg font-semibold">{title}</h3>
+      <p className="mb-6">{message}</p>
+      <div className="flex justify-end">
+        <button
+          onClick={onClose}
+          className="rounded bg-green-600 px-4 py-2 font-semibold text-white hover:bg-green-700"
+          autoFocus
+        >
+          OK
+        </button>
+      </div>
+    </motion.div>
+  </>
 );
 
 const renderPieChart = (jobData, isLoading) => {
@@ -185,9 +206,9 @@ const renderPieChart = (jobData, isLoading) => {
       {
         data: [percentages.Open, percentages.Pending, percentages.Closed],
         backgroundColor: [
-          'rgba(75, 192, 192, 0.8)', // Open
-          'rgba(255, 206, 86, 0.8)', // Pending
-          'rgba(255, 99, 132, 0.8)', // Closed
+          'rgba(75, 192, 192, 0.8)',
+          'rgba(255, 206, 86, 0.8)',
+          'rgba(255, 99, 132, 0.8)',
         ],
         borderColor: [
           'rgba(75, 192, 192, 1)',
@@ -284,9 +305,11 @@ const RecruitmentHome = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [showNoSelectionAlert, setShowNoSelectionAlert] = useState(false);
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const [showViewRequisition, setShowViewRequisition] = useState(false);
   const [selectedJob, setSelectedJob] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [cardStats, setCardStats] = useState({
     total: 0,
     open: 0,
@@ -296,8 +319,7 @@ const RecruitmentHome = () => {
 
   const masterCheckboxRef = useRef(null);
 
-  // Define filteredJobs, totalPages, startIdx, and currentJobs
-  const filteredJobs = jobData; // Filtering is handled server-side
+  const filteredJobs = jobData;
   const totalPages = Math.ceil(filteredJobs.length / rowsPerPage);
   const startIdx = (currentPage - 1) * rowsPerPage;
   const currentJobs = filteredJobs.slice(startIdx, startIdx + rowsPerPage);
@@ -311,7 +333,6 @@ const RecruitmentHome = () => {
         role: roleFilter !== 'All' ? roleFilter.toLowerCase() : undefined,
       };
       const response = await fetchAllRequisitions(params);
-      // Normalize data for display
       const normalizedData = response.map((job) => ({
         ...job,
         requestedDate: job.requested_date,
@@ -327,7 +348,7 @@ const RecruitmentHome = () => {
       });
       setErrorMessage('');
     } catch (error) {
-      setErrorMessage(error);
+      setErrorMessage(error.message);
       console.error('Error fetching jobs:', error);
     } finally {
       setIsLoading(false);
@@ -383,7 +404,7 @@ const RecruitmentHome = () => {
     }
   };
 
-  const handleDeleteMarked = async () => {
+  const handleDeleteMarked = () => {
     if (!selectedIds.length) {
       setShowNoSelectionAlert(true);
       return;
@@ -393,15 +414,18 @@ const RecruitmentHome = () => {
 
   const confirmDelete = async () => {
     try {
-      await bulkDeleteRequisitions(selectedIds);
+      console.log('Attempting to soft delete requisitions with IDs:', selectedIds);
+      const response = await bulkDeleteRequisitions(selectedIds);
       await fetchJobs();
       setSelectedIds([]);
       setShowConfirmDelete(false);
+      setSuccessMessage(response.detail || `${selectedIds.length} requisition(s) have been moved to the recycle bin.`);
+      setShowSuccessAlert(true);
       setErrorMessage('');
     } catch (error) {
       setShowConfirmDelete(false);
-      setErrorMessage(error);
-      console.error('Error deleting requisitions:', error);
+      setErrorMessage(error.message);
+      console.error('Error soft deleting requisitions:', error);
     }
   };
 
@@ -419,7 +443,6 @@ const RecruitmentHome = () => {
     setSelectedJob(null);
   };
 
-  // Get full name from user data
   const getFullName = (user) => {
     if (!user || typeof user !== 'object') return 'Unknown';
     if (user.first_name && user.last_name) {
@@ -442,6 +465,7 @@ const RecruitmentHome = () => {
         <AnimatePresence>
           {errorMessage && (
             <motion.div
+              key="error-alert"
               className="error-alert mmoah-Dals"
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -481,6 +505,39 @@ const RecruitmentHome = () => {
                 <XMarkIcon className="h-5 w-5" />
               </button>
             </motion.div>
+          )}
+        </AnimatePresence>
+        <AnimatePresence>
+          {showSuccessAlert && (
+            <SuccessModal
+              key="success-modal"
+              title="Success"
+              message={successMessage}
+              onClose={() => setShowSuccessAlert(false)}
+            />
+          )}
+        </AnimatePresence>
+        <AnimatePresence>
+          {showConfirmDelete && (
+            <Modal
+              key="confirm-delete-modal"
+              title="Confirm Soft Delete"
+              message={`Are you sure you want to soft delete ${selectedIds.length} marked requisition(s)? They will be moved to the recycle bin and can be recovered later.`}
+              onConfirm={confirmDelete}
+              onCancel={() => setShowConfirmDelete(false)}
+              confirmText="Soft Delete"
+              cancelText="Cancel"
+            />
+          )}
+        </AnimatePresence>
+        <AnimatePresence>
+          {showNoSelectionAlert && (
+            <AlertModal
+              key="no-selection-modal"
+              title="No Selection"
+              message="You have not selected any requisitions to soft delete."
+              onClose={() => setShowNoSelectionAlert(false)}
+            />
           )}
         </AnimatePresence>
         <div className="glo-Top-Cards">
@@ -702,29 +759,6 @@ const RecruitmentHome = () => {
         </div>
       </div>
 
-      <AnimatePresence>
-        {showConfirmDelete && (
-          <Modal
-            title="Confirm Delete"
-            message={`Are you sure you want to delete ${selectedIds.length} marked requisition(s)? This action cannot be undone.`}
-            onConfirm={confirmDelete}
-            onCancel={() => setShowConfirmDelete(false)}
-            confirmText="Delete"
-            cancelText="Cancel"
-          />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showNoSelectionAlert && (
-          <AlertModal
-            title="No Selection"
-            message="You have not selected any requisitions to delete."
-            onClose={() => setShowNoSelectionAlert(false)}
-          />
-        )}
-      </AnimatePresence>
-
       <div className="YUa-Opal-Part-2">
         <div className="Top-GHY-s">
           <button onClick={() => setShowRequisition(true)} className="btn-primary-bg">
@@ -742,12 +776,16 @@ const RecruitmentHome = () => {
       </div>
 
       <AnimatePresence>
-        {showRequisition && <CreateRequisition onClose={() => setShowRequisition(false)} />}
+        {showRequisition && (
+          <CreateRequisition key="create-requisition" onClose={() => setShowRequisition(false)} />
+        )}
       </AnimatePresence>
 
-      {showViewRequisition && (
-        <VewRequisition job={selectedJob} onClose={handleCloseViewRequisition} />
-      )}
+      <AnimatePresence>
+        {showViewRequisition && (
+          <VewRequisition key="view-requisition" job={selectedJob} onClose={handleCloseViewRequisition} />
+        )}
+      </AnimatePresence>
     </div>
   );
 };

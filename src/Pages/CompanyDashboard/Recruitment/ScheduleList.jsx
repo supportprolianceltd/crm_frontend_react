@@ -17,7 +17,15 @@ import {
 } from '@heroicons/react/24/outline';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { fetchSchedules, updateSchedule, completeSchedule, cancelSchedule, bulkDeleteSchedules } from './ApiService'; // Adjust path as needed
+import {
+  fetchSchedules,
+  updateSchedule,
+  completeSchedule,
+  cancelSchedule,
+  bulkDeleteSchedules,
+  fetchSoftDeletedSchedules,
+  recoverSchedules,
+} from './ApiService'; // Adjust path as needed
 
 const Modal = ({ title, message, onConfirm, onCancel, confirmText = 'Confirm', cancelText = 'Cancel' }) => (
   <AnimatePresence>
@@ -80,6 +88,38 @@ const AlertModal = ({ title, message, onClose }) => (
         <button
           onClick={onClose}
           className="rounded bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700"
+          autoFocus
+        >
+          OK
+        </button>
+      </div>
+    </motion.div>
+  </AnimatePresence>
+);
+
+const SuccessModal = ({ title, message, onClose }) => (
+  <AnimatePresence>
+    <motion.div
+      className="fixed inset-0 bg-black bg-opacity-50 z-40"
+      onClick={onClose}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 0.5 }}
+      exit={{ opacity: 0 }}
+    />
+    <motion.div
+      className="fixed top-1/2 left-1/2 z-50 w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-md bg-white p-6 shadow-lg"
+      initial={{ opacity: 0, scale: 0.75 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.75 }}
+      role="alertdialog"
+      aria-modal="true"
+    >
+      <h3 className="mb-4 text-lg font-semibold text-green-600">{title}</h3>
+      <p className="mb-6">{message}</p>
+      <div className="flex justify-end">
+        <button
+          onClick={onClose}
+          className="rounded bg-green-600 px-4 py-2 font-semibold text-white hover:bg-green-700"
           autoFocus
         >
           OK
@@ -222,6 +262,9 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
     try {
       const interviewDateTime = new Date(tempSelectedDate);
       interviewDateTime.setHours(tempStartTime.getHours(), tempStartTime.getMinutes());
+      if (interviewDateTime <= new Date()) {
+        throw new Error('Interview date and time must be in the future.');
+      }
       const updatedSchedule = {
         interview_date_time: interviewDateTime.toISOString(),
         meeting_mode: meetingMode,
@@ -229,11 +272,11 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
         interview_address: meetingMode === 'Physical' ? interviewAddress : '',
         message: message,
       };
-      await onSave(schedule.tenant_unique_id, updatedSchedule);
+      await onSave(schedule.id, updatedSchedule);
       setIsSaving(false);
       onClose();
     } catch (error) {
-      setErrorMessage(error.message || 'Failed to save schedule. Please try again.');
+      setErrorMessage(error.message || 'Failed to save schedule.');
       setIsSaving(false);
       setTimeout(() => setErrorMessage(''), 3000);
       console.error('Error saving schedule:', error);
@@ -243,11 +286,11 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
   const handleCompleteSchedule = async () => {
     setIsCompleting(true);
     try {
-      await onComplete(schedule.tenant_unique_id);
+      await onComplete(schedule.id);
       setIsCompleting(false);
       onClose();
     } catch (error) {
-      setErrorMessage(error.message || 'Failed to complete schedule. Please try again.');
+      setErrorMessage(error.message || 'Failed to complete schedule.');
       setIsCompleting(false);
       setTimeout(() => setErrorMessage(''), 3000);
       console.error('Error completing schedule:', error);
@@ -273,12 +316,12 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
     setIsSubmittingReason(true);
 
     try {
-      await onCancelReject(schedule.tenant_unique_id, cancelReason);
+      await onCancelReject(schedule.id, cancelReason);
       setIsSubmittingReason(false);
       setIsCancelling(false);
       onClose();
     } catch (error) {
-      setErrorMessage(error.message || 'Failed to cancel schedule. Please try again.');
+      setErrorMessage(error.message || 'Failed to cancel schedule.');
       setIsSubmittingReason(false);
       setIsCancelling(false);
       setTimeout(() => setErrorMessage(''), 3000);
@@ -346,7 +389,7 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
           className="modal-content custom-scroll-bar okauj-MOadad"
           ref={modalContentRef}
           initial={{ scale: 0.8, opacity: 0 }}
-          animate = {{ scale: 1, opacity: 1 }}
+          animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.8, opacity: 0 }}
           style={{
             background: '#fff',
@@ -369,6 +412,10 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
                     className="btn-cancel-bg"
                     style={{
                       cursor: 'pointer',
+                      backgroundColor: '#dc2626',
+                      color: '#fff',
+                      padding: '0.5rem 1rem',
+                      borderRadius: '4px',
                     }}
                   >
                     {isCancelling ? (
@@ -399,6 +446,10 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
                     className="btn-complete-bg"
                     style={{
                       cursor: 'pointer',
+                      backgroundColor: '#15803d',
+                      color: '#fff',
+                      padding: '0.5rem 1rem',
+                      borderRadius: '4px',
                     }}
                   >
                     {isCompleting ? (
@@ -460,7 +511,7 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
                       style={{
                         width: '100%',
                         padding: '0.5rem',
-                        borderRadius: '4px',
+                        borderRadius: '0px',
                         border: '1px solid #ccc',
                       }}
                       disabled={!isEditable}
@@ -470,8 +521,9 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
 
                 {meetingMode === 'Physical' && (
                   <div className="GGtg-DDDVa" style={{ marginTop: '1rem' }}>
-                    <label>Interview Address:</label>
+                    <label htmlFor="interviewAddress">Interview Address:</label>
                     <input
+                      id="interviewAddress"
                       type="text"
                       value={interviewAddress}
                       onChange={(e) => setInterviewAddress(e.target.value)}
@@ -490,15 +542,22 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
               </div>
 
               <div className="GGtg-DDDVa">
-                <label>Message:</label>
+                <label htmlFor="message">Message:</label>
                 <textarea
+                  id="message"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   className="oujka-Inpuauy OIUja-Tettxa"
+                  placeholder="Enter any additional message"
                   disabled={!isEditable}
-                >
-                  {message}
-                </textarea>
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem',
+                    borderRadius: '4px',
+                    border: '1px solid #ccc',
+                    minHeight: '100px',
+                  }}
+                />
               </div>
 
               <div className="GGtg-DDDVa">
@@ -510,14 +569,14 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
                 <h4>Schedule Details:</h4>
                 <p>
                   <span>
-                    <CalendarDaysIcon style={{ width: '20px', marginRight: '0.5rem' }} />
+                    <CalendarDaysIcon className="inline-block w-5 h-5 mr-2" />
                     Date:
                   </span>{' '}
                   {formatFullDate(tempSelectedDate)}
                 </p>
                 <p>
                   <span>
-                    <ClockIcon style={{ width: '20px', marginRight: '0.5rem' }} />
+                    <ClockIcon className="inline-block w-5 h-5 mr-2" />
                     Time:
                   </span>{' '}
                   {formatTime(tempStartTime)} - {formatTime(tempEndTime)}
@@ -574,6 +633,7 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
                               style={{
                                 padding: '0.5rem',
                                 cursor: 'pointer',
+                                hover: { backgroundColor: '#f0f0f0' },
                               }}
                             >
                               {formatTime(time)}
@@ -591,15 +651,22 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
                       selected={tempSelectedDate}
                       onChange={(date) => handleDateChange(date)}
                       inline
+                      minDate={new Date()}
                     />
                   </div>
                 )}
               </div>
 
-              <div className="oioak-POldj-BTn">
+              <div className="oioak-POldj-BTn" style={{ marginTop: '1rem', display: 'flex', justifyContent: 'space-between' }}>
                 <button
                   onClick={onClose}
                   className="CLCLCjm-BNtn"
+                  style={{
+                    padding: '0.5rem 1rem',
+                    borderRadius: '4px',
+                    background: '#d1d5db',
+                    color: '#111827',
+                  }}
                 >
                   Close
                 </button>
@@ -609,6 +676,10 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
                     disabled={isSaving || isCompleting || isCancelling}
                     className="btn-primary-bg"
                     style={{
+                      padding: '0.5rem 1rem',
+                      borderRadius: '4px',
+                      background: '#2563eb',
+                      color: '#fff',
                       cursor: (isSaving || isCompleting || isCancelling) ? 'not-allowed' : 'pointer',
                     }}
                   >
@@ -648,12 +719,25 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
                   onChange={(e) => setCancelReason(e.target.value)}
                   placeholder="Enter the reason for cancelling the interview..."
                   className="oujka-Inpuauy OIUja-Tettxa"
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem',
+                    borderRadius: '4px',
+                    border: '3px solid #ccc',
+                    minHeight: '100px',
+                  }}
                 />
               </div>
-              <div className="oioak-POldj-BTn">
+              <div className="oioak-POldj-BTn" style={{ marginTop: '1rem', display: 'flex', justifyContent: 'space-between' }}>
                 <button
                   onClick={handleGoBack}
                   className="CLCLCjm-BNtn"
+                  style={{
+                    padding: '0.5rem 1rem',
+                    borderRadius: '4px',
+                    background: '#d1d5db',
+                    color: '#111827',
+                  }}
                 >
                   Go Back
                 </button>
@@ -661,6 +745,13 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
                   onClick={handleSubmitCancelReason}
                   disabled={isSubmittingReason}
                   className="btn-primary-bg"
+                  style={{
+                    padding: '0.5rem 1rem',
+                    borderRadius: '4px',
+                    background: '#2563eb',
+                    color: '#fff',
+                    cursor: isSubmittingReason ? 'not-allowed' : 'pointer',
+                  }}
                 >
                   {isSubmittingReason ? (
                     <>
@@ -669,20 +760,20 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
                         animate={{ rotate: 360 }}
                         transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                         style={{
-                          width: 16,
-                          height: 16,
+                          width: 20,
+                          height: 20,
                           borderRadius: '50%',
-                          border: '3px solid rgba(255,255,255,0.3)',
+                          border: '2px solid rgba(255,255,255,0.3)',
                           borderTopColor: '#fff',
-                          marginRight: '5px',
+                          marginRight: '8px',
                           display: 'inline-block',
                         }}
                       />
                       Submitting...
                     </>
                   ) : (
-                    'Submit'
-                  )}
+                      'Submit'
+                    )}
                 </button>
               </div>
             </>
@@ -702,6 +793,8 @@ const ScheduleList = () => {
   const [selectedIds, setSelectedIds] = useState([]);
   const [showNoSelectionAlert, setShowNoSelectionAlert] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [schedules, setSchedules] = useState([]);
@@ -721,7 +814,7 @@ const ScheduleList = () => {
         setSchedules(data);
         setIsLoading(false);
       } catch (error) {
-        setErrorMessage(error.message || 'Failed to load schedules. Please try again.');
+        setErrorMessage(error.message || 'Failed to load schedules.');
         setIsLoading(false);
         setTimeout(() => setErrorMessage(''), 3000);
         console.error('Error fetching schedules:', error);
@@ -734,20 +827,13 @@ const ScheduleList = () => {
     setIsVisible((prev) => !prev);
   };
 
-// AFTER (with null checks)
-const filteredSchedules = schedules.filter((item) => {
-  const lowerSearch = searchTerm.toLowerCase();
-  
-  const id = item.tenant_unique_id ? item.tenant_unique_id.toLowerCase() : '';
-  const title = item.job_requisition_title ? item.job_requisition_title.toLowerCase() : '';
-  const name = item.candidate_name ? item.candidate_name.toLowerCase() : '';
-
-  return (
-    id.includes(lowerSearch) || 
-    title.includes(lowerSearch) || 
-    name.includes(lowerSearch)
-  );
-});
+  const filteredSchedules = schedules.filter((item) => {
+    const lowerSearch = searchTerm?.toLowerCase() || '';
+    const id = item.id?.toLowerCase() || '';
+    const title = item.job_requisition_title?.toLowerCase() || '';
+    const name = item.candidate_name?.toLowerCase() || '';
+    return id.includes(lowerSearch) || title.includes(lowerSearch) || name.includes(lowerSearch);
+  });
 
   const totalPages = Math.ceil(filteredSchedules.length / rowsPerPage);
   const startIndex = (currentPage - 1) * rowsPerPage;
@@ -760,12 +846,12 @@ const filteredSchedules = schedules.filter((item) => {
   };
 
   const handleSelectAllVisible = () => {
-    if (currentSchedules.every((item) => selectedIds.includes(item.tenant_unique_id))) {
-      setSelectedIds((prev) => prev.filter((id) => !currentSchedules.some((item) => item.tenant_unique_id === id)));
+    if (currentSchedules.every((item) => selectedIds.includes(item.id))) {
+      setSelectedIds((prev) => prev.filter((id) => !currentSchedules.some((item) => item.id === id)));
     } else {
       setSelectedIds((prev) => [
         ...prev,
-        ...currentSchedules.filter((item) => !prev.includes(item.tenant_unique_id)).map((item) => item.tenant_unique_id),
+        ...currentSchedules.filter((item) => !prev.includes(item.id)).map((item) => item.id),
       ]);
     }
   };
@@ -781,13 +867,15 @@ const filteredSchedules = schedules.filter((item) => {
   const confirmDelete = async () => {
     try {
       setIsLoading(true);
-      await bulkDeleteSchedules(selectedIds);
-      setSchedules((prev) => prev.filter((item) => !selectedIds.includes(item.tenant_unique_id)));
+      const response = await bulkDeleteSchedules(selectedIds);
+      setSchedules((prev) => prev.filter((item) => !selectedIds.includes(item.id)));
       setSelectedIds([]);
       setShowConfirmDelete(false);
+      setSuccessMessage(response.detail || `Successfully deleted ${selectedIds.length} schedule(s).`);
+      setShowSuccessModal(true);
       setIsLoading(false);
     } catch (error) {
-      setErrorMessage(error.message || 'Failed to delete schedules. Please try again.');
+      setErrorMessage(error.message || 'Failed to delete schedules.');
       setIsLoading(false);
       setTimeout(() => setErrorMessage(''), 3000);
       console.error('Error deleting schedules:', error);
@@ -803,8 +891,10 @@ const filteredSchedules = schedules.filter((item) => {
     try {
       const response = await updateSchedule(id, updatedSchedule);
       setSchedules((prev) =>
-        prev.map((item) => (item.tenant_unique_id === id ? { ...item, ...response } : item))
+        prev.map((item) => (item.id === id ? { ...item, ...response } : item))
       );
+      setSuccessMessage('Schedule updated successfully.');
+      setShowSuccessModal(true);
     } catch (error) {
       throw new Error(error.message || 'Failed to update schedule.');
     }
@@ -814,8 +904,10 @@ const filteredSchedules = schedules.filter((item) => {
     try {
       const response = await completeSchedule(id);
       setSchedules((prev) =>
-        prev.map((item) => (item.tenant_unique_id === id ? { ...item, ...response } : item))
+        prev.map((item) => (item.id === id ? { ...item, ...response } : item))
       );
+      setSuccessMessage('Schedule marked as completed.');
+      setShowSuccessModal(true);
     } catch (error) {
       throw new Error(error.message || 'Failed to complete schedule.');
     }
@@ -825,8 +917,10 @@ const filteredSchedules = schedules.filter((item) => {
     try {
       const response = await cancelSchedule(id, cancellationReason);
       setSchedules((prev) =>
-        prev.map((item) => (item.tenant_unique_id === id ? { ...item, ...response } : item))
+        prev.map((item) => (item.id === id ? { ...item, ...response } : item))
       );
+      setSuccessMessage('Schedule cancelled successfully.');
+      setShowSuccessModal(true);
     } catch (error) {
       throw new Error(error.message || 'Failed to cancel schedule.');
     }
@@ -838,28 +932,6 @@ const filteredSchedules = schedules.filter((item) => {
     }
     setSelectedIds([]);
   }, [currentPage, rowsPerPage]);
-
-  if (isLoading) {
-    return (
-      <div
-        className="ScheduleList-sec"
-        style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}
-      >
-        <motion.div
-          initial={{ rotate: 0 }}
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: '50%',
-            border: '4px solid rgba(114, 38, 255, 0.3)',
-            borderTopColor: '#7226FF',
-          }}
-        />
-      </div>
-    );
-  }
 
   return (
     <div className="ScheduleList-sec">
@@ -894,6 +966,13 @@ const filteredSchedules = schedules.filter((item) => {
             </svg>
             <span style={{ color: '#fff' }}>{errorMessage}</span>
           </motion.div>
+        )}
+        {showSuccessModal && (
+          <SuccessModal
+            title="Success"
+            message={successMessage}
+            onClose={() => setShowSuccessModal(false)}
+          />
         )}
       </AnimatePresence>
 
@@ -951,7 +1030,8 @@ const filteredSchedules = schedules.filter((item) => {
                     type="checkbox"
                     ref={masterCheckboxRef}
                     onChange={handleSelectAllVisible}
-                    checked={currentSchedules.length > 0 && currentSchedules.every((item) => selectedIds.includes(item.tenant_unique_id))}
+                    checked={currentSchedules.length > 0 && currentSchedules.every((item) => selectedIds.includes(item.id))}
+                    disabled={isLoading}
                   />
                 </th>
                 <th>Schedule ID</th>
@@ -964,7 +1044,26 @@ const filteredSchedules = schedules.filter((item) => {
               </tr>
             </thead>
             <tbody>
-              {currentSchedules.length === 0 ? (
+              {isLoading ? (
+                <tr>
+                  <td colSpan="8" style={{ textAlign: 'center', padding: '20px' }}>
+                    <motion.div
+                      initial={{ rotate: 0 }}
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: '50%',
+                        border: '4px solid rgba(114, 38, 255, 0.3)',
+                        borderTopColor: '#7226FF',
+                        margin: '0 auto',
+                      }}
+                    />
+                    <p style={{ marginTop: '10px', color: '#666' }}>Loading schedules...</p>
+                  </td>
+                </tr>
+              ) : currentSchedules.length === 0 ? (
                 <tr>
                   <td colSpan="8" style={{ textAlign: 'center', padding: '20px', fontStyle: 'italic' }}>
                     No matching scheduled interviews found
@@ -972,20 +1071,20 @@ const filteredSchedules = schedules.filter((item) => {
                 </tr>
               ) : (
                 currentSchedules.map((item) => (
-                  <tr key={item.tenant_unique_id}>
+                  <tr key={item.id}>
                     <td>
                       <input
                         type="checkbox"
-                        checked={selectedIds.includes(item.tenant_unique_id)}
-                        onChange={() => handleCheckboxChange(item.tenant_unique_id)}
+                        checked={selectedIds.includes(item.id)}
+                        onChange={() => handleCheckboxChange(item.id)}
+                        disabled={isLoading}
                       />
                     </td>
-                    <td>{item.tenant_unique_id}</td>
+                    <td>{item.id}</td>
                     <td>{item.job_requisition_title}</td>
                     <td>{item.candidate_name}</td>
                     <td>
                       {new Date(item.interview_date_time).toLocaleString('en-GB', {
-                    
                         day: '2-digit',
                         month: 'short',
                         year: 'numeric',
@@ -1027,6 +1126,13 @@ const filteredSchedules = schedules.filter((item) => {
                         <button
                           className="view-btn btn-primary-bg"
                           onClick={() => handleViewSchedule(item)}
+                          disabled={isLoading}
+                          style={{
+                            padding: '0.5rem 1rem',
+                            borderRadius: '4px',
+                            background: '#2563eb',
+                            color: '#fff',
+                          }}
                         >
                           View Schedule
                         </button>
@@ -1038,16 +1144,21 @@ const filteredSchedules = schedules.filter((item) => {
             </tbody>
           </table>
         </div>
-        {filteredSchedules.length > 0 && (
+        {!isLoading && filteredSchedules.length > 0 && (
           <div className="pagination-controls">
             <div className="Dash-OO-Boas-foot">
               <div className="Dash-OO-Boas-foot-1">
                 <div className="items-per-page">
                   <p>Number of rows:</p>
                   <select
-                    className="form-select"
                     value={rowsPerPage}
                     onChange={(e) => setRowsPerPage(Number(e.target.value))}
+                    disabled={isLoading}
+                    style={{
+                      padding: '0.5rem',
+                      borderRadius: '4px',
+                      border: '1px solid #ccc',
+                    }}
                   >
                     <option value="5">5</option>
                     <option value="10">10</option>
@@ -1058,11 +1169,11 @@ const filteredSchedules = schedules.filter((item) => {
               </div>
 
               <div className="Dash-OO-Boas-foot-2">
-                <button onClick={handleSelectAllVisible} className="mark-all-btn">
+                <button onClick={handleSelectAllVisible} className="mark-all-btn" disabled={isLoading} style={{ padding: '0.5rem 1rem' }}>
                   <CheckCircleIcon className="h-6 w-6" />
-                  {currentSchedules.every((item) => selectedIds.includes(item.tenant_unique_id)) ? 'Unmark All' : 'Mark All'}
+                  {currentSchedules.every((item) => selectedIds.includes(item.id)) ? 'Unmark All' : 'Mark All'}
                 </button>
-                <button onClick={handleDeleteMarked} className="delete-marked-btn">
+                <button onClick={handleDeleteMarked} className="delete-marked-btn" disabled={isLoading} style={{ padding: '0.5rem 1rem' }}>
                   <TrashIcon className="h-6 w-6" />
                   Delete Marked
                 </button>
@@ -1077,14 +1188,16 @@ const filteredSchedules = schedules.filter((item) => {
                 <button
                   className="page-button"
                   onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
+                  disabled={currentPage === 1 || isLoading}
+                  style={{ padding: '0.5rem' }}
                 >
                   <ChevronLeftIcon className="h-5 w-5" />
                 </button>
                 <button
                   className="page-button"
                   onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
+                  disabled={currentPage === totalPages || isLoading}
+                  style={{ padding: '0.5rem' }}
                 >
                   <ChevronRightIcon className="h-5 w-5" />
                 </button>
@@ -1105,7 +1218,7 @@ const filteredSchedules = schedules.filter((item) => {
         {showConfirmDelete && (
           <Modal
             title="Confirm Delete"
-            message={`Are you sure you want to delete ${selectedIds.length} selected schedule(s)? This action cannot be undone.`}
+            message={`Are you sure you want to soft delete ${selectedIds.length} selected schedule(s)? They will be moved to the recycle bin.`}
             onConfirm={confirmDelete}
             onCancel={() => setShowConfirmDelete(false)}
             confirmText="Delete"

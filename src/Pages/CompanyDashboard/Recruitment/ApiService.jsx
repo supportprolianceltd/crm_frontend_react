@@ -28,13 +28,11 @@ const refreshAccessToken = async () => {
     return newAccessToken;
   } catch (error) {
     console.error('Error refreshing token:', error);
-    // Clear all authentication-related localStorage items
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('tenantId');
     localStorage.removeItem('tenantSchema');
     localStorage.removeItem('user');
-    // Redirect to login page
     window.location.href = '/';
     throw new Error('Session expired. Please log in again.');
   }
@@ -71,17 +69,15 @@ apiClient.interceptors.response.use(
   }
 );
 
-// API function to create a requisition
 export const createRequisition = async (requisitionData) => {
   try {
     const response = await apiClient.post('/api/talent-engine/requisitions/', requisitionData);
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.detail || 'Failed to create job requisition. Please try again.');
+    throw new Error(error.response?.data?.detail || 'Failed to create job requisition.');
   }
 };
 
-// API function to fetch a requisition
 export const fetchRequisition = async (id) => {
   try {
     const response = await apiClient.get(`/api/talent-engine/requisitions/${id}/`);
@@ -91,17 +87,42 @@ export const fetchRequisition = async (id) => {
   }
 };
 
-// API function to fetch all requisitions
+
+export const bulkDeleteRequisitions = async (ids) => {
+  try {
+    console.log('Sending bulk soft delete request for requisitions:', { ids, url: '/api/talent-engine/requisitions/bulk-delete/' });
+    if (!ids.every(id => typeof id === 'string' && id.match(/^PRO-\d{4}$/))) {
+      throw new Error('Invalid IDs provided. All IDs must be in the format PRO-XXXX.');
+    }
+    const config = {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+      },
+    };
+    console.log('Request config:', config);
+    const response = await apiClient.post('/api/talent-engine/requisitions/bulk-delete/', { ids }, config);
+    console.log('Bulk soft delete response:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Bulk soft delete error:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
+    throw new Error(error.response?.data?.detail || error.message || 'Failed to soft delete requisitions.');
+  }
+};
+
 export const fetchAllRequisitions = async (params = {}) => {
   try {
     const response = await apiClient.get('/api/talent-engine/requisitions/', { params });
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.detail || 'Failed to load job requisitions. Please try again.');
+    throw new Error(error.response?.data?.detail || 'Failed to load job requisitions.');
   }
 };
 
-// API function to update a requisition
+
 export const updateRequisition = async (id, requisitionData) => {
   try {
     const response = await apiClient.patch(`/api/talent-engine/requisitions/${id}/`, requisitionData, {
@@ -111,31 +132,47 @@ export const updateRequisition = async (id, requisitionData) => {
     });
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.detail || 'Failed to update requisition. Please try again.');
+    throw new Error(error.response?.data?.detail || 'Failed to update requisition.');
   }
 };
 
-// API function to delete a requisition
 export const deleteRequisition = async (id) => {
   try {
     await apiClient.delete(`/api/talent-engine/requisitions/${id}/`);
     return true;
   } catch (error) {
-    throw new Error(error.response?.data?.detail || 'Failed to delete requisition. Please try again.');
+    throw new Error(error.response?.data?.detail || 'Failed to soft delete requisition.');
   }
 };
 
-// API function to bulk delete requisitions
-export const bulkDeleteRequisitions = async (ids) => {
+
+export const fetchSoftDeletedRequisitions = async () => {
   try {
-    const response = await apiClient.post('/api/talent-engine/requisitions/bulk-delete/', { ids });
+    const response = await apiClient.get('/api/talent-engine/requisitions/soft-deleted/');
+    return response.data.data || response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.detail || 'Failed to load soft-deleted requisitions.');
+  }
+};
+
+export const recoverRequisitions = async (ids) => {
+  try {
+    const response = await apiClient.post('/api/talent-engine/requisitions/recover/', { ids });
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.detail || 'Failed to delete requisitions. Please try again.');
+    throw new Error(error.response?.data?.detail || 'Failed to recover requisitions.');
   }
 };
 
-// API function to update requisition status
+export const permanentDeleteRequisitions = async (ids) => {
+  try {
+    const response = await apiClient.post('/api/talent-engine/requisitions/permanent-delete/', { ids });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.detail || 'Failed to permanently delete requisitions.');
+  }
+};
+
 export const updateRequisitionStatus = async (id, status) => {
   try {
     const response = await apiClient.patch(`/api/talent-engine/requisitions/${id}/`, { status });
@@ -145,7 +182,6 @@ export const updateRequisitionStatus = async (id, status) => {
   }
 };
 
-// API function to toggle publish status
 export const togglePublishRequisition = async (id, publishStatus) => {
   try {
     const response = await apiClient.patch(`/api/talent-engine/requisitions/${id}/`, { publish_status: publishStatus });
@@ -155,13 +191,14 @@ export const togglePublishRequisition = async (id, publishStatus) => {
   }
 };
 
+
 // API function to fetch all job applications
 export const fetchAllJobApplications = async () => {
   try {
     const response = await apiClient.get('/api/talent-engine-job-applications/applications/');
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.detail || 'Failed to load job applications. Please try again.');
+    throw new Error(error.response?.data?.detail || 'Failed to load job applications.');
   }
 };
 
@@ -171,7 +208,7 @@ export const fetchJobApplicationsByRequisition = async (jobId) => {
     const response = await apiClient.get(`/api/talent-engine-job-applications/applications/job-requisitions/${jobId}/applications/`);
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.detail || 'Failed to load job applications for requisition. Please try again.');
+    throw new Error(error.response?.data?.detail || 'Failed to load job applications for requisition.');
   }
 };
 
@@ -181,7 +218,7 @@ export const updateJobApplicationStatus = async (id, status) => {
     const response = await apiClient.put(`/api/talent-engine-job-applications/applications/${id}/`, { status });
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.detail || 'Failed to update job application status. Please try again.');
+    throw new Error(error.response?.data?.detail || 'Failed to update job application status.');
   }
 };
 
@@ -191,7 +228,7 @@ export const bulkDeleteJobApplications = async (ids) => {
     const response = await apiClient.post('/api/talent-engine-job-applications/applications/bulk-delete/', { ids });
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.detail || 'Failed to delete job applications. Please try again.');
+    throw new Error(error.response?.data?.detail || 'Failed to delete job applications.');
   }
 };
 
@@ -204,7 +241,7 @@ export const screenResumes = async (jobRequisitionId, data) => {
     );
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.detail || 'Failed to screen resumes. Please try again.');
+    throw new Error(error.response?.data?.detail || 'Failed to screen resumes.');
   }
 };
 
@@ -214,7 +251,7 @@ export const fetchPublishedRequisitionsWithShortlisted = async () => {
     const response = await apiClient.get('/api/talent-engine-job-applications/published-requisitions-with-shortlisted/');
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.detail || 'Failed to load published requisitions with shortlisted applications. Please try again.');
+    throw new Error(error.response?.data?.detail || 'Failed to load published requisitions with shortlisted applications.');
   }
 };
 
@@ -223,86 +260,118 @@ export const createSchedule = async (scheduleData) => {
     const response = await apiClient.post('/api/talent-engine-job-applications/schedules/', scheduleData);
     return response.data;
   } catch (error) {
-    // Check if the error response contains validation errors
-    if (error.response?.data) {
-      // Handle field-specific and non-field errors
-      const errorDetails = error.response.data;
-      if (errorDetails.meeting_link) {
-        throw new Error(errorDetails.meeting_link[0] || 'Invalid meeting link provided.');
-      } else if (errorDetails.non_field_errors) {
-        throw new Error(errorDetails.non_field_errors[0] || 'Invalid schedule data.');
-      } else if (errorDetails.detail) {
-        throw new Error(errorDetails.detail);
-      }
+    const errorDetails = error.response?.data || {};
+    if (errorDetails.meeting_link) {
+      throw new Error(errorDetails.meeting_link[0] || 'Invalid meeting link provided.');
+    } else if (errorDetails.non_field_errors) {
+      throw new Error(errorDetails.non_field_errors[0] || 'Invalid schedule data.');
+    } else if (errorDetails.detail) {
+      throw new Error(errorDetails.detail);
     }
-    throw new Error('Failed to create schedule. Please try again.');
+    throw new Error('Failed to create schedule.');
   }
 };
-// API function to fetch all schedules
+
 export const fetchSchedules = async (params = {}) => {
   try {
     const response = await apiClient.get('/api/talent-engine-job-applications/schedules/', { params });
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.detail || 'Failed to load schedules. Please try again.');
+    throw new Error(error.response?.data?.detail || 'Failed to load schedules.');
   }
 };
 
-// API function to update a schedule
 export const updateSchedule = async (id, scheduleData) => {
   try {
-    const response = await apiClient.put(`/api/talent-engine-job-applications/schedules/${id}/`, scheduleData);
+    const response = await apiClient.patch(`/api/talent-engine-job-applications/schedules/${id}/`, scheduleData);
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.detail || 'Failed to update schedule. Please try again.');
+    const errorDetails = error.response?.data || {};
+    if (errorDetails.meeting_link) {
+      throw new Error(errorDetails.meeting_link[0] || 'Invalid meeting link provided.');
+    } else if (errorDetails.detail) {
+      throw new Error(errorDetails.detail);
+    }
+    throw new Error('Failed to update schedule.');
   }
 };
 
-// API function to complete a schedule
 export const completeSchedule = async (id) => {
   try {
-    const response = await apiClient.put(`/api/talent-engine-job-applications/schedules/${id}/`, {
+    const response = await apiClient.patch(`/api/talent-engine-job-applications/schedules/${id}/`, {
       status: 'completed',
     });
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.detail || 'Failed to complete schedule. Please try again.');
+    throw new Error(error.response?.data?.detail || 'Failed to complete schedule.');
   }
 };
 
-// API function to cancel a schedule
 export const cancelSchedule = async (id, cancellationReason) => {
   try {
-    const response = await apiClient.put(`/api/talent-engine-job-applications/schedules/${id}/`, {
+    const response = await apiClient.patch(`/api/talent-engine-job-applications/schedules/${id}/`, {
       status: 'cancelled',
       cancellation_reason: cancellationReason,
     });
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.detail || 'Failed to cancel schedule. Please try again.');
+    const errorDetails = error.response?.data || {};
+    if (errorDetails.cancellation_reason) {
+      throw new Error(errorDetails.cancellation_reason[0] || 'Cancellation reason is required.');
+    } else if (errorDetails.detail) {
+      throw new Error(errorDetails.detail);
+    }
+    throw new Error('Failed to cancel schedule.');
   }
 };
 
-// API function to delete a schedule
 export const deleteSchedule = async (id) => {
   try {
     await apiClient.delete(`/api/talent-engine-job-applications/schedules/${id}/`);
     return true;
   } catch (error) {
-    throw new Error(error.response?.data?.detail || 'Failed to delete schedule. Please try again.');
+    throw new Error(error.response?.data?.detail || 'Failed to delete schedule.');
   }
 };
 
-// API function to bulk delete schedules
 export const bulkDeleteSchedules = async (ids) => {
   try {
+    console.log('Sending bulk delete request:', { ids });
     const response = await apiClient.post('/api/talent-engine-job-applications/schedules/bulk-delete/', { ids });
+    console.log('Bulk delete response:', response.data);
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.detail || 'Failed to delete schedules. Please try again.');
+    console.error('Bulk delete error:', error.response?.data);
+    throw new Error(error.response?.data?.detail || 'Failed to delete schedules.');
   }
 };
 
+export const fetchSoftDeletedSchedules = async () => {
+  try {
+    const response = await apiClient.get('/api/talent-engine-job-applications/schedules/soft-deleted/');
+    return response.data.data || response.data; // Handle response structure
+  } catch (error) {
+    throw new Error(error.response?.data?.detail || 'Failed to load soft-deleted schedules.');
+  }
+};
+
+export const recoverSchedules = async (ids) => {
+  try {
+    const response = await apiClient.post('/api/talent-engine-job-applications/schedules/recover/', { ids });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.detail || 'Failed to recover schedules.');
+  }
+};
+
+export const permanentDeleteSchedules = async (ids) => {
+  try {
+    const response = await apiClient.post('/api/talent-engine-job-applications/schedules/permanent-delete/', { ids });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.detail || 'Failed to permanently delete schedules.');
+  }
+};
 
 // API function to fetch tenant email configuration
 export const fetchTenantConfig = async () => {
@@ -311,7 +380,6 @@ export const fetchTenantConfig = async () => {
     if (!token) {
       throw new Error('No access token available');
     }
-    // Decode JWT token to extract tenant_id (assuming JWT format)
     const base64Url = token.split('.')[1];
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
     const payload = JSON.parse(atob(base64));
@@ -330,7 +398,6 @@ export const updateTenantConfig = async (id, configData) => {
     if (!token) {
       throw new Error('No access token available');
     }
-    // Decode JWT token to extract tenant_id (assuming JWT format)
     const base64Url = token.split('.')[1];
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
     const payload = JSON.parse(atob(base64));

@@ -307,9 +307,9 @@ const ViewApplications = () => {
       setDocumentsRequired(job.documents_required || []);
       setLoading(false);
 
-      console.log("transformedData")
-      console.log(transformedData)
-      console.log("transformedData")
+      // console.log("transformedData")
+      // console.log(transformedData)
+      // console.log("transformedData")
       
     } catch (err) {
       setError(err.message || 'Failed to fetch applications');
@@ -472,9 +472,16 @@ const handleScreenResumes = async (documentType) => {
     setCurrentPage(1);
   };
 
+
+
+
   if (loading) {
-    return <div>Loading applications...</div>;
+    return <div className="Alll_OOo_LODer">
+      <p className="loader">Screening Applications...</p>
+      </div>;
   }
+
+
 
   if (error) {
     return (
