@@ -2,29 +2,109 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   MagnifyingGlassIcon,
-  AdjustmentsHorizontalIcon,
-  TrashIcon,
+  CheckCircleIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  ArrowPathIcon,
-  ExclamationTriangleIcon,
-  UserIcon,
-  BuildingOfficeIcon,
-  BriefcaseIcon,
-  CurrencyDollarIcon,
-  XMarkIcon
+  ArrowPathIcon
 } from '@heroicons/react/24/outline';
+import { FaRecycle } from 'react-icons/fa';
+import {
+  UsersIcon as UsersOutline,
+  CalendarDaysIcon as CalendarOutline,
+  BriefcaseIcon as BriefcaseOutline,
+  ChartBarIcon as ChartBarOutline,
+  ServerStackIcon as ServerStackOutline,
+} from '@heroicons/react/24/outline';
+import {
+  UsersIcon as UsersSolid,
+  CalendarDaysIcon as CalendarSolid,
+  BriefcaseIcon as BriefcaseSolid,
+  ChartBarIcon as ChartBarSolid,
+  ServerStackIcon as ServerStackSolid,
+} from '@heroicons/react/24/solid';
 
-// Record type mapping to icons
-const RECORD_TYPE_ICONS = {
-  contact: <UserIcon className="h-5 w-5" />,
-  company: <BuildingOfficeIcon className="h-5 w-5" />,
-  deal: <BriefcaseIcon className="h-5 w-5" />,
-  transaction: <CurrencyDollarIcon className="h-5 w-5" />,
-  other: <BriefcaseIcon className="h-5 w-5" />
+const tabs = [
+  { id: 'job-requisition', label: 'Job Requisition', OutlineIcon: BriefcaseOutline, SolidIcon: BriefcaseSolid },
+  { id: 'job-adverts', label: 'Job Adverts', OutlineIcon: ChartBarOutline, SolidIcon: ChartBarSolid },
+  { id: 'applications', label: 'Applications', OutlineIcon: UsersOutline, SolidIcon: UsersSolid },
+  { id: 'scheduled-interviews', label: 'Scheduled Interviews', OutlineIcon: CalendarOutline, SolidIcon: CalendarSolid },
+  { id: 'api-integrations', label: 'API Integrations', OutlineIcon: ServerStackOutline, SolidIcon: ServerStackSolid },
+];
+
+const ROLES = ['Admin', 'User', 'Manager', 'Editor', 'Viewer'];
+const JOB_TYPES = ['Full-Time', 'Part-Time', 'Contract', 'Internship'];
+const LOCATIONS = ['New York', 'London', 'Tokyo', 'Remote'];
+const JOB_BOARDS = ['Indeed', 'LinkedIn', 'Glassdoor', 'Monster'];
+
+// Generate mock data for each tab
+const generateMockData = (type, count = 50) => {
+  const data = [];
+  for (let i = 1; i <= count; i++) {
+    const date = `2025-${String((i % 3) + 1).padStart(2, '0')}-${String((i % 28) + 1).padStart(2, '0')}`;
+    const dateTime = `2025-${String((i % 3) + 1).padStart(2, '0')}-${String((i % 28) + 1).padStart(2, '0')} ${String(i % 24).padStart(2, '0')}:00`;
+    let item;
+    switch (type) {
+      case 'job-requisition':
+        item = {
+          id: `REQ-${String(i).padStart(3, '0')}`,
+          title: `Requisition-${String(i).padStart(2, '0')}`,
+          status: 'Deleted',
+          requestDate: date,
+          requestedBy: `User${i}`,
+          role: ROLES[i % ROLES.length]
+        };
+        break;
+      case 'job-adverts':
+        item = {
+          id: `ADV-${String(i).padStart(3, '0')}`,
+          jobTitle: `Job-Ad-${String(i).padStart(2, '0')}`,
+          jobType: JOB_TYPES[i % JOB_TYPES.length],
+          location: LOCATIONS[i % LOCATIONS.length],
+          deadline: date,
+          status: 'Deleted',
+          applicationLink: `https://example.com/apply/${i}`
+        };
+        break;
+      case 'applications':
+        item = {
+          id: `APP-${String(i).padStart(3, '0')}`,
+          jobTitle: `Job-App-${String(i).padStart(2, '0')}`,
+          noOfApplications: i % 100,
+          deadline: date,
+          lastModified: date,
+          status: 'Deleted'
+        };
+        break;
+      case 'scheduled-interviews':
+        item = {
+          id: `INT-${String(i).padStart(3, '0')}`,
+          position: `Position-${String(i).padStart(2, '0')}`,
+          candidate: `Candidate${i}`,
+          interviewDateTime: dateTime,
+          lastModified: date,
+          status: 'Deleted'
+        };
+        break;
+      case 'api-integrations':
+        item = {
+          id: `API-${String(i).padStart(3, '0')}`,
+          jobBoard: JOB_BOARDS[i % JOB_BOARDS.length],
+          apiKey: `key-${String(i).padStart(3, '0')}`,
+          activePostings: i % 10,
+          createdDate: date,
+          lastSync: date,
+          status: 'Deleted'
+        };
+        break;
+      default:
+        item = {};
+    }
+    data.push(item);
+  }
+  return data;
 };
 
-// Modal component for confirmation dialogs
+// Modal component
 const Modal = ({ title, message, onConfirm, onCancel, confirmText = 'Confirm', cancelText = 'Cancel' }) => (
   <AnimatePresence>
     <motion.div
@@ -63,7 +143,7 @@ const Modal = ({ title, message, onConfirm, onCancel, confirmText = 'Confirm', c
   </AnimatePresence>
 );
 
-// AlertModal component for simple alerts
+// AlertModal component
 const AlertModal = ({ title, message, onClose }) => (
   <AnimatePresence>
     <motion.div
@@ -79,14 +159,13 @@ const AlertModal = ({ title, message, onClose }) => (
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.75 }}
       role="alertdialog"
-      aria-modal="true"
     >
       <h3 className="mb-4 text-lg font-semibold">{title}</h3>
       <p className="mb-6">{message}</p>
       <div className="flex justify-end">
         <button
           onClick={onClose}
-          className="rounded bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700"
+          className="rounded bg-blue-600 px-7 py-2 font-semibold text-white hover:bg-blue-700"
           autoFocus
         >
           OK
@@ -96,95 +175,104 @@ const AlertModal = ({ title, message, onClose }) => (
   </AnimatePresence>
 );
 
-// Function to generate mock deleted records data
-const generateMockDeletedRecords = () => {
-  const records = [];
-  const recordTypes = ['contact', 'company', 'deal', 'transaction', 'other'];
-  const deletedByUsers = ['admin@company.com', 'manager@company.com', 'user@company.com', 'support@company.com'];
-  
-  for (let i = 1; i <= 50; i++) {
-    const recordType = recordTypes[Math.floor(Math.random() * recordTypes.length)];
-    const deletedDate = new Date();
-    deletedDate.setDate(deletedDate.getDate() - Math.floor(Math.random() * 30));
-    
-    records.push({
-      id: `REC-${String(i).padStart(3, '0')}`,
-      name: `Record ${i}`,
-      type: recordType,
-      deletedBy: deletedByUsers[Math.floor(Math.random() * deletedByUsers.length)],
-      deletedDate: deletedDate.toISOString().split('T')[0],
-      daysLeft: Math.floor(Math.random() * 30) + 1,
-      originalData: {
-        email: `contact${i}@example.com`,
-        phone: `+1 (555) ${Math.floor(100 + Math.random() * 900)}-${Math.floor(1000 + Math.random() * 9000)}`,
-        value: recordType === 'deal' ? `$${(Math.random() * 100000).toFixed(2)}` : 'N/A'
-      }
-    });
-  }
-  return records;
-};
-
-// Main RecycleBin component
 const RecycleBin = () => {
-  // State declarations
+  const [activeTab, setActiveTab] = useState(tabs[0].id);
   const [searchTerm, setSearchTerm] = useState('');
-  const [typeFilter, setTypeFilter] = useState('All');
-  const [isVisible, setIsVisible] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [selectedIds, setSelectedIds] = useState([]);
   const [showNoSelectionAlert, setShowNoSelectionAlert] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
-  const [deleteItemId, setDeleteItemId] = useState(null);
-  const [isRestoring, setIsRestoring] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteRequestId, setDeleteRequestId] = useState(null);
+  const [showConfirmRestore, setShowConfirmRestore] = useState(false);
+  const [restoreRequestId, setRestoreRequestId] = useState(null);
   const masterCheckboxRef = useRef(null);
 
-  const toggleSection = () => {
-    setIsVisible(prev => !prev);
-  };
+  // Initialize data for each tab
+  const [data, setData] = useState({
+    'job-requisition': generateMockData('job-requisition'),
+    'job-adverts': generateMockData('job-adverts'),
+    'applications': generateMockData('applications'),
+    'scheduled-interviews': generateMockData('scheduled-interviews'),
+    'api-integrations': generateMockData('api-integrations'),
+  });
 
-  const recordTypes = ['All', 'contact', 'company', 'deal', 'transaction', 'other'];
+  // Reset selections and checkbox when page, rows, or tab changes
+  useEffect(() => {
+    if (masterCheckboxRef.current) {
+      masterCheckboxRef.current.checked = false;
+    }
+    setSelectedIds([]);
+  }, [currentPage, rowsPerPage, activeTab]);
 
-  // Initialize deleted records with mock data
-  const [deletedRecords, setDeletedRecords] = useState(generateMockDeletedRecords());
-
-  // Filter records based on search term and type
-  const filteredRecords = deletedRecords.filter((record) => {
-    const matchesSearch = 
-      record.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      record.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      record.deletedBy.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      record.originalData.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = typeFilter === 'All' || record.type === typeFilter;
-    return matchesSearch && matchesType;
+  // Filter data for the active tab
+  const filteredData = data[activeTab].filter((item) => {
+    switch (activeTab) {
+      case 'job-requisition':
+        return (
+          item.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.requestedBy.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.role.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      case 'job-adverts':
+        return (
+          item.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.jobTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.jobType.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.applicationLink.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      case 'applications':
+        return (
+          item.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.jobTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          String(item.noOfApplications).includes(searchTerm.toLowerCase())
+        );
+      case 'scheduled-interviews':
+        return (
+          item.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.position.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.candidate.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.interviewDateTime.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      case 'api-integrations':
+        return (
+          item.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.jobBoard.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.apiKey.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          String(item.activePostings).includes(searchTerm.toLowerCase())
+        );
+      default:
+        return true;
+    }
   });
 
   // Pagination logic
-  const totalPages = Math.ceil(filteredRecords.length / rowsPerPage);
+  const totalPages = Math.ceil(filteredData.length / rowsPerPage);
   const startIndex = (currentPage - 1) * rowsPerPage;
-  const currentRecords = filteredRecords.slice(startIndex, startIndex + rowsPerPage);
+  const currentData = filteredData.slice(startIndex, startIndex + rowsPerPage);
 
-  // Handle checkbox selection for individual records
+  // Handle checkbox selection
   const handleCheckboxChange = (id) => {
     setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((recordId) => recordId !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((requestId) => requestId !== id) : [...prev, id]
     );
   };
 
-  // Handle select all visible records
+  // Handle select all visible items
   const handleSelectAllVisible = () => {
-    if (currentRecords.every((record) => selectedIds.includes(record.id))) {
-      setSelectedIds((prev) => prev.filter((id) => !currentRecords.some((record) => record.id === id)));
+    if (currentData.every((item) => selectedIds.includes(item.id))) {
+      setSelectedIds((prev) => prev.filter((id) => !currentData.some((item) => item.id === id)));
     } else {
       setSelectedIds((prev) => [
         ...prev,
-        ...currentRecords.filter((record) => !prev.includes(record.id)).map((record) => record.id),
+        ...currentData.filter((item) => !prev.includes(item.id)).map((item) => item.id),
       ]);
     }
   };
 
-  // Handle permanent deletion of marked records
+  // Handle permanent delete marked items
   const handleDeleteMarked = () => {
     if (selectedIds.length === 0) {
       setShowNoSelectionAlert(true);
@@ -193,661 +281,354 @@ const RecycleBin = () => {
     setShowConfirmDelete(true);
   };
 
-  // Handle single record deletion
+  // Handle single item permanent deletion
   const handleDeleteSingle = (id) => {
-    setDeleteItemId(id);
+    setDeleteRequestId(id);
     setShowConfirmDelete(true);
   };
 
-  // Handle record restoration
-  const handleRestore = (id) => {
-    setIsRestoring(true);
-    
-    // Simulate restore process
-    setTimeout(() => {
-      // Remove from deleted records
-      setDeletedRecords(prev => prev.filter(record => record.id !== id));
-      setSelectedIds(prev => prev.filter(recordId => recordId !== id));
-      setIsRestoring(false);
-    }, 1000);
+  // Handle single item restoration
+  const handleRestoreSingle = (id) => {
+    setRestoreRequestId(id);
+    setShowConfirmRestore(true);
   };
 
-  // Handle restore all selected records
-  const handleRestoreSelected = () => {
-    if (selectedIds.length === 0) {
-      setShowNoSelectionAlert(true);
-      return;
-    }
-    
-    setIsRestoring(true);
-    
-    // Simulate restore process
-    setTimeout(() => {
-      // Remove selected records from deleted records
-      setDeletedRecords(prev => prev.filter(record => !selectedIds.includes(record.id)));
-      setSelectedIds([]);
-      setIsRestoring(false);
-    }, 1000);
-  };
-
-  // Confirm deletion of selected or single record
+  // Confirm permanent deletion
   const confirmDelete = () => {
-    setIsDeleting(true);
-    
-    // Simulate deletion process
-    setTimeout(() => {
-      if (deleteItemId) {
-        // Single record deletion
-        setDeletedRecords(prev => prev.filter(record => record.id !== deleteItemId));
-        setSelectedIds(prev => prev.filter(id => id !== deleteItemId));
-        setDeleteItemId(null);
-      } else {
-        // Multiple record deletion
-        setDeletedRecords(prev => prev.filter(record => !selectedIds.includes(record.id)));
-        setSelectedIds([]);
-      }
-      setShowConfirmDelete(false);
-      setIsDeleting(false);
-    }, 1000);
+    if (deleteRequestId) {
+      setData((prev) => ({
+        ...prev,
+        [activeTab]: prev[activeTab].filter((item) => item.id !== deleteRequestId)
+      }));
+      setSelectedIds((prev) => prev.filter((id) => id !== deleteRequestId));
+      setDeleteRequestId(null);
+    } else {
+      setData((prev) => ({
+        ...prev,
+        [activeTab]: prev[activeTab].filter((item) => !selectedIds.includes(item.id))
+      }));
+      setSelectedIds([]);
+    }
+    setShowConfirmDelete(false);
   };
 
-  // Reset master checkbox when page or rows change
-  useEffect(() => {
-    if (masterCheckboxRef.current) {
-      masterCheckboxRef.current.checked = false;
-    }
-    setSelectedIds([]);
-  }, [currentPage, rowsPerPage]);
-
-  return (
-    <div className="RecycleBin-sec">
-      <div className="Dash-OO-Boas OOOP-LOa">
-        <div className="Dash-OO-Boas-Top">
-          <div className="Dash-OO-Boas-Top-1">
-            <span onClick={toggleSection}><AdjustmentsHorizontalIcon className="h-6 w-6" /></span>
-            <h3>Recycle Bin</h3>
-          </div>
-          <div className="Dash-OO-Boas-Top-2">
-            <div className="genn-Drop-Search">
-              <span><MagnifyingGlassIcon className="h-6 w-6" /></span>
-              <input 
-                type="text" 
-                placeholder="Search deleted records..." 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+  // Confirm restoration
+  const confirmRestore = () => {
+    setData((prev) => ({
+        ...prev,
+        [activeTab]: prev[activeTab].filter((item) => item.id !== restoreRequestId)
+      }));
+      setSelectedIds((prev) => prev.filter((id) => id !== restoreRequestId));
+      setRestoreRequestId(null);
+      setShowConfirmRestore(false);
+    };
+  
+    // Render table headers based on tab
+    const renderTableHeaders = () => {
+      let headers = [];
+      switch (activeTab) {
+        case 'job-requisition':
+          headers = ['Request ID', 'Title', 'Status', 'Request Date', 'Requested By', 'Role'];
+          break;
+        case 'job-adverts':
+          headers = ['Job ID', 'Job Title', 'Job Type', 'Location', 'Deadline for Applications', 'Status', 'Application Link'];
+          break;
+        case 'applications':
+          headers = ['Job ID', 'Job Title', 'No. of Applications', 'Deadline for Applications', 'Last Modified', 'Status'];
+          break;
+        case 'scheduled-interviews':
+          headers = ['Schedule ID', 'Position', 'Candidate', 'Interview Date/Time', 'Last Modified', 'Status'];
+          break;
+        case 'api-integrations':
+          headers = ['Board ID', 'Job Board', 'API Key', 'Active Postings', 'Created Date', 'Last Sync', 'Status'];
+          break;
+        default:
+          break;
+      }
+      return headers.map((header) => (
+        <th key={header}><span className="flex items-center gap-1">{header}</span></th>
+      ));
+    };
+  
+    // Render table row data based on tab
+    const renderTableRow = (item) => {
+      let rowData = [];
+      switch (activeTab) {
+        case 'job-requisition':
+          rowData = [
+            item.id,
+            item.title,
+            <span className={`status deleted haggsb-status`}>{item.status}</span>,
+            item.requestDate,
+            item.requestedBy,
+            item.role
+          ];
+          break;
+        case 'job-adverts':
+          rowData = [
+            item.id,
+            item.jobTitle,
+            item.jobType,
+            item.location,
+            item.deadline,
+            <span className={`status deleted haggsb-status`}>{item.status}</span>,
+            <a href={item.applicationLink} target="_blank" rel="noopener noreferrer">Apply</a>
+          ];
+          break;
+        case 'applications':
+          rowData = [
+            item.id,
+            item.jobTitle,
+            item.noOfApplications,
+            item.deadline,
+            item.lastModified,
+            <span className={`status deleted haggsb-status`}>{item.status}</span>
+          ];
+          break;
+        case 'scheduled-interviews':
+          rowData = [
+            item.id,
+            item.position,
+            item.candidate,
+            item.interviewDateTime,
+            item.lastModified,
+            <span className={`status deleted haggsb-status`}>{item.status}</span>
+          ];
+          break;
+        case 'api-integrations':
+          rowData = [
+            item.id,
+            item.jobBoard,
+            item.apiKey,
+            item.activePostings,
+            item.createdDate,
+            item.lastSync,
+            <span className={`status deleted haggsb-status`}>{item.status}</span>
+          ];
+          break;
+        default:
+          break;
+      }
+      return rowData.map((cell, index) => <td key={index}>{cell}</td>);
+    };
+  
+    return (
+      <div className="RecycleBin-sec">
+        <div className="OLIK-NAVVVB OLik-Srfga">
+          {tabs.map(({ id, label, OutlineIcon, SolidIcon }) => {
+            const isActive = activeTab === id;
+            const Icon = isActive ? SolidIcon : OutlineIcon;
+            return (
+              <button
+                key={id}
+                onClick={() => {
+                  setActiveTab(id);
+                  setCurrentPage(1);
+                  setSelectedIds([]);
+                  setSearchTerm('');
+                }}
+                className={`flex items-center gap-2 px-4 py-2 rounded-md transition ${
+                  isActive
+                    ? 'active-OLika bg-blue-100 text-blue-600 font-semibold'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <Icon className="h-5 w-5" />
+                {label}
+              </button>
+            );
+          })}
+        </div>
+  
+        <div className="Dash-OO-Boas OOOP-LOa">
+          <div className="Dash-OO-Boas-Top">
+            <div className="Dash-OO-Boas-Top-1">
+              <h3>Recycle Bin - {tabs.find(tab => tab.id === activeTab).label}</h3>
+            </div>
+            <div className="Dash-OO-Boas-Top-2">
+              <div className="genn-Drop-Search">
+                <span><MagnifyingGlassIcon className="h-6 w-6" /></span>
+                <input
+                  type="text"
+                  placeholder={`Search deleted ${activeTab.replace('-', ' ')}...`}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
             </div>
           </div>
         </div>
-
+  
+        <div className="Dash-OO-Boas Gen-Boxshadow">
+          <div className="oujah-Oujka">
+            <h3>Deleted {tabs.find(tab => tab.id === activeTab).label}</h3>
+          </div>
+          <div className="table-container">
+            <table className="Gen-Sys-table">
+              <thead>
+                <tr>
+                  <th>
+                    <input
+                      type="checkbox"
+                      ref={masterCheckboxRef}
+                      onChange={handleSelectAllVisible}
+                      checked={currentData.length > 0 && currentData.every((item) => selectedIds.includes(item.id))}
+                    />
+                  </th>
+                  {renderTableHeaders()}
+                  <th><span className="flex items-center gap-1">Actions</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentData.length === 0 ? (
+                  <tr>
+                    <td colSpan={renderTableHeaders().length + 2} style={{ textAlign: 'center', padding: '20px', fontStyle: 'italic' }}>
+                      No deleted {activeTab.replace('-', ' ')} found
+                    </td>
+                  </tr>
+                ) : (
+                  currentData.map((item) => (
+                    <tr key={item.id}>
+                      <td>
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.includes(item.id)}
+                          onChange={() => handleCheckboxChange(item.id)}
+                        />
+                      </td>
+                      {renderTableRow(item)}
+                      <td>
+                        <div className="gen-td-btns">
+                          <button
+                            onClick={() => handleRestoreSingle(item.id)}
+                            className="link-btn btn-primary-bg"
+                          >
+                            <ArrowPathIcon className="h-4 w-4 mr-1" />
+                            Restore
+                          </button>
+                          <button
+                            onClick={() => handleDeleteSingle(item.id)}
+                            className="view-btn"
+                          >
+                            <FaRecycle className="h-4 w-4 mr-1" />
+                            Permanently Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+  
+          {filteredData.length > 0 && (
+            <div className="pagination-controls">
+              <div className="Dash-OO-Boas-foot">
+                <div className="Dash-OO-Boas-foot-1">
+                  <div className="items-per-page">
+                    <p>Number of rows:</p>
+                    <select
+                      className="form-select"
+                      value={rowsPerPage}
+                      onChange={(e) => setRowsPerPage(Number(e.target.value))}
+                    >
+                      <option value={5}>5</option>
+                      <option value={10}>10</option>
+                      <option value={20}>20</option>
+                      <option value={50}>50</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="Dash-OO-Boas-foot-2">
+                  <button onClick={handleSelectAllVisible} className="mark-all-btn">
+                    <CheckCircleIcon className="h-5 w-5 mr-1" />
+                    {currentData.every((item) => selectedIds.includes(item.id)) ? 'Unmark All' : 'Mark All'}
+                  </button>
+                  <button onClick={handleDeleteMarked} className="delete-marked-btn">
+                    <FaRecycle className="h-5 w-5 mr-1" />
+                    Permanently Delete Marked
+                  </button>
+                </div>
+              </div>
+              <div className="page-navigation">
+                <span className="page-info">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <div className="page-navigation-Btns">
+                  <button
+                    className="page-button"
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeftIcon className="h-5 w-5" />
+                  </button>
+                  <button
+                    className="page-button"
+                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                  >
+                    <ChevronRightIcon className="h-5 w-5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+  
         <AnimatePresence>
-          {isVisible && (
-            <motion.div
-              className="filter-dropdowns"
-              initial={{ height: 0, opacity: 0, overflow: "hidden" }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <select
-                value={typeFilter}
-                onChange={(e) => setTypeFilter(e.target.value)}
-                className="filter-select"
-              >
-                {recordTypes.map(type => (
-                  <option key={type} value={type}>
-                    {type === 'All' ? 'All Types' : type.charAt(0).toUpperCase() + type.slice(1)}
-                  </option>
-                ))}
-              </select>
-            </motion.div>
+          {showNoSelectionAlert && (
+            <AlertModal
+              title="No Selection"
+              message="You have not selected any items to delete."
+              onClose={() => setShowNoSelectionAlert(false)}
+            />
+          )}
+          {showConfirmDelete && (
+            <Modal
+              title="Confirm Permanent Deletion"
+              message={
+                deleteRequestId
+                  ? `Are you sure you want to permanently delete the ${activeTab.replace('-', ' ')} "${
+                      activeTab === 'job-requisition' ? data[activeTab].find(r => r.id === deleteRequestId)?.title :
+                      activeTab === 'job-adverts' ? data[activeTab].find(r => r.id === deleteRequestId)?.jobTitle :
+                      activeTab === 'applications' ? data[activeTab].find(r => r.id === deleteRequestId)?.jobTitle :
+                      activeTab === 'scheduled-interviews' ? data[activeTab].find(r => r.id === deleteRequestId)?.position :
+                      data[activeTab].find(r => r.id === deleteRequestId)?.jobBoard
+                    }"? This action cannot be undone.`
+                  : `Are you sure you want to permanently delete ${selectedIds.length} selected ${activeTab.replace('-', ' ')}(s)? This action cannot be undone.`
+              }
+              onConfirm={confirmDelete}
+              onCancel={() => {
+                setShowConfirmDelete(false);
+                setDeleteRequestId(null);
+              }}
+              confirmText="Permanently Delete"
+              cancelText="Cancel"
+            />
+          )}
+          {showConfirmRestore && (
+            <Modal
+              title="Confirm Restore"
+              message={`Are you sure you want to restore the ${activeTab.replace('-', ' ')} "${
+                activeTab === 'job-requisition' ? data[activeTab].find(r => r.id === restoreRequestId)?.title :
+                activeTab === 'job-adverts' ? data[activeTab].find(r => r.id === restoreRequestId)?.jobTitle :
+                activeTab === 'applications' ? data[activeTab].find(r => r.id === restoreRequestId)?.jobTitle :
+                activeTab === 'scheduled-interviews' ? data[activeTab].find(r => r.id === restoreRequestId)?.position :
+                data[activeTab].find(r => r.id === restoreRequestId)?.jobBoard
+              }"?`}
+              onConfirm={confirmRestore}
+              onCancel={() => {
+                setShowConfirmRestore(false);
+                setRestoreRequestId(null);
+              }}
+              confirmText="Restore"
+              cancelText="Cancel"
+            />
           )}
         </AnimatePresence>
       </div>
-
-      <div className="Dash-OO-Boas Gen-Boxshadow">
-        <div className='oujah-Oujka'>
-          <h3>Deleted Records</h3>
-          <div className="flex gap-2">
-            <button 
-              className='poli-BTn btn-primary-bg flex items-center'
-              onClick={handleRestoreSelected}
-              disabled={isRestoring || selectedIds.length === 0}
-            >
-              {isRestoring ? (
-                <>
-                  <motion.div
-                    initial={{ rotate: 0 }}
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                    style={{
-                      width: 18,
-                      height: 18,
-                      borderRadius: '50%',
-                      border: '3px solid rgba(255,255,255,0.3)',
-                      borderTopColor: '#fff',
-                      marginRight: '5px',
-                    }}
-                  />
-                  Restoring...
-                </>
-              ) : (
-                <>
-                  <ArrowPathIcon className="h-5 w-5 mr-1" /> 
-                  Restore Selected
-                </>
-              )}
-            </button>
-            <button 
-              className='poli-BTn bg-red-600 hover:bg-red-700 flex items-center'
-              onClick={handleDeleteMarked}
-              disabled={isDeleting || selectedIds.length === 0}
-            >
-              <TrashIcon className="h-5 w-5 mr-1" /> 
-              Delete Permanently
-            </button>
-          </div>
-        </div>
-        <div className="table-container">
-          <table className="Gen-Sys-table">
-            <thead>
-              <tr>
-                <th>
-                  <input
-                    type="checkbox"
-                    ref={masterCheckboxRef}
-                    onChange={handleSelectAllVisible}
-                    checked={currentRecords.length > 0 && currentRecords.every((record) => selectedIds.includes(record.id))}
-                  />
-                </th>
-                <th>
-                  <span className="flex items-center gap-1">
-                    Record ID
-                  </span>
-                </th>
-                <th>
-                  <span className="flex items-center gap-1">
-                    Name
-                  </span>
-                </th>
-                <th>
-                  <span className="flex items-center gap-1">
-                    Type
-                  </span>
-                </th>
-                <th>
-                  <span className="flex items-center gap-1">
-                    Details
-                  </span>
-                </th>
-                <th>
-                  <span className="flex items-center gap-1">
-                    Deleted By
-                  </span>
-                </th>
-                <th>
-                  <span className="flex items-center gap-1">
-                    Deleted Date
-                  </span>
-                </th>
-                <th>
-                  <span className="flex items-center gap-1">
-                    Days Left
-                  </span>
-                </th>
-                <th>
-                  <span className="flex items-center gap-1">
-                    Actions
-                  </span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {currentRecords.length === 0 ? (
-                <tr>
-                  <td colSpan={9} style={{ textAlign: 'center', padding: '20px', fontStyle: 'italic' }}>
-                    No deleted records found
-                  </td>
-                </tr>
-              ) : (
-                currentRecords.map((record) => (
-                  <tr key={record.id}>
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.includes(record.id)}
-                        onChange={() => handleCheckboxChange(record.id)}
-                      />
-                    </td>
-                    <td>{record.id}</td>
-                    <td className="flex items-center gap-2">
-                      <span className="text-blue-500">
-                        {RECORD_TYPE_ICONS[record.type] || RECORD_TYPE_ICONS.other}
-                      </span>
-                      {record.name}
-                    </td>
-                    <td>
-                      <span className="capitalize">{record.type}</span>
-                    </td>
-                    <td>
-                      {record.type === 'contact' ? (
-                        <div className="text-xs">
-                          <div>Email: {record.originalData.email}</div>
-                          <div>Phone: {record.originalData.phone}</div>
-                        </div>
-                      ) : record.type === 'deal' ? (
-                        <div className="text-xs">
-                          Value: {record.originalData.value}
-                        </div>
-                      ) : (
-                        <div className="text-xs">N/A</div>
-                      )}
-                    </td>
-                    <td>{record.deletedBy}</td>
-                    <td>{record.deletedDate}</td>
-                    <td>
-                      <span className={`status ${record.daysLeft <= 7 ? 'expiring' : 'normal'}`}>
-                        {record.daysLeft} days
-                      </span>
-                    </td>
-                    <td>
-                      <div className="gen-td-btns">
-                        <button
-                          onClick={() => handleRestore(record.id)}
-                          className="link-btn btn-primary-bg"
-                          disabled={isRestoring}
-                        >
-                          <ArrowPathIcon className="h-4 w-4 mr-1" />
-                          Restore
-                        </button>
-                        <button
-                          onClick={() => handleDeleteSingle(record.id)}
-                          className="view-btn bg-red-600 hover:bg-red-700"
-                          disabled={isDeleting}
-                        >
-                          <XMarkIcon className="h-4 w-4 mr-1" />
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {filteredRecords.length > 0 && (
-          <div className="pagination-controls">
-            <div className="Dash-OO-Boas-foot">
-              <div className="Dash-OO-Boas-foot-1">
-                <div className="items-per-page">
-                  <p>Records per page:</p>
-                  <select
-                    className="form-select"
-                    value={rowsPerPage}
-                    onChange={(e) => setRowsPerPage(Number(e.target.value))}
-                  >
-                    <option value={5}>5</option>
-                    <option value={10}>10</option>
-                    <option value={20}>20</option>
-                    <option value={50}>50</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="Dash-OO-Boas-foot-2">
-                <button onClick={handleSelectAllVisible} className="mark-all-btn">
-                  {currentRecords.every((record) => selectedIds.includes(record.id)) ? 'Unselect All' : 'Select All'}
-                </button>
-              </div>
-            </div>
-
-            <div className="page-navigation">
-              <span className="page-info">
-                Page {currentPage} of {totalPages}
-              </span>
-              <div className="page-navigation-Btns">
-                <button
-                  className="page-button"
-                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                >
-                  <ChevronLeftIcon className="h-5 w-5" />
-                </button>
-                <button
-                  className="page-button"
-                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                >
-                  <ChevronRightIcon className="h-5 w-5" />
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      <AnimatePresence>
-        {showNoSelectionAlert && (
-          <AlertModal
-            title="No Selection"
-            message="You have not selected any records to perform this action."
-            onClose={() => setShowNoSelectionAlert(false)}
-          />
-        )}
-        {showConfirmDelete && (
-          <Modal
-            title={deleteItemId ? "Permanently Delete Record" : "Permanently Delete Records"}
-            message={
-              deleteItemId
-                ? `Are you sure you want to permanently delete this record? This action cannot be undone.`
-                : `Are you sure you want to permanently delete ${selectedIds.length} selected record(s)? This action cannot be undone.`
-            }
-            onConfirm={confirmDelete}
-            onCancel={() => {
-              setShowConfirmDelete(false);
-              setDeleteItemId(null);
-            }}
-            confirmText={isDeleting ? "Deleting..." : "Delete Permanently"}
-            cancelText="Cancel"
-          />
-        )}
-      </AnimatePresence>
-
-      <style jsx>{`
-        .RecycleBin-sec {
-          padding: 20px;
-          font-family: 'Inter', sans-serif;
-        }
-        
-        .Dash-OO-Boas {
-          background: white;
-          border-radius: 12px;
-          box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-          margin-bottom: 20px;
-          overflow: hidden;
-        }
-        
-        .Dash-OO-Boas-Top {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 16px 24px;
-          border-bottom: 1px solid #e5e7eb;
-        }
-        
-        .Dash-OO-Boas-Top-1 {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-        }
-        
-        .Dash-OO-Boas-Top-1 span {
-          cursor: pointer;
-          display: flex;
-          padding: 6px;
-          border-radius: 6px;
-          background: #f3f4f6;
-        }
-        
-        .Dash-OO-Boas-Top-1 h3 {
-          font-size: 18px;
-          font-weight: 600;
-          color: #1f2937;
-        }
-        
-        .genn-Drop-Search {
-          display: flex;
-          align-items: center;
-          background: #f9fafb;
-          border: 1px solid #e5e7eb;
-          border-radius: 8px;
-          padding: 8px 12px;
-          width: 300px;
-        }
-        
-        .genn-Drop-Search input {
-          border: none;
-          background: transparent;
-          padding: 4px 8px;
-          width: 100%;
-          font-size: 14px;
-          outline: none;
-        }
-        
-        .filter-dropdowns {
-          padding: 0 24px 16px;
-        }
-        
-        .filter-select {
-          padding: 8px 12px;
-          border-radius: 6px;
-          border: 1px solid #d1d5db;
-          background: white;
-          font-size: 14px;
-        }
-        
-        .oujah-Oujka {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 16px 24px;
-          border-bottom: 1px solid #e5e7eb;
-        }
-        
-        .oujah-Oujka h3 {
-          font-size: 16px;
-          font-weight: 600;
-          color: #1f2937;
-        }
-        
-        .poli-BTn {
-          display: flex;
-          align-items: center;
-          padding: 8px 16px;
-          border-radius: 6px;
-          font-weight: 500;
-          font-size: 14px;
-          border: none;
-          cursor: pointer;
-          transition: background-color 0.2s;
-        }
-        
-        .btn-primary-bg {
-          background-color: #3b82f6;
-          color: white;
-        }
-        
-        .btn-primary-bg:hover {
-          background-color: #2563eb;
-        }
-        
-        .btn-primary-bg:disabled {
-          opacity: 0.7;
-          cursor: not-allowed;
-        }
-        
-        .bg-red-600 {
-          background-color: #dc2626;
-          color: white;
-        }
-        
-        .bg-red-600:hover {
-          background-color: #b91c1c;
-        }
-        
-        .table-container {
-          overflow-x: auto;
-          padding: 0 16px;
-        }
-        
-        .Gen-Sys-table {
-          width: 100%;
-          border-collapse: collapse;
-          font-size: 14px;
-        }
-        
-        .Gen-Sys-table th {
-          background-color: #f9fafb;
-          padding: 12px 16px;
-          text-align: left;
-          font-weight: 600;
-          color: #374151;
-          border-bottom: 1px solid #e5e7eb;
-        }
-        
-        .Gen-Sys-table td {
-          padding: 12px 16px;
-          border-bottom: 1px solid #e5e7eb;
-          color: #4b5563;
-        }
-        
-        .Gen-Sys-table tr:hover td {
-          background-color: #f9fafb;
-        }
-        
-        .status {
-          padding: 4px 8px;
-          border-radius: 12px;
-          font-size: 0.75rem;
-          font-weight: 500;
-        }
-        
-        .status.normal {
-          background-color: #e0f2fe;
-          color: #0369a1;
-        }
-        
-        .status.expiring {
-          background-color: #fee2e2;
-          color: #b91c1c;
-        }
-        
-        .gen-td-btns {
-          display: flex;
-          gap: 8px;
-        }
-        
-        .link-btn {
-          padding: 6px 12px;
-          border-radius: 6px;
-          background-color: #3b82f6;
-          color: white;
-          font-size: 0.875rem;
-          display: flex;
-          align-items: center;
-          border: none;
-          cursor: pointer;
-        }
-        
-        .link-btn:hover {
-          background-color: #2563eb;
-        }
-        
-        .link-btn:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-        
-        .view-btn {
-          padding: 6px 12px;
-          border-radius: 6px;
-          background-color: #ef4444;
-          color: white;
-          font-size: 0.875rem;
-          display: flex;
-          align-items: center;
-          border: none;
-          cursor: pointer;
-        }
-        
-        .view-btn:hover {
-          background-color: #dc2626;
-        }
-        
-        .view-btn:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-        
-        .pagination-controls {
-          padding: 16px 24px;
-        }
-        
-        .Dash-OO-Boas-foot {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 12px;
-        }
-        
-        .items-per-page {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          font-size: 14px;
-          color: #4b5563;
-        }
-        
-        .form-select {
-          padding: 6px 10px;
-          border-radius: 6px;
-          border: 1px solid #d1d5db;
-          background: white;
-        }
-        
-        .mark-all-btn {
-          padding: 8px 16px;
-          background-color: #e5e7eb;
-          border-radius: 6px;
-          font-weight: 500;
-          border: none;
-          cursor: pointer;
-          font-size: 14px;
-        }
-        
-        .mark-all-btn:hover {
-          background-color: #d1d5db;
-        }
-        
-        .page-navigation {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-        
-        .page-info {
-          font-size: 14px;
-          color: #4b5563;
-        }
-        
-        .page-navigation-Btns {
-          display: flex;
-          gap: 8px;
-        }
-        
-        .page-button {
-          padding: 6px 12px;
-          border-radius: 6px;
-          background-color: #f3f4f6;
-          border: 1px solid #e5e7eb;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-        }
-        
-        .page-button:hover {
-          background-color: #e5e7eb;
-        }
-        
-        .page-button:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-      `}</style>
-    </div>
-  );
-};
-
-export default RecycleBin;
+    );
+  };
+  
+  export default RecycleBin;
