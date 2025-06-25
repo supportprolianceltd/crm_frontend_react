@@ -136,8 +136,9 @@
     border-bottom: 1px solid #c4bde0;
     display: flex;
     align-items: center;
+    overflow-x: auto;
 }
-
+.OLIK-NAVVVB button,
 .OLIK-NAVVVB a{
     position: relative;
     padding:15px 20px;
@@ -149,20 +150,40 @@
     text-transform: uppercase;
     font-weight: 500;
     gap: 5px;
+    user-select: none;
+    cursor: pointer;
+    background-color: transparent;
+    white-space: nowrap;
 }
-
+.OLIK-NAVVVB button:hover{
+    background-color: #f0edfc;
+}
 .OLIK-NAVVVB a:hover{
     background-color: #f7f5ff;
 }
-
+.OLIK-NAVVVB button.active-OLika,
 .OLIK-NAVVVB a.active-OLika{
     background-color: #ebe6ff !important;
     border-color: #7226FF !important;
     color: #7226FF !important;
     font-weight: 600;
 }
+.OLIK-NAVVVB button svg,
 .OLIK-NAVVVB a svg{
     width: 14px;
+}
+
+.OLik-Srfga{
+    margin-top: 0px !important;
+}
+
+.OLik-Srfga button{
+    font-size: 10px !important;
+    padding: 10px 15px !important;
+}
+
+.OLik-Srfga button svg{
+    width: 12px !important;
 }
 
 /* Gyhat-HG */
@@ -217,6 +238,8 @@
   overflow-x: auto;
   scrollbar-width: thin; /* Firefox */
   margin-top: 20px;
+  position: relative;
+  padding-bottom: 30px;
 }
 
 .GYhh-Cardss-SesC::-webkit-scrollbar {
@@ -236,6 +259,7 @@
   transition: box-shadow 0.2s ease;
   user-select: none;
   cursor: pointer;
+  position: relative;
 }
 
 .GYhh-Card.active{
@@ -270,8 +294,15 @@ color: #7226FF !important;
 .GYhh-Card::before{
     content: '';
     position: absolute;
-    border-left: 10px solid transparent;
-    border-right: 10px solid transparent;
-    border-bottom: 10px solid red;
-    border-top: 10px solid red;
+    width: 20px;
+    height: 20px;
+    background-color: inherit;
+    transform: translateX(-50%) rotate(45deg);
+    left: 50%;
+    bottom: -10px;
+    opacity: 0;
+}
+
+.GYhh-Card.active::before{
+    opacity: 1;
 }

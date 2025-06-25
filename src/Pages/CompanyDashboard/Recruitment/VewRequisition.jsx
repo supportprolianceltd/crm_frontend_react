@@ -909,7 +909,7 @@ const VewRequisition = ({ job, onClose }) => {
                           </select>
                         </div>
                         <div className='GHuh-Form-Input'>
-                          <label>Location</label>
+                          <label>Work Model</label>
                           <select
                             name="locationType"
                             value={formData.locationType}
@@ -923,13 +923,12 @@ const VewRequisition = ({ job, onClose }) => {
                         </div>
                       </div>
 
-                      {formData.locationType === 'On-site' && (
                         <div className='GHuh-Form-Input'>
                           <label>Company Address</label>
                           <input
                             name="companyAddress"
                             type='text'
-                            placeholder='e.g. 24 Marina Street, Lagos'
+                            placeholder='Enter Company Address'
                             value={formData.companyAddress}
                             onChange={handleInputChange}
                             required
@@ -937,7 +936,19 @@ const VewRequisition = ({ job, onClose }) => {
                           />
                           {errors.companyAddress && <p className='error'>{errors.companyAddress}</p>}
                         </div>
-                      )}
+
+
+                           <div className='GHuh-Form-Input'>
+                          <label>Location</label>
+                          <input
+                            name="companyAddress"
+                            type='text'
+                            placeholder='Enter Work Location'
+                            onChange={handleInputChange}
+                            required
+                            disabled={!isFormMutable}
+                          />
+                        </div>
 
                       <div className='GHuh-Form-Input'>
                         <label>Salary Range (optional)</label>

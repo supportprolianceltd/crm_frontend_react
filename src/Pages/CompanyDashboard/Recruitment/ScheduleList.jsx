@@ -390,6 +390,7 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
           ref={modalContentRef}
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
+          animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.8, opacity: 0 }}
           style={{
             background: '#fff',
@@ -1064,6 +1065,26 @@ const ScheduleList = () => {
                   </td>
                 </tr>
               ) : currentSchedules.length === 0 ? (
+              {isLoading ? (
+                <tr>
+                  <td colSpan="8" style={{ textAlign: 'center', padding: '20px' }}>
+                    <motion.div
+                      initial={{ rotate: 0 }}
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: '50%',
+                        border: '4px solid rgba(114, 38, 255, 0.3)',
+                        borderTopColor: '#7226FF',
+                        margin: '0 auto',
+                      }}
+                    />
+                    <p style={{ marginTop: '10px', color: '#666' }}>Loading schedules...</p>
+                  </td>
+                </tr>
+              ) : currentSchedules.length === 0 ? (
                 <tr>
                   <td colSpan="8" style={{ textAlign: 'center', padding: '20px', fontStyle: 'italic' }}>
                     No matching scheduled interviews found
@@ -1144,6 +1165,7 @@ const ScheduleList = () => {
             </tbody>
           </table>
         </div>
+        {!isLoading && filteredSchedules.length > 0 && (
         {!isLoading && filteredSchedules.length > 0 && (
           <div className="pagination-controls">
             <div className="Dash-OO-Boas-foot">
@@ -1240,3 +1262,4 @@ const ScheduleList = () => {
 };
 
 export default ScheduleList;
+

@@ -857,6 +857,12 @@ function JobApplication() {
                             name: 'phone',
                             required: true,
                           },
+                             {
+                            label: 'Date of Birth',
+                            placeholder: 'Enter your date of birth',
+                            name: 'phone',
+                            required: true,
+                          },
                           {
                             label: 'Qualification',
                             placeholder: 'Enter your highest qualification',

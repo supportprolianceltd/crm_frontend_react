@@ -102,6 +102,7 @@ const DocumentSelectionModal = ({ documentsRequired, onConfirm, onCancel }) => {
       >
         <h3 className="mb-4 text-lg font-semibold">Select Document for Screening</h3>
         <p className="mb-4">Choose the document type to use for resume screening:</p>
+        <div className='GHuh-Form-Input'>
         <select
           value={selectedDocumentType}
           onChange={(e) => setSelectedDocumentType(e.target.value)}
@@ -113,6 +114,7 @@ const DocumentSelectionModal = ({ documentsRequired, onConfirm, onCancel }) => {
             </option>
           ))}
         </select>
+        </div>
         <div className="flex justify-end gap-3">
           <button
             className="rounded bg-gray-300 px-4 py-2 font-semibold hover:bg-gray-400"
@@ -193,7 +195,7 @@ const CircularProgress = ({ percentage, color }) => {
         y="50%"
         textAnchor="middle"
         dy=".3em"
-        fontSize="10"
+        fontSize="8"
         fill="#333"
         fontWeight="500"
       >
@@ -475,6 +477,22 @@ const handleScreenResumes = async (documentType) => {
 
 
 
+  // if (loading) {
+  //   return   <div className="Schedule-MMAin-Pais" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+  //           <motion.div
+  //             initial={{ rotate: 0 }}
+  //             animate={{ rotate: 360 }}
+  //             transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+  //             style={{
+  //               width: 40,
+  //               height: 40,
+  //               borderRadius: '50%',
+  //               border: '4px solid rgba(114, 38, 255, 0.2)',
+  //               borderTopColor: '#7226FF',
+  //             }}
+  //           />
+  //         </div>
+  // }
   if (loading) {
     return <div className="Alll_OOo_LODer">
       <p className="loader">Screening Applications...</p>
@@ -529,16 +547,14 @@ const handleScreenResumes = async (documentType) => {
 
         <div className="Gllla-Toopa">
           <h3>{job?.title}</h3>
-          <button className="screen-resumes-btn" onClick={initiateScreening}>
-            <DocumentCheckIcon className="h-6 w-6 inline mr-1" />
-            Screen Resumes
-          </button>
         </div>
 
         {screeningResults && (
           <div className="screening-results Gen-Boxshadow">
+            <div className='oo-Header'>
             <h3>Screening Results</h3>
             <p>{screeningResults.detail}</p>
+            </div>
             <table className="Gen-Sys-table">
               <thead>
                 <tr>
@@ -630,57 +646,70 @@ const handleScreenResumes = async (documentType) => {
                   <th>Action</th>
                 </tr>
               </thead>
-              <tbody>
-                {currentApplicants.length === 0 ? (
-                  <tr>
-                    <td colSpan={8} style={{ textAlign: 'center', padding: '20px', fontStyle: 'italic' }}>
-                      No matching applicants found
-                    </td>
-                  </tr>
-                ) : (
-                  currentApplicants.map(applicant => (
-                    <tr key={applicant.id}>
-                      <td>
-                        <input
-                          type="checkbox"
-                          checked={selectedIds.includes(applicant.id)}
-                          onChange={() => handleCheckboxChange(applicant.id)}
-                        />
-                      </td>
-                      <td>{applicant.name}</td>
-                      <td>{applicant.dateApplied}</td>
-                      <td>
-                        <span className={`status ${applicant.status.toLowerCase()}`}>
-                          {applicant.status}
-                          {applicant.status === 'Shortlisted' && <CheckIcon className="w-4 h-4 inline ml-1" />}
-                        </span>
-                      </td>
-                      <td>{applicant.source}</td>
-                      <td>
-                        <a
-                          href={`${config.API_BASE_URL}/${applicant.documents[0].file_url}`}
-                          
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="resume-link"
-                        >
-                          <img src={PDFICON} alt="PDF Resume" className="pdf-icon" />
-                          View
-                        </a>
-
-                      </td>
-                      <td>{applicant.screening_score ? `${applicant.screening_score}%` : 'Not Screened'}</td>
-                      <td>
-                        <div className="gen-td-btns">
-                          <button className="view-btn" onClick={() => handleViewClick(applicant)}>
-                            Details
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
+           <tbody>
+  {loading ? (
+    <tr>
+      <td colSpan={8} style={{ textAlign: 'center', padding: '20px', fontStyle: 'italic' }}>
+                    <ul className="tab-Loadding-AniMMA">
+                      <li></li>
+                      <li></li>
+                      <li></li>
+                      <li></li>
+                      <li></li>
+                      <li></li>
+                      <li></li>
+                      <li></li>
+                    </ul>
+                  </td>
+    </tr>
+  ) : currentApplicants.length === 0 ? (
+    <tr>
+      <td colSpan={8} style={{ textAlign: 'center', padding: '20px', fontStyle: 'italic' }}>
+        No matching applicants found
+      </td>
+    </tr>
+  ) : (
+    currentApplicants.map(applicant => (
+      <tr key={applicant.id}>
+        <td>
+          <input
+            type="checkbox"
+            checked={selectedIds.includes(applicant.id)}
+            onChange={() => handleCheckboxChange(applicant.id)}
+          />
+        </td>
+        <td>{applicant.name}</td>
+        <td>{applicant.dateApplied}</td>
+        <td>
+          <span className={`status ${applicant.status.toLowerCase()}`}>
+            {applicant.status}
+            {applicant.status === 'Shortlisted' && <CheckIcon className="w-4 h-4 inline ml-1" />}
+          </span>
+        </td>
+        <td>{applicant.source}</td>
+        <td>
+          <a
+            href={`${config.API_BASE_URL}/${applicant.documents[0].file_url}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="resume-link"
+          >
+            <img src={PDFICON} alt="PDF Resume" className="pdf-icon" />
+            View
+          </a>
+        </td>
+        <td>{applicant.screening_score ? `${applicant.screening_score}%` : 'Not Screened'}</td>
+        <td>
+          <div className="gen-td-btns">
+            <button className="view-btn" onClick={() => handleViewClick(applicant)}>
+              Details
+            </button>
+          </div>
+        </td>
+      </tr>
+    ))
+  )}
+</tbody>
             </table>
           </div>
 
@@ -786,9 +815,10 @@ const handleScreenResumes = async (documentType) => {
 
       <div className="YUa-Opal-Part-2">
         <div className="Top-GHY-s">
-          <Link to="/job-application" className="link-btn btn-primary-bg">
-            Visit Site
-          </Link>
+           <button className="link-btn btn-primary-bg" onClick={initiateScreening}>
+            <DocumentCheckIcon  />
+            Screen Resumes
+          </button>
           <p>
             Created on <span>2025-06-02 ✦ 9:21 AM</span>
           </p>

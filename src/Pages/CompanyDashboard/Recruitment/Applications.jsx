@@ -308,9 +308,9 @@ const JobApplication = () => {
       <div className="Dash-OO-Boas TTTo-POkay">
         <div className="glo-Top-Cards">
           {[
-            { icon: BriefcaseIcon, label: 'Total Job Requisitions', value: stats.total },
-            { icon: LockOpenIcon, label: 'Open Requisitions', value: stats.open },
-            { icon: LockClosedIcon, label: 'Closed Requisitions', value: stats.closed },
+            { icon: BriefcaseIcon, label: 'Total Applications', value: stats.total },
+            { icon: LockOpenIcon, label: 'Open Applications', value: stats.open },
+            { icon: LockClosedIcon, label: 'Closed Applications', value: stats.closed },
           ].map((item, idx) => (
             <div key={idx} className={`glo-Top-Card card-${idx + 1}`}>
               <div className="ffl-TOp">
@@ -332,14 +332,14 @@ const JobApplication = () => {
         <div className="Dash-OO-Boas-Top">
           <div className="Dash-OO-Boas-Top-1">
             <span onClick={toggleSection}><AdjustmentsHorizontalIcon className="h-6 w-6" /></span>
-            <h3>Job Requisitions</h3>
+            <h3>Job Applications</h3>
           </div>
           <div className="Dash-OO-Boas-Top-2">
             <div className="genn-Drop-Search">
               <span><MagnifyingGlassIcon className="h-6 w-6" /></span>
               <input 
                 type="text" 
-                placeholder="Search requisitions..." 
+                placeholder="Search applications..." 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -386,43 +386,36 @@ const JobApplication = () => {
                 </th>
                 <th>
                   <span className="flex items-center gap-1">
-                    <GlobeAltIcon className="h-5 w-5" />
                     Job ID
                   </span>
                 </th>
                 <th>
                   <span className="flex items-center gap-1">
-                    <BriefcaseIcon className="h-5 w-5" />
                     Job Title
                   </span>
                 </th>
                 <th>
                   <span className="flex items-center gap-1">
-                    <UsersIcon className="h-5 w-5" />
                     No. of Applications
                   </span>
                 </th>
                 <th>
                   <span className="flex items-center gap-1">
-                    <CalendarIcon className="h-5 w-5" />
                     Deadline for Applications
                   </span>
                 </th>
                 <th>
                   <span className="flex items-center gap-1">
-                    <ClockIcon className="h-5 w-5" />
                     Last Modified
                   </span>
                 </th>
                 <th>
                   <span className="flex items-center gap-1">
-                    <LockClosedIcon className="h-5 w-5" />
                     Status
                   </span>
                 </th>
                 <th>
                   <span className="flex items-center gap-1">
-                    <Cog6ToothIcon className="h-5 w-5" />
                     Actions
                   </span>
                 </th>

@@ -391,6 +391,7 @@
     cursor: pointer;
     border:1px solid transparent;
     transition: all 0.3s ease-in-out;
+    white-space: nowrap;
 }
 
 .gen-td-btns .link-btn svg,
@@ -883,10 +884,11 @@ button:focus-visible {
 
 }
 .CreateRequisition-box-SubTop p{
-    font-size: 13px;
+    font-size: 12px;
     display: flex;
     align-items: center;
     gap: 5px;
+    font-style: italic;
 }
 
 .CreateRequisition-box-SubTop p span{
@@ -938,8 +940,9 @@ button:focus-visible {
 }
 .CreateRequisition-box-Mid input::placeholder,
 .CreateRequisition-box-Mid textarea::placeholder{
-    color: #372580;
+    color: #b4abd2 !important;
     font-size: 11px;
+
 }
 
 
@@ -1605,7 +1608,7 @@ background: #ebe6ff;
 }
 .GHuh-Form-Input input::placeholder,
 .GHuh-Form-Input textarea::placeholder{
-    color: #372580;
+    color: #7462bd;
     font-size: 10px;
 }
 
@@ -3833,4 +3836,29 @@ background: linear-gradient(135deg, #FF6FD8 0%, #FF42A1 50%, #FF9770 100%) !impo
     display: flex !important;
     align-items: center !important;
     gap: 5px !important;
+}
+
+
+
+
+
+/* oo-Header */
+
+.oo-Header{
+    position: relative;
+    width: 100%;
+    height: auto;
+    margin-bottom: 20px;
+}
+
+.oo-Header h3{
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #7226FF;
+    margin-bottom: 5px;
+}
+
+.oo-Header p{
+    font-size: 12px;
 }
