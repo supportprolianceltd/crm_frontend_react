@@ -127,7 +127,7 @@ const SuccessModal = ({ title, message, onClose }) => (
       <div className="flex justify-end">
         <button
           onClick={onClose}
-          className="rounded bg-green-600 px-4 py-2 font-semibold text-white hover:bg-green-700"
+           className="rounded bg-blue-600 px-7 py-2 font-semibold text-white hover:bg-blue-700"
           autoFocus
         >
           OK
@@ -513,21 +513,17 @@ const RecycleBin = () => {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={renderTableHeaders().length + 2} style={{ textAlign: 'center', padding: '20px' }}>
-                    <motion.div
-                      initial={{ rotate: 0 }}
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                      style={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: '50%',
-                        border: '4px solid rgba(114, 38, 255, 0.3)',
-                        borderTopColor: '#7226FF',
-                        margin: '0 auto',
-                      }}
-                    />
-                    <p style={{ marginTop: '10px', color: '#666' }}>Loading deleted items...</p>
+                <td colSpan={9} style={{ textAlign: 'center', padding: '20px', fontStyle: 'italic' }}>
+                    <ul className="tab-Loadding-AniMMA">
+                      <li></li>
+                      <li></li>
+                      <li></li>
+                      <li></li>
+                      <li></li>
+                      <li></li>
+                      <li></li>
+                      <li></li>
+                    </ul>
                   </td>
                 </tr>
               ) : currentData.length === 0 ? (

@@ -1,9 +1,16 @@
+// Imports remain the same
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import usePageTitle from '../../hooks/useMainPageTitle';
-import { Route, Routes, Link } from 'react-router-dom';
-import { ChevronRightIcon, FolderIcon, PlusCircleIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
+import { Link } from 'react-router-dom';
+import {
+  ChevronRightIcon,
+  FolderIcon,
+  PlusCircleIcon,
+  Cog6ToothIcon,
+} from '@heroicons/react/24/outline';
 import { CheckIcon } from '@heroicons/react/24/solid';
+import { ClockIcon } from '@heroicons/react/24/outline'
 import './Dashboard.css';
 
 // CountUp component
@@ -12,7 +19,7 @@ const CountUp = ({ end, duration = 1000 }) => {
 
   useEffect(() => {
     let start = 0;
-    const increment = end / (duration / 16); // approx 60fps
+    const increment = end / (duration / 16); // ~60fps
     let current = start;
 
     const counter = setInterval(() => {
@@ -31,177 +38,275 @@ const CountUp = ({ end, duration = 1000 }) => {
   return <span>{count}%</span>;
 };
 
+// CircularProgress component
 const CircularProgress = ({ size = 70, strokeWidth = 6, percentage = 75, color = '#7226FF', number = 1, isActive }) => {
-    const radius = (size - strokeWidth) / 2;
-    const circumference = 2 * Math.PI * radius;
-    const offset = circumference - (percentage / 100) * circumference;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (percentage / 100) * circumference;
 
-    return (
-        <svg width={size} height={size} className="circular-progress">
-            <circle
-                stroke="#ebe6ff"
-                fill="transparent"
-                strokeWidth={strokeWidth}
-                r={radius}
-                cx={size / 2}
-                cy={size / 2}
-            />
-            <motion.circle
-                stroke={color}
-                fill="transparent"
-                strokeWidth={strokeWidth}
-                r={radius}
-                cx={size / 2}
-                cy={size / 2}
-                strokeDasharray={circumference}
-                strokeDashoffset={circumference}
-                animate={{
-                    strokeDashoffset: offset
-                }}
-                transition={{
-                    duration: 1,
-                    ease: "easeInOut"
-                }}
-                style={{
-                    transform: 'rotate(-90deg)',
-                    transformOrigin: '50% 50%'
-                }}
-            />
-            <text
-                x="50%"
-                y="50%"
-                dominantBaseline="middle"
-                textAnchor="middle"
-                fontSize="23"
-                fontWeight="500"
-                fill={isActive ? '#7226FF' : '#111827'}
-            >
-                {number}
-            </text>
-        </svg>
-    );
+  return (
+    <svg width={size} height={size} className="circular-progress">
+      <circle
+        stroke="#ebe6ff"
+        fill="transparent"
+        strokeWidth={strokeWidth}
+        r={radius}
+        cx={size / 2}
+        cy={size / 2}
+      />
+      <motion.circle
+        stroke={color}
+        fill="transparent"
+        strokeWidth={strokeWidth}
+        r={radius}
+        cx={size / 2}
+        cy={size / 2}
+        strokeDasharray={circumference}
+        strokeDashoffset={circumference}
+        animate={{ strokeDashoffset: offset }}
+        transition={{ duration: 1, ease: "easeInOut" }}
+        style={{ transform: 'rotate(-90deg)', transformOrigin: '50% 50%' }}
+      />
+      <text
+        x="50%"
+        y="50%"
+        dominantBaseline="middle"
+        textAnchor="middle"
+        fontSize="23"
+        fontWeight="500"
+        fill={isActive ? '#7226FF' : '#111827'}
+      >
+        {number}
+      </text>
+    </svg>
+  );
 };
 
+const stepTitles = [
+  'Job Application',
+  'Document Uploads',
+  'Interview',
+  'Compliance Check',
+  'Decision',
+];
+
+const stepPercentages = [100, 100, 50, 0, 0];
+
+// Main Dashboard component
 const Dashboard = () => {
-    usePageTitle();
+  usePageTitle();
+  const [activeCard, setActiveCard] = useState(3); // Interview as default
 
-    const [activeCard, setActiveCard] = useState(3);
+  const handleCardClick = (cardNumber) => {
+    setActiveCard(cardNumber);
+  };
 
-    const handleCardClick = (cardNumber) => {
-        setActiveCard(cardNumber);
-    };
+  return (
+    <div className='Applicant-Dashboard'>
+      <div className='site-container'>
 
-    return (
-        <div className='Applicant-Dashboard'>
-            <div className='site-container'>
-
-                <div className='GHH-Top-GTga'>
-                    <p>
-                        <Link to='/'>Kaeft</Link>
-                        <ChevronRightIcon className='chevron-icon' />
-                        <Link to='/'>My applications</Link>
-                        <ChevronRightIcon className='chevron-icon' />
-                        <span>Frontend website developer</span>
-                    </p>
-                </div>
-
-                <div className='OLIK-NAVVVB'>
-                    <Link to='/'>
-                        <FolderIcon className='icon-nav' />
-                        My applications
-                    </Link>
-                    <Link to='/' className='active-OLika'>
-                        <PlusCircleIcon className='icon-nav' />
-                        New application
-                    </Link>
-                    <Link to='/'>
-                        <Cog6ToothIcon className='icon-nav' />
-                        Settings
-                    </Link>
-                </div>
-
-                <div className='Gyhat-HG'>
-                    <h3>Frontend website developer</h3>
-                    <p>Application Progress: <span>90%</span></p>
-                </div>
-
-                <div className='oik-pa'>
-                    <p>Posted by: <a href='#'>Proliance LTD</a></p>
-                </div>
-
-                <div className='GYhh-Cardss-SesC'>
-                    <div
-                        className={`GYhh-Card ${activeCard === 1 ? 'active' : ''}`}
-                        onClick={() => handleCardClick(1)}
-                    >
-                        <div className='progress-Chat'>
-                            <CircularProgress percentage={100} color="#7226FF" number={1} isActive={activeCard === 1} />
-                        </div>
-                        <p><CountUp end={100} /> Job Application</p>
-                    </div>
-
-                    <div
-                        className={`GYhh-Card ${activeCard === 2 ? 'active' : ''}`}
-                        onClick={() => handleCardClick(2)}
-                    >
-                        <div className='progress-Chat'>
-                            <CircularProgress percentage={100} color="#7226FF" number={2} isActive={activeCard === 2} />
-                        </div>
-                        <p><CountUp end={100} /> Document Uploads</p>
-                    </div>
-
-                    <div
-                        className={`GYhh-Card ${activeCard === 3 ? 'active' : ''}`}
-                        onClick={() => handleCardClick(3)}
-                    >
-                        <div className='progress-Chat'>
-                            <CircularProgress percentage={50} color="#7226FF" number={3} isActive={activeCard === 3} />
-                        </div>
-                        <p><CountUp end={50} /> Interview</p>
-                    </div>
-
-                    <div
-                        className={`GYhh-Card ${activeCard === 4 ? 'active' : ''}`}
-                        onClick={() => handleCardClick(4)}
-                    >
-                        <div className='progress-Chat'>
-                            <CircularProgress percentage={0} color="#7226FF" number={4} isActive={activeCard === 4} />
-                        </div>
-                        <p><CountUp end={0} /> Compliance Check</p>
-                    </div>
-
-                    <div
-                        className={`GYhh-Card ${activeCard === 5 ? 'active' : ''}`}
-                        onClick={() => handleCardClick(5)}
-                    >
-                        <div className='progress-Chat'>
-                            <CircularProgress percentage={0} color="#7226FF" number={5} isActive={activeCard === 5} />
-                        </div>
-                        <p><CountUp end={0} /> Decision</p>
-                    </div>
-                </div>
-
-                <div className='OL-Boxas'>
-                    <div className='OL-Boxas-Top'>
-                        <h3>Job Application <span>Progress: 100% <b>Completed <CheckIcon  /></b></span></h3>
-                        <p>You’ve successfully completed the first phase of your application for the Frontend Website Developer role. All required application information has been submitted and confirmed.
-                            Your next step is the Interview phase, which is currently at 50% completion. Please monitor your email and application dashboard for further updates or interview scheduling.
-                        </p>
-                    </div>
-
-                    <div className='OL-Boxas-Body'>
-                        <form className='Ol-Boxxx-Forms'>
-                                 <div className="GHuh-Form-Input">
-                                    <label>Document Uploads (Required)</label>
-                                    <input type='text' />
-                                 </div>
-                        </form>
-                    </div>
-                </div>
-
-            </div>
+        <div className='GHH-Top-GTga'>
+          <p>
+            <Link to='/'>Kaeft</Link>
+            <ChevronRightIcon className='chevron-icon' />
+            <Link to='/'>My applications</Link>
+            <ChevronRightIcon className='chevron-icon' />
+            <span>Frontend website developer</span>
+          </p>
         </div>
-    );
+
+        <div className='OLIK-NAVVVB'>
+          <Link to='/'>
+            <FolderIcon className='icon-nav' />
+            My applications
+          </Link>
+          <Link to='/' className='active-OLika'>
+            <PlusCircleIcon className='icon-nav' />
+            New application
+          </Link>
+          <Link to='/'>
+            <Cog6ToothIcon className='icon-nav' />
+            Settings
+          </Link>
+        </div>
+
+        <div className='Gyhat-HG'>
+          <h3>Frontend website developer</h3>
+          <p>Application Progress: <span>90%</span></p>
+        </div>
+
+        <div className='oik-pa'>
+          <p>Posted by: <a href='#'>Proliance LTD</a></p>
+        </div>
+
+        <div className='GYhh-Cardss-SesC'>
+          {[1, 2, 3, 4, 5].map((num) => (
+            <div
+              key={num}
+              className={`GYhh-Card ${activeCard === num ? 'active' : ''}`}
+              onClick={() => handleCardClick(num)}
+            >
+              <div className='progress-Chat'>
+                <CircularProgress
+                  percentage={stepPercentages[num - 1]}
+                  color="#7226FF"
+                  number={num}
+                  isActive={activeCard === num}
+                />
+              </div>
+              <p>
+                <CountUp end={stepPercentages[num - 1]} /> {stepTitles[num - 1]}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* === Independent Box Sections === */}
+        {activeCard === 1 && (
+          <div className='OL-Boxas'>
+            <div className='OL-Boxas-Top'>
+              <h3>Job Application <span>Progress: 100% <b className='completed'>Completed <CheckIcon /></b></span></h3>
+              <p>You’ve successfully completed the first phase of your application for the Frontend Website Developer role. All required application information has been submitted and confirmed.</p>
+            </div>
+
+             <div className='OL-Boxas-Body'>
+       <form className='Ol-Boxxx-Forms'>
+            <div className='Grga-INpu-Grid'>
+                <div className="GHuh-Form-Input">
+                <label>
+                    Full Name
+                    <span className="label-Sopppan">
+                    Checked <CheckIcon className="w-4 h-4 ml-1" />
+                    </span>
+                </label>
+                <input type='text' name='fullName' value='Prince Godson' readOnly />
+                </div>
+
+                <div className="GHuh-Form-Input">
+                <label>
+                    Email Address
+                    <span className="label-Sopppan">
+                    Checked <CheckIcon className="w-4 h-4 ml-1" />
+                    </span>
+                </label>
+                <input type='email' name='email' value='prince@example.com' readOnly />
+                </div>
+
+                <div className="GHuh-Form-Input">
+                <label>
+                    Confirm Email Address
+                    <span className="label-Sopppan">
+                    Checked <CheckIcon className="w-4 h-4 ml-1" />
+                    </span>
+                </label>
+                <input type='email' name='confirmEmail' value='prince@example.com' readOnly />
+                </div>
+            </div>
+
+            <div className='Grga-INpu-Grid'>
+                <div className="GHuh-Form-Input">
+                <label>
+                    Phone Number
+                    <span className="label-Sopppan">
+                    Checked <CheckIcon className="w-4 h-4 ml-1" />
+                    </span>
+                </label>
+                <input type='tel' name='phone' value='+2348012345678' readOnly />
+                </div>
+
+                <div className="GHuh-Form-Input">
+                <label>
+                    Date of Birth
+                    <span className="label-Sopppan">
+                    Checked <CheckIcon className="w-4 h-4 ml-1" />
+                    </span>
+                </label>
+                <input type='date' name='dob' value='1998-07-15' readOnly />
+                </div>
+            </div>
+
+            <div className='Grga-INpu-Grid'>
+                <div className="GHuh-Form-Input">
+                <label>
+                    Qualification
+                    <span className="label-Sopppan">
+                    Checked <CheckIcon className="w-4 h-4 ml-1" />
+                    </span>
+                </label>
+                <input type='text' name='qualification' value='B.Sc. Computer Science' readOnly />
+                </div>
+
+                <div className="GHuh-Form-Input">
+                <label>
+                    Experience
+                    <span className="label-Sopppan">
+                    Checked <CheckIcon className="w-4 h-4 ml-1" />
+                    </span>
+                </label>
+                <input type='text' name='experience' value='4 years' readOnly />
+                </div>
+            </div>
+
+            <div className="GHuh-Form-Input">
+                <label>
+                Knowledge/Skill
+                <span className="label-Sopppan">
+                    Checked <CheckIcon className="w-4 h-4 ml-1" />
+                </span>
+                </label>
+                <input type='text' name='knowledgeSkill' value='React, JavaScript, Tailwind CSS, Figma' readOnly />
+            </div>
+            </form>
+
+
+          </div>
+
+          </div>
+        )}
+
+        {activeCard === 2 && (
+          <div className='OL-Boxas'>
+            <div className='OL-Boxas-Top'>
+              <h3>Document Uploads <span>Progress: 100% <b className='completed'>Completed <CheckIcon /></b></span></h3>
+              <p>You’ve successfully uploaded all required supporting documents for your application.</p>
+              {/* Add more content/components here */}
+            </div>
+          </div>
+        )}
+
+        {activeCard === 3 && (
+          <div className='OL-Boxas'>
+            <div className='OL-Boxas-Top'>
+              <h3>Interview <span>Progress: 50% <b className='pending'>Pending <ClockIcon /></b></span></h3>
+              <p>Your next step is the Interview phase, which is currently at 50% completion. Please monitor your email and application dashboard for further updates or interview scheduling.</p>
+              {/* Add more content/components here */}
+            </div>
+          </div>
+        )}
+
+        {activeCard === 4 && (
+          <div className='OL-Boxas'>
+            <div className='OL-Boxas-Top'>
+              <h3>Compliance Check <span>Progress: 0%</span></h3>
+              <p>The compliance check has not yet started. You will be notified once this stage begins.</p>
+              {/* Add more content/components here */}
+            </div>
+          </div>
+        )}
+
+        {activeCard === 5 && (
+          <div className='OL-Boxas'>
+            <div className='OL-Boxas-Top'>
+              <h3>Decision <span>Progress: 0%</span></h3>
+              <p>Final decisions will be made and communicated once previous stages are complete.</p>
+              {/* Add more content/components here */}
+            </div>
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
 };
 
 export default Dashboard;
