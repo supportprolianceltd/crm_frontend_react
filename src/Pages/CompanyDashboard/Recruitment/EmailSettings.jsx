@@ -686,7 +686,6 @@
 // };
 
 // export default EmailSettings;
-
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -912,7 +911,7 @@ const EmailConfigModal = ({ isOpen, onClose, config, onSave, isSaving = false })
                     left: '50%',
                     transform: 'translateX(-50%)',
                     background: '#fee2e2',
-                    color: '#b91c1c',
+                    icolor: '#b91c1c',
                     padding: '1rem',
                     borderRadius: '8px',
                     display: 'flex',
@@ -937,7 +936,7 @@ const EmailConfigModal = ({ isOpen, onClose, config, onSave, isSaving = false })
                 placeholder="e.g., smtp.gmail.com"
               />
             </div>
-            <div className="GGtg-DDDVa">
+            <div className="GGtg-DDDVa deliVa">
               <label>Email Port *</label>
               <input
                 type="number"
@@ -1034,13 +1033,15 @@ const EmailSettings = () => {
   const [showEmailConfigModal, setShowEmailConfigModal] = useState(false);
   const [currentEmailConfig, setCurrentEmailConfig] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
   // Fetch tenant email configuration from the backend
   const fetchEmailConfig = async () => {
+    setIsLoading(true);
     try {
       const tenant = await fetchTenantConfig();
-
+      
       console.log("tenant")
       console.log(tenant)
       console.log("tenant")
@@ -1061,6 +1062,8 @@ const EmailSettings = () => {
     } catch (err) {
       setError(err.message || 'Failed to fetch email configuration');
       setTimeout(() => setError(''), 3000);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -1109,7 +1112,7 @@ const EmailSettings = () => {
           <button
             className="poli-BTn btn-primary-bg"
             onClick={handleEditEmailConfig}
-            disabled={!emailConfig}
+            disabled={!emailConfig || isLoading}
           >
             <PencilIcon className="h-5 w-5 mr-1" />
             Edit Email Configuration
@@ -1156,11 +1159,25 @@ const EmailSettings = () => {
                 <th><span className="flex items-center gap-1">Default From Email</span></th>
                 <th><span className="flex items-center gap-1">Created Date</span></th>
                 <th><span className="flex items-center gap-1">Last Modified</span></th>
-                <th><span className="flex items-center gap-1">Actions</span></th>
               </tr>
             </thead>
             <tbody>
-              {emailConfig ? (
+              {isLoading ? (
+                <tr>
+                 <td colSpan={8} style={{ textAlign: 'center', padding: '20px', fontStyle: 'italic' }}>
+                    <ul className="tab-Loadding-AniMMA">
+                      <li></li>
+                      <li></li>
+                      <li></li>
+                      <li></li>
+                      <li></li>
+                      <li></li>
+                      <li></li>
+                      <li></li>
+                    </ul>
+                  </td>
+                </tr>
+              ) : emailConfig ? (
                 <tr key={emailConfig.id}>
                   <td>{emailConfig.id}</td>
                   <td>{emailConfig.email_host}</td>
@@ -1170,21 +1187,10 @@ const EmailSettings = () => {
                   <td>{emailConfig.default_from_email}</td>
                   <td>{emailConfig.created_date}</td>
                   <td>{emailConfig.last_modified}</td>
-                  <td>
-                    <div className="gen-td-btns">
-                      <button
-                        onClick={handleEditEmailConfig}
-                        className="link-btn btn-primary-bg"
-                      >
-                        <PencilIcon className="h-4 w-4 mr-1" />
-                        Edit
-                      </button>
-                    </div>
-                  </td>
                 </tr>
               ) : (
                 <tr>
-                  <td colSpan={9} style={{ textAlign: 'center', padding: '20px', fontStyle: 'italic' }}>
+                  <td colSpan={8} style={{ textAlign: 'center', padding: '20px', fontStyle: 'italic' }}>
                     No email configuration found
                   </td>
                 </tr>

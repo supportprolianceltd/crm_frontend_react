@@ -28,39 +28,29 @@ import {
   LifebuoyIcon as HelpSolid,
 } from '@heroicons/react/24/solid';
 
+import { Bars3BottomLeftIcon } from '@heroicons/react/24/solid';
+import { ArrowLongRightIcon } from '@heroicons/react/24/outline';
+
 const iconClass = 'w-5 h-5';
+const basePath = '/company';
 
-const basePath = '/company'; // prefix for all routes
-
-const SideNavBar = () => {
+const SideNavBar = ({ setShrinkNav }) => {
   const location = useLocation();
-
-  // Remove the basePath from location pathname to get "relative" path
   let relativePath = location.pathname.startsWith(basePath)
     ? location.pathname.slice(basePath.length)
     : location.pathname;
-
-  // Normalize relativePath - remove leading slash if any
   if (relativePath.startsWith('/')) relativePath = relativePath.slice(1);
 
-  // Determine active menu key based on path
-  // Dashboard is '' (empty string means root path after /company/)
   const initialActive = relativePath === '' ? 'dashboard' : relativePath.split('/')[0];
-
   const [active, setActive] = useState(initialActive);
+  const [menuToggled, setMenuToggled] = useState(false);
 
-  // Update active when location changes
   useEffect(() => {
     let relPath = location.pathname.startsWith(basePath)
       ? location.pathname.slice(basePath.length)
       : location.pathname;
     if (relPath.startsWith('/')) relPath = relPath.slice(1);
-
-    if (relPath === '') {
-      setActive('dashboard');
-    } else {
-      setActive(relPath.split('/')[0]);
-    }
+    setActive(relPath === '' ? 'dashboard' : relPath.split('/')[0]);
   }, [location]);
 
   const renderIcon = (name, OutlineIcon, SolidIcon) => {
@@ -71,12 +61,19 @@ const SideNavBar = () => {
     );
   };
 
-  const MenuItem = ({ name, label, OutlineIcon, SolidIcon, to }) => (
+  const MenuItem = ({ name, label, OutlineIcon, SolidIcon, to, onClick }) => (
     <li className={active === name ? 'active' : ''}>
       <Link
         to={to}
         className="flex items-center justify-between"
-        onClick={() => setActive(name)}
+        title={menuToggled ? label : undefined}
+        onClick={(e) => {
+          if (onClick) {
+            e.preventDefault();
+            onClick();
+          }
+          setActive(name);
+        }}
       >
         <span className="LefB-Icon">{renderIcon(name, OutlineIcon, SolidIcon)}</span>
         <span className="LefB-label flex justify-between items-center w-full">
@@ -94,7 +91,23 @@ const SideNavBar = () => {
       transition={{ duration: 0.2 }}
     >
       <div className="SideNavBar-Main custom-scroll-bar">
-        <p className="LeftnavBr-Title">Menu</p>
+        <p className="LeftnavBr-Title">
+          <span className="Leffft-SOpan">Menu</span>
+          <span
+            onClick={() => {
+              setMenuToggled(!menuToggled);
+              setShrinkNav(!menuToggled);
+            }}
+            className="shrinkToggle"
+            title={menuToggled ? 'Expand Menu' : 'Collapse Menu'}
+          >
+            {menuToggled ? (
+              <ArrowLongRightIcon className="w-6 h-6 text-gray-700" />
+            ) : (
+              <Bars3BottomLeftIcon className="w-6 h-6 text-gray-700" />
+            )}
+          </span>
+        </p>
         <ul className="LeftnavBr-Icons">
           <MenuItem
             name="dashboard"
@@ -126,7 +139,7 @@ const SideNavBar = () => {
           />
         </ul>
 
-        <p className="LeftnavBr-Title">Management</p>
+        {!menuToggled && <p className="LeftnavBr-Title">Management</p>}
         <ul className="LeftnavBr-Icons">
           <MenuItem
             name="employee"
@@ -158,7 +171,7 @@ const SideNavBar = () => {
           />
         </ul>
 
-        <p className="LeftnavBr-Title">Other Menu</p>
+        {!menuToggled && <p className="LeftnavBr-Title">Other Menu</p>}
         <ul className="LeftnavBr-Icons">
           <MenuItem
             name="settings"
@@ -166,6 +179,10 @@ const SideNavBar = () => {
             OutlineIcon={SettingsOutline}
             SolidIcon={SettingsSolid}
             to={`${basePath}/settings`}
+            onClick={() => {
+              setMenuToggled(false);
+              setShrinkNav(false);
+            }}
           />
           <MenuItem
             name="help"
@@ -181,41 +198,3 @@ const SideNavBar = () => {
 };
 
 export default SideNavBar;
-
-
-
-
-
-
-
-
-
-
-
-  // <AnimatePresence>
-  //           {projectOpen && (
-  //             <motion.ul
-  //               className="submenu-list"
-  //               initial={{ height: 0, opacity: 0 }}
-  //               animate={{ height: 'auto', opacity: 1 }}
-  //               exit={{ height: 0, opacity: 0 }}
-  //               style={{ overflow: 'hidden' }}
-  //             >
-  //               <SubMenuItem
-  //                 name="ongoing"
-  //                 label="Ongoing Projects"
-  //                 to={`${basePath}/project/ongoing`}
-  //               />
-  //               <SubMenuItem
-  //                 name="completed"
-  //                 label="Completed Projects"
-  //                 to={`${basePath}/project/completed`}
-  //               />
-  //               <SubMenuItem
-  //                 name="report"
-  //                 label="Project Report"
-  //                 to={`${basePath}/project/report`}
-  //               />
-  //             </motion.ul>
-  //           )}
-  //         </AnimatePresence>

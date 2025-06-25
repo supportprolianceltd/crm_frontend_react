@@ -3837,3 +3837,28 @@ background: linear-gradient(135deg, #FF6FD8 0%, #FF42A1 50%, #FF9770 100%) !impo
     align-items: center !important;
     gap: 5px !important;
 }
+
+
+
+
+
+/* oo-Header */
+
+.oo-Header{
+    position: relative;
+    width: 100%;
+    height: auto;
+    margin-bottom: 20px;
+}
+
+.oo-Header h3{
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #7226FF;
+    margin-bottom: 5px;
+}
+
+.oo-Header p{
+    font-size: 12px;
+}

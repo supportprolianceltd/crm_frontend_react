@@ -386,43 +386,36 @@ const JobApplication = () => {
                 </th>
                 <th>
                   <span className="flex items-center gap-1">
-                    <GlobeAltIcon className="h-5 w-5" />
                     Job ID
                   </span>
                 </th>
                 <th>
                   <span className="flex items-center gap-1">
-                    <BriefcaseIcon className="h-5 w-5" />
                     Job Title
                   </span>
                 </th>
                 <th>
                   <span className="flex items-center gap-1">
-                    <UsersIcon className="h-5 w-5" />
                     No. of Applications
                   </span>
                 </th>
                 <th>
                   <span className="flex items-center gap-1">
-                    <CalendarIcon className="h-5 w-5" />
                     Deadline for Applications
                   </span>
                 </th>
                 <th>
                   <span className="flex items-center gap-1">
-                    <ClockIcon className="h-5 w-5" />
                     Last Modified
                   </span>
                 </th>
                 <th>
                   <span className="flex items-center gap-1">
-                    <LockClosedIcon className="h-5 w-5" />
                     Status
                   </span>
                 </th>
                 <th>
                   <span className="flex items-center gap-1">
-                    <Cog6ToothIcon className="h-5 w-5" />
                     Actions
                   </span>
                 </th>

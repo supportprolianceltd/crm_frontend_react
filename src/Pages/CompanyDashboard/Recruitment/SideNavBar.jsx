@@ -9,6 +9,7 @@ import {
   BriefcaseIcon as BriefcaseOutline,
   ChartBarIcon as ChartBarOutline,
   Cog6ToothIcon as Cog6ToothOutline,
+  TrashIcon as TrashOutline,
 } from '@heroicons/react/24/outline';
 
 import {
@@ -20,12 +21,16 @@ import {
   Cog6ToothIcon as Cog6ToothSolid,
   ChevronDownIcon,
   ChevronUpIcon,
+  TrashIcon as TrashSolid,
 } from '@heroicons/react/24/solid';
+
+import { Bars3BottomLeftIcon } from '@heroicons/react/24/solid';
+import { ArrowLongRightIcon } from '@heroicons/react/24/outline';
 
 const iconClass = 'w-5 h-5';
 const basePath = '/company/recruitment';
 
-const SideNavBar = () => {
+const SideNavBar = ({ setShrinkNav }) => {
   const location = useLocation();
   let relativePath = location.pathname.startsWith(basePath)
     ? location.pathname.slice(basePath.length)
@@ -38,21 +43,18 @@ const SideNavBar = () => {
 
   const [active, setActive] = useState(initialActive);
   const [settingsOpen, setSettingsOpen] = useState(initialActive.startsWith('settings/'));
+  const [menuToggled, setMenuToggled] = useState(false);
 
   const settingsRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // Ignore clicks on submenu items
-      if (event.target.closest('.SubMenu-Settings')) {
-        return;
-      }
-      
+      if (event.target.closest('.SubMenu-Settings')) return;
       if (settingsRef.current && !settingsRef.current.contains(event.target)) {
         setSettingsOpen(false);
       }
     };
-    
+
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
@@ -103,6 +105,7 @@ const SideNavBar = () => {
         <Link
           to={to}
           className="flex items-center justify-between"
+          title={menuToggled ? label : undefined}
           onClick={(e) => {
             if (onClick) {
               e.preventDefault();
@@ -122,6 +125,7 @@ const SideNavBar = () => {
         <a
           href="#"
           className="flex items-center justify-between"
+          title={menuToggled ? label : undefined}
           onClick={(e) => {
             e.preventDefault();
             if (onClick) onClick();
@@ -143,8 +147,9 @@ const SideNavBar = () => {
       <Link
         to={to}
         className="submenu"
+        title={menuToggled ? label : undefined}
         onClick={(e) => {
-          e.stopPropagation(); // Prevent event from bubbling up
+          e.stopPropagation();
           setActive(`settings/${name}`);
         }}
       >
@@ -161,7 +166,24 @@ const SideNavBar = () => {
       transition={{ duration: 0.2 }}
     >
       <div className="SideNavBar-Main custom-scroll-bar">
-        <p className="LeftnavBr-Title">Recruitment</p>
+        <p className="LeftnavBr-Title">
+          <span className='Leffft-SOpan'>Recruitment </span>
+          <span 
+            onClick={() => {
+              setMenuToggled(!menuToggled);
+              setShrinkNav(!menuToggled);
+            }}
+            className="shrinkToggle"
+            title={menuToggled ? 'Expand Menu' : 'Collapse Menu'}
+          >
+            {menuToggled ? (
+              <ArrowLongRightIcon className="w-6 h-6 text-gray-700" />
+            ) : (
+              <Bars3BottomLeftIcon className="w-6 h-6 text-gray-700" />
+            )}
+          </span>
+        </p>
+
         <ul className="LeftnavBr-Icons">
           <MenuItem
             name="job-requisition"
@@ -198,16 +220,18 @@ const SideNavBar = () => {
             SolidIcon={ClipboardSolid}
             to={`${basePath}/compliance`}
           />
-
           <MenuItem
             name="settings"
             label="Settings"
             OutlineIcon={Cog6ToothOutline}
             SolidIcon={Cog6ToothSolid}
-            extraIcon={settingsOpen ? <ChevronUpIcon className="w-4 h-4" /> : <ChevronDownIcon className="w-4 h-4" />}
-            onClick={() => setSettingsOpen(!settingsOpen)}
+            extraIcon={settingsOpen ? <ChevronUpIcon className="wddss-Cgatgs" /> : <ChevronDownIcon className="wddss-Cgatgs" />}
+            onClick={() => {
+              setSettingsOpen(!settingsOpen);
+              setMenuToggled(false);
+              setShrinkNav(false);
+            }}
           />
-
           <AnimatePresence>
             {settingsOpen && (
               <motion.ul
@@ -225,13 +249,18 @@ const SideNavBar = () => {
                 <SubMenuItem
                   name="email-configuration"
                   label="Email Configuration"
-                  to={`${basePath}/email-settings`}
+                  to={`${basePath}/email-configuration`}
                 />
-                
               </motion.ul>
             )}
           </AnimatePresence>
-
+          <MenuItem
+            name="recycle-bin"
+            label="Recycle Bin"
+            OutlineIcon={TrashOutline}
+            SolidIcon={TrashSolid}
+            to={`${basePath}/recycle-bin`}
+          />
         </ul>
       </div>
     </motion.div>

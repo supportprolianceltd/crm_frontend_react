@@ -568,8 +568,11 @@ button.logout-btn:hover{
     height: auto;
     padding-top: 55px;
     padding-left: 220px;
+    transition: all 0.3s ease-in-out;
 }
-
+.ShrinkNav .Main-DB-Envt{
+    padding-left: 60px;
+}
 .DB-Envt-Container{
     position: relative;
     width: 100%;
@@ -587,8 +590,11 @@ button.logout-btn:hover{
     padding-top: 55px;
     width: 220px;
     height: 100%;
+    transition: all 0.3s ease-in-out;
 }
-
+.ShrinkNav .SideNavBar{
+    width: 60px;
+}
 .SideNavBar-Main{
     position: relative;
     width: 100%;
@@ -616,6 +622,42 @@ button.logout-btn:hover{
     font-weight: 500;
     text-transform: uppercase;
     user-select: none;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 5px;
+}
+
+.LeftnavBr-Title .shrinkToggle{
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    width: 25px;
+    height: 25px;
+    justify-content: center;
+    text-align: center;
+    border-radius: 50%;
+    transition: all 0.3s ease-in-out;
+    user-select: none;
+    cursor: pointer;
+}
+.Leffft-SOpan{
+    transition: all 0.3s ease-in-out;
+    display: inline-flex;
+    align-items: center;
+}
+.LeftnavBr-Title .shrinkToggle svg{
+    width:70%;
+}
+.LeftnavBr-Title .shrinkToggle:hover{
+    background-color: #ebe6ff;
+    color: #7226FF;
+}
+.ShrinkNav p.LeftnavBr-Title{
+    padding-left: 18px !important;
+}
+.ShrinkNav p.LeftnavBr-Title .Leffft-SOpan{
+    opacity: 0;
+    display: none;
 }
 
 
@@ -626,6 +668,14 @@ button.logout-btn:hover{
     padding: 0px 10px;
     display: flex;
     flex-direction: column;
+    gap: 5px;
+}
+.ShrinkNav .LeftnavBr-Icons{
+    padding-left: 9px !important;
+}
+.wddss-Cgatgs{
+    width: 14px !important;
+    padding-top: 4px !important;
 }
 
 .LeftnavBr-Icons li{
@@ -642,10 +692,15 @@ button.logout-btn:hover{
     grid-template-columns: auto 1fr;
     gap: 10px;
     padding:8px 10px;
-    font-size: 13px;
+    font-size: 12.5px;
     user-select: none;
     cursor: pointer;
     border-radius: 8px;
+    white-space: nowrap;
+}
+.ShrinkNav .SideNavBar .LeftnavBr-Icons li a{
+    padding-left: 5px !important;
+    
 }
 .LeftnavBr-Icons li.active p,
 .LeftnavBr-Icons li.active a{
@@ -682,14 +737,18 @@ button.logout-btn:hover{
     display: flex !important;
     align-items: center !important;
     justify-content: space-between;
+    transition: all 0.3s ease-in-out;
 }
 .LeftnavBr-Icons li p .LefB-label svg,
 .LeftnavBr-Icons li a .LefB-label svg{
     width: 15px;
     margin-top: 2px !important;
 }
-
-
+.ShrinkNav .SideNavBar .LeftnavBr-Icons li a .LefB-label,
+.ShrinkNav .SideNavBar .LeftnavBr-Icons li p .LefB-label{
+    opacity: 0;
+    display: none;
+}
 .submenu-list{
     position:absolute;
     width: 100%;
