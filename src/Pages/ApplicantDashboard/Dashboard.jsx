@@ -134,7 +134,6 @@ const documentList = [
 ];
 
 // Calendar Component
-// Calendar Component (updated to show previous/next month dates)
 const InterviewCalendar = ({ interviewDate }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(interviewDate);
@@ -168,7 +167,7 @@ const InterviewCalendar = ({ interviewDate }) => {
   const days = [];
   
   // Previous month days
-  const prevMonthDays = firstDayOfMonth.getDay(); // 0 = Sunday, 1 = Monday, etc.
+  const prevMonthDays = firstDayOfMonth.getDay();
   for (let i = prevMonthDays - 1; i >= 0; i--) {
     const day = lastDayOfPrevMonth.getDate() - i;
     days.push({
@@ -195,7 +194,7 @@ const InterviewCalendar = ({ interviewDate }) => {
   }
   
   // Next month days
-  const nextMonthDays = 42 - days.length; // 6 rows x 7 days
+  const nextMonthDays = 42 - days.length;
   for (let i = 1; i <= nextMonthDays; i++) {
     days.push({
       date: new Date(
@@ -282,12 +281,15 @@ const InterviewCalendar = ({ interviewDate }) => {
     </div>
   );
 };
+
 const Dashboard = () => {
   usePageTitle();
-  const [activeCard, setActiveCard] = useState(3); // Interview as default
+  const [activeCard, setActiveCard] = useState(3);
   
   // Set interview date to June 26, 2025 at 1:02 PM
   const interviewDate = new Date(2025, 5, 26, 13, 2);
+  // Dynamic meeting link
+  const meetingLink = 'https://teams.microsoft.com/l/meetup-join/19%3ameeting_NjA1Nzk4YzItNzU5Zi00YjQzLWEzNjEtNjAxODc1NDVhNDk2%40thread.v2/0?context=%7b%22Tid%22%3a%22d1234567-abcd-8901-efgh-1234567890ab%22%2c%22Oid%22%3a%2298765432-abcd-1234-efgh-0987654321cd%22%7d';
 
   const handleCardClick = (cardNumber) => {
     setActiveCard(cardNumber);
@@ -295,6 +297,21 @@ const Dashboard = () => {
 
   const handleViewDocument = (url) => {
     window.open(url, '_blank');
+  };
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(meetingLink)
+      .then(() => {
+        alert('Meeting link copied to clipboard!');
+      })
+      .catch((err) => {
+        console.error('Failed to copy link: ', err);
+        alert('Failed to copy link. Please try again.');
+      });
+  };
+
+  const handleLaunchMeeting = () => {
+    window.open(meetingLink, '_blank');
   };
 
   // Animation variants for slide-down effect
@@ -306,7 +323,6 @@ const Dashboard = () => {
   return (
     <div className='Applicant-Dashboard'>
       <div className='site-container'>
-
         <div className='GHH-Top-GTga'>
           <p>
             <Link to='/'>Kaeft</Link>
@@ -389,11 +405,9 @@ const Dashboard = () => {
                     </label>
                     <input type='email' name='email' value='prince@example.com' readOnly />
                   </div>
+                </div>
 
-                  </div>
-
-                  <div className='Grga-INpu-Grid'>
-
+                <div className='Grga-INpu-Grid'>
                   <div className="GHuh-Form-Input">
                     <label>
                       Confirm Email Address
@@ -404,7 +418,6 @@ const Dashboard = () => {
                     <input type='email' name='confirmEmail' value='prince@example.com' readOnly />
                   </div>
 
-                <div className='Grga-INpu-Grid'>
                   <div className="GHuh-Form-Input">
                     <label>
                       Phone Number
@@ -414,12 +427,9 @@ const Dashboard = () => {
                     </label>
                     <input type='tel' name='phone' value='+2348012345678' readOnly />
                   </div>
-
-                </div>
                 </div>
 
                 <div className='Grga-INpu-Grid'>
-
                   <div className="GHuh-Form-Input">
                     <label>
                       Date of Birth
@@ -452,15 +462,15 @@ const Dashboard = () => {
                     <input type='text' name='experience' value='4 years' readOnly />
                   </div>
 
-                <div className="GHuh-Form-Input">
-                  <label>
-                    Knowledge/Skill
-                    <span className="label-Sopppan">
-                      Checked <CheckIcon className="w-4 h-4 ml-1" />
-                    </span>
-                  </label>
-                  <input type='text' name='knowledgeSkill' value='React, JavaScript, Tailwind CSS, Figma' readOnly />
-                </div>
+                  <div className="GHuh-Form-Input">
+                    <label>
+                      Knowledge/Skill
+                      <span className="label-Sopppan">
+                        Checked <CheckIcon className="w-4 h-4 ml-1" />
+                      </span>
+                    </label>
+                    <input type='text' name='knowledgeSkill' value='React, JavaScript, Tailwind CSS, Figma' readOnly />
+                  </div>
                 </div>
               </form>
             </div>
@@ -544,7 +554,6 @@ const Dashboard = () => {
             <div className='OL-Boxas-Body'>
               <div className='OUjauj-DAS'>
                 <div className='OUjauj-DAS-1'>
-                  
                   <div className='Calender-Dspy'>
                     <InterviewCalendar interviewDate={interviewDate} />
                   </div>
@@ -554,12 +563,17 @@ const Dashboard = () => {
                       <h4>Date and Time</h4>
                       <p>26, June 2025 - 1:02 PM</p>
                     </div>
-                     <div className='OUauj-Biaoo-ManD'>
+                    <div className='OUauj-Biaoo-ManD'>
                       <h4>Location <span>Virtual</span></h4>
-                      <p>Plot 5 Owule Ojuan Street, off Peter Odili Road, Trans Amadi, Port Harcourt, Rivers State</p>
+                      <h6>
+                        <span className="meeting-link">{meetingLink}</span>
+                        <span className="copy-link" onClick={handleCopyLink}>Copy Link</span>
+                      </h6>
+                      <button className="launch-meeting-btn" onClick={handleLaunchMeeting}>Launch Meeting</button>
                     </div>
                   </div>
                 </div>
+                <div className='Meeting-Box'></div>
               </div>
             </div>
           </motion.div>
