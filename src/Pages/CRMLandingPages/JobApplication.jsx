@@ -848,7 +848,7 @@ function JobApplication() {
                           {
                             label: 'Confirm Email Address',
                             placeholder: 'Enter your confirm email address',
-                            name: 'email',
+                            name: 'confrimemail',
                             required: true,
                           },
                           {
