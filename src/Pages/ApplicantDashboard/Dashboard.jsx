@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import usePageTitle from '../../hooks/useMainPageTitle';
 import { Link } from 'react-router-dom';
 import SampleCV from '../../assets/resume.pdf';
@@ -77,6 +77,32 @@ const CircularProgress = ({ size = 70, strokeWidth = 6, percentage = 75, color =
         {number}
       </text>
     </svg>
+  );
+};
+
+// Alert component for Framer Motion
+const Alert = ({ message, onClose }) => {
+  return (
+    <motion.div
+      className="alert"
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 50 }}
+      transition={{ duration: 0.3 }}
+      style={{
+        position: 'fixed',
+        bottom: '20px',
+        right: '20px',
+        backgroundColor: '#7226FF',
+        color: 'white',
+        padding: '12px 24px',
+        borderRadius: '8px',
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+        zIndex: 1000,
+      }}
+    >
+      {message}
+    </motion.div>
   );
 };
 
@@ -285,6 +311,7 @@ const InterviewCalendar = ({ interviewDate }) => {
 const Dashboard = () => {
   usePageTitle();
   const [activeCard, setActiveCard] = useState(3);
+  const [showAlert, setShowAlert] = useState(false);
   
   // Set interview date to June 26, 2025 at 1:02 PM
   const interviewDate = new Date(2025, 5, 26, 13, 2);
@@ -302,7 +329,8 @@ const Dashboard = () => {
   const handleCopyLink = () => {
     navigator.clipboard.writeText(meetingLink)
       .then(() => {
-        alert('Meeting link copied to clipboard!');
+        setShowAlert(true);
+        setTimeout(() => setShowAlert(false), 2000); // Hide alert after 2 seconds
       })
       .catch((err) => {
         console.error('Failed to copy link: ', err);
@@ -369,6 +397,11 @@ const Dashboard = () => {
             </div>
           ))}
         </div>
+
+        {/* Alert Component */}
+        <AnimatePresence>
+          {showAlert && <Alert message="Link copied" />}
+        </AnimatePresence>
 
         {/* === Independent Box Sections === */}
         {activeCard === 1 && (
@@ -565,11 +598,11 @@ const Dashboard = () => {
                     </div>
                     <div className='OUauj-Biaoo-ManD'>
                       <h4>Location <span>Virtual</span></h4>
-                      <h6>
-                        <span className="meeting-link">{meetingLink}</span>
-                        <span className="copy-link" onClick={handleCopyLink}>Copy Link</span>
+                      <h6 className='Gen-Boxshadow'>
+                        <span className="meeting-link" onClick={handleCopyLink} aria-label="Copy meeting link">{meetingLink}</span>
+                        {/* <span className="copy-link" onClick={handleCopyLink} aria-label="Copy meeting link">Copy Link</span> */}
                       </h6>
-                      <button className="launch-meeting-btn" onClick={handleLaunchMeeting}>Launch Meeting</button>
+                      <button className="launch-meeting-btn btn-primary-bg" onClick={handleLaunchMeeting} aria-label="Launch virtual meeting">Launch Meeting</button>
                     </div>
                   </div>
                 </div>
