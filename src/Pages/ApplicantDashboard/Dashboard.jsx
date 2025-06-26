@@ -600,7 +600,6 @@ const Dashboard = () => {
                       <h4>Location <span>Virtual</span></h4>
                       <h6 className='Gen-Boxshadow'>
                         <span className="meeting-link" onClick={handleCopyLink} aria-label="Copy meeting link">{meetingLink}</span>
-                        {/* <span className="copy-link" onClick={handleCopyLink} aria-label="Copy meeting link">Copy Link</span> */}
                       </h6>
                       <button className="launch-meeting-btn btn-primary-bg" onClick={handleLaunchMeeting} aria-label="Launch virtual meeting">Launch Meeting</button>
                     </div>

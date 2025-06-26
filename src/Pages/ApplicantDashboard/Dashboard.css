@@ -558,7 +558,9 @@ color: #7226FF !important;
     position: relative;
     width: 100%;
     height: auto;
-    margin-top: 20px;
+    margin-top: 10px;
+    border-top: 1px solid #ded9f3;
+    padding-top: 15px;
 }
 
 .OUauj-Biaoo h3{
@@ -584,9 +586,9 @@ color: #7226FF !important;
     justify-content: space-between;
     gap: 10px;
     flex-wrap: wrap;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
-    margin-bottom: 8px;
+    margin-bottom: 5px;
 }
 .OUauj-Biaoo-ManD h4 span{
     font-size:8px;
@@ -599,7 +601,7 @@ color: #7226FF !important;
 }
 
 .OUauj-Biaoo-ManD p{
-    font-size: 13px;
+    font-size: 12px;
 }
 
 
@@ -607,17 +609,18 @@ color: #7226FF !important;
     position: relative;
     width: 100%;
     height: auto;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 400;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    padding: 5px 15px;
+    padding: 8px 15px;
     background-color: #fff;
-    border-radius: 30px;
+    border-radius: 8px;
     cursor: pointer;
     user-select: none;
     color: #7226FF;
+    margin-top: 10px;
 }
 
 .launch-meeting-btn{
