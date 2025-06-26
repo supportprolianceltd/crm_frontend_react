@@ -177,10 +177,7 @@ const RecycleBin = () => {
         }
         // Ensure data is an array, handling cases where response is an object with a data property
         const dataArray = Array.isArray(response) ? response : response.data || [];
-
-        console.log("dataArray")
-        console.log(dataArray)
-        console.log("dataArray")
+        
         setData(dataArray);
         setIsLoading(false);
       } catch (error) {
