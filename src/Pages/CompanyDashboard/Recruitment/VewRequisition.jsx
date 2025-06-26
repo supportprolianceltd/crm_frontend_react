@@ -209,6 +209,8 @@ const VewRequisition = ({ job, onClose }) => {
   const [userHasAdded, setUserHasAdded] = useState(false);
   const [requisitionData, setRequisitionData] = useState(job || {});
 
+   const compulsoryDocuments = ['Curriculum Vitae (CV)'];
+
   // Form data initialized with requisition data
   const [formData, setFormData] = useState({
     jobTitle: job?.title || '',
@@ -228,56 +230,69 @@ const VewRequisition = ({ job, onClose }) => {
   });
 
   // Fetch requisition and advert details
-  useEffect(() => {
-    if (job?.id) {
-      const fetchData = async () => {
-        try {
-          const data = await fetchRequisition(job.id);
-          setRequisitionData(data);
-          setStatus(data.status);
-          setIsFormMutable(data.status === 'open');
+useEffect(() => {
+  if (job?.id) {
+    const fetchData = async () => {
+      try {
+        const data = await fetchRequisition(job.id);
+        setRequisitionData(data);
+        setStatus(data.status);
+        setIsFormMutable(data.status === 'open');
 
-          setFormData({
-            jobTitle: data.title || '',
-            companyName: data.company_name || '',
-            jobType: reverseJobTypeMap[data.job_type] || 'Full-time',
-            locationType: reverseLocationTypeMap[data.location_type] || 'On-site',
-            companyAddress: data.company_address || '',
-            job_location: data.job_location || '',
-            salaryRange: data.salary_range || '',
-            jobDescription: data.job_description || '',
-            numberOfCandidates: data.number_of_candidates ? String(data.number_of_candidates) : '',
-            qualificationRequirement: data.qualification_requirement || '',
-            experienceRequirement: data.experience_requirement || '',
-            knowledgeSkillRequirement: data.knowledge_requirement || '',
-            reasonForRequisition: data.reason || '',
-            advertBannerFile: null,
-          });
+        setFormData({
+          jobTitle: data.title || '',
+          companyName: data.company_name || '',
+          jobType: reverseJobTypeMap[data.job_type] || 'Full-time',
+          locationType: reverseLocationTypeMap[data.location_type] || 'On-site',
+          companyAddress: data.company_address || '',
+          job_location: data.job_location || '',
+          salaryRange: data.salary_range || '',
+          jobDescription: data.job_description || '',
+          numberOfCandidates: data.number_of_candidates ? String(data.number_of_candidates) : '',
+          qualificationRequirement: data.qualification_requirement || '',
+          experienceRequirement: data.experience_requirement || '',
+          knowledgeSkillRequirement: data.knowledge_requirement || '',
+          reasonForRequisition: data.reason || '',
+          advertBannerFile: null,
+        });
 
-          setDeadlineDate(data.deadline_date ? new Date(data.deadline_date) : null);
-          setStartDate(data.start_date ? new Date(data.start_date) : null);
-          setResponsibilities(data.responsibilities?.length ? data.responsibilities : ['']);
-          setDocuments(data.documents_required || []);
-          setCheckedItems(data.compliance_checklist || []);
-          if (data.company_name || data.job_description || data.publish_status) {
-            setShowPreview(true);
-            setShowJobAdvert(true);
-          }
-          if (data.advert_banner) {
-            setAdvertBanner(data.advert_banner.startsWith('http') ? data.advert_banner : `${process.env.REACT_APP_API_BASE_URL}${data.advert_banner}`);
-          }
-        } catch (error) {
-          setAlertModal({
-            title: 'Error',
-            message: error,
-          });
-          console.error('Error fetching requisition:', error);
+        setDeadlineDate(data.deadline_date ? new Date(data.deadline_date) : null);
+        setStartDate(data.start_date ? new Date(data.start_date) : null);
+        setResponsibilities(data.responsibilities?.length ? data.responsibilities : ['']);
+        
+        // COMPULSORY DOCUMENTS INTEGRATION
+        const compulsoryDocuments = ['Curriculum Vitae (CV)'];
+        const fetchedDocs = data.documents_required || [];
+        // Merge documents: compulsory first, then unique fetched docs
+        const allDocs = [
+          ...compulsoryDocuments,
+          ...fetchedDocs.filter(doc => !compulsoryDocuments.includes(doc))
+        ];
+        setDocuments(allDocs);
+        
+        setCheckedItems(data.compliance_checklist || []);
+        if (data.company_name || data.job_description || data.publish_status) {
+          setShowPreview(true);
+          setShowJobAdvert(true);
         }
-      };
-      fetchData();
-    }
-  }, [job?.id]);
-
+        if (data.advert_banner) {
+          setAdvertBanner(
+            data.advert_banner.startsWith('http') 
+              ? data.advert_banner 
+              : `${process.env.REACT_APP_API_BASE_URL}${data.advert_banner}`
+          );
+        }
+      } catch (error) {
+        setAlertModal({
+          title: 'Error',
+          message: error,
+        });
+        console.error('Error fetching requisition:', error);
+      }
+    };
+    fetchData();
+  }
+}, [job?.id]);
   const handleInputChange = (e) => {
     const { name, type, value, files } = e.target;
     if (type === 'file') {
@@ -572,21 +587,21 @@ const VewRequisition = ({ job, onClose }) => {
     setErrors((prev) => ({ ...prev, compliance: '' }));
   };
 
-  const handleAddDocument = () => {
+ const handleAddDocument = () => {
     if (!isFormMutable) return;
     const trimmed = documentTitle.trim();
     if (trimmed && !documents.includes(trimmed)) {
-      const newDocs = [...documents, trimmed];
-      setDocuments(userHasAdded ? newDocs : [trimmed]);
-      setUserHasAdded(true);
+      setDocuments(prev => [...prev, trimmed]);
       setDocumentTitle('');
-      setErrors((prev) => ({ ...prev, documents: '' }));
+      setErrors(prev => ({ ...prev, documents: '' }));
     }
   };
 
   const handleRemoveDocument = (titleToRemove) => {
     if (!isFormMutable) return;
-    setDocuments((prev) => prev.filter((doc) => doc !== titleToRemove));
+    // Prevent removal of compulsory documents
+    if (compulsoryDocuments.includes(titleToRemove)) return;
+    setDocuments(prev => prev.filter(doc => doc !== titleToRemove));
   };
 
   const hasAdvertData = () => {
@@ -1114,7 +1129,7 @@ const VewRequisition = ({ job, onClose }) => {
                     </>
                   )}
 
-                  {activeSection === 1 && (
+               {activeSection === 1 && (
                     <>
                       <h3>Document Uploads</h3>
                       <div className='GHuh-Form-Input'>
@@ -1142,26 +1157,23 @@ const VewRequisition = ({ job, onClose }) => {
                         </div>
                         {errors.documents && <p className='error'>{errors.documents}</p>}
                         <ul className='apooul-Ul'>
-                          <li>
-                            <p>
-                              <MinusIcon className='w-4 h-4' /> 
-                              Curriculum Vitae (CV)
-                            </p>
-                          </li>
                           {documents.map((doc, index) => (
                             <li key={index}>
                               <p>
                                 <MinusIcon className='w-4 h-4' /> {doc}
                               </p>
-                              <span
-                                onClick={() => handleRemoveDocument(doc)}
-                                style={{
-                                  cursor: isFormMutable ? 'pointer' : 'not-allowed',
-                                  opacity: isFormMutable ? 1 : 0.5,
-                                }}
-                              >
-                                <XMarkIcon className='w-4 h-4 cursor-pointer' />
-                              </span>
+                              {/* Disable removal for compulsory documents */}
+                              {!compulsoryDocuments.includes(doc) && (
+                                <span
+                                  onClick={() => handleRemoveDocument(doc)}
+                                  style={{
+                                    cursor: isFormMutable ? 'pointer' : 'not-allowed',
+                                    opacity: isFormMutable ? 1 : 0.5,
+                                  }}
+                                >
+                                  <XMarkIcon className='w-4 h-4 cursor-pointer' />
+                                </span>
+                              )}
                             </li>
                           ))}
                         </ul>
