@@ -1142,6 +1142,12 @@ const VewRequisition = ({ job, onClose }) => {
                         </div>
                         {errors.documents && <p className='error'>{errors.documents}</p>}
                         <ul className='apooul-Ul'>
+                          <li>
+                            <p>
+                              <MinusIcon className='w-4 h-4' /> 
+                              Curriculum Vitae (CV)
+                            </p>
+                          </li>
                           {documents.map((doc, index) => (
                             <li key={index}>
                               <p>
