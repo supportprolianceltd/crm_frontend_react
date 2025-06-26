@@ -137,6 +137,7 @@ const SuccessModal = ({ title, message, onClose }) => (
   </AnimatePresence>
 );
 
+
 const RecycleBin = () => {
   const [activeTab, setActiveTab] = useState(tabs[0].id);
   const [searchTerm, setSearchTerm] = useState('');
@@ -176,6 +177,10 @@ const RecycleBin = () => {
         }
         // Ensure data is an array, handling cases where response is an object with a data property
         const dataArray = Array.isArray(response) ? response : response.data || [];
+
+        console.log("dataArray")
+        console.log(dataArray)
+        console.log("dataArray")
         setData(dataArray);
         setIsLoading(false);
       } catch (error) {
@@ -326,7 +331,7 @@ const RecycleBin = () => {
       setErrorMessage(error.message || 'Failed to restore.');
       setIsLoading(false);
       setTimeout(() => setErrorMessage(''), 5000);
-      console.error('Error restoring:', error);
+     // console.error('Error restoring:', error);
     }
   };
 
@@ -352,51 +357,100 @@ const RecycleBin = () => {
     ));
   };
 
-  const renderTableRow = (item) => {
-    let rowData = [];
-    switch (activeTab) {
-      case 'job-requisition':
-        rowData = [
-          item.id || 'N/A',
-          item.title || 'N/A',
-          <span className={`status deleted haggsb-status`}>{item.status || 'Deleted'}</span>,
-          item.requested_by ? `${item.requested_by.first_name} ${item.requested_by.last_name}` : 'N/A',
-          item.created_at ? new Date(item.created_at).toLocaleDateString('en-GB') : 'N/A',
-        ];
-        break;
-      case 'applications':
-        rowData = [
-          item.id || 'N/A',
-          item.job_requisition_title || 'N/A',
-          item.full_name ? (typeof item.full_name === 'string' ? item.full_name : `${item.full_name.first_name} ${item.full_name.last_name}`) : 'N/A',
-          <span className={`status deleted haggsb-status`}>{item.status || 'Deleted'}</span>,
-          item.created_at ? new Date(item.created_at).toLocaleDateString('en-GB') : 'N/A',
-        ];
-        break;
-      case 'scheduled-interviews':
-        rowData = [
-          item.id || 'N/A',
-          item.job_requisition_title || 'N/A',
-          item.candidate_name || 'N/A',
-          item.interview_date_time
-            ? new Date(item.interview_date_time).toLocaleString('en-GB', {
-                day: '2-digit',
-                month: 'short',
-                year: 'numeric',
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: true,
-              })
-            : 'N/A',
-          <span className={`status deleted haggsb-status`}>{item.status || 'Deleted'}</span>,
-        ];
-        break;
-      default:
-        break;
-    }
-    return rowData.map((cell, index) => <td key={index}>{cell}</td>);
-  };
+  // const renderTableRow = (item) => {
+  //   let rowData = [];
+  //   switch (activeTab) {
+  //     case 'job-requisition':
+  //       rowData = [
+  //         item.id || 'N/A',
+  //         item.title || 'N/A',
+  //         <span className={`status deleted haggsb-status`}>{item.status || 'Deleted'}</span>,
+  //         item.requested_by ? `${item.requested_by.first_name} ${item.requested_by.last_name}` : 'N/A',
+  //         item.created_at ? new Date(item.created_at).toLocaleDateString('en-GB') : 'N/A',
+  //       ];
+  //       break;
+  //     case 'applications':
+  //       rowData = [
+  //         item.id || 'N/A',
+  //         item.job_requisition_title || 'N/A',
+  //         item.full_name ? (typeof item.full_name === 'string' ? item.full_name : `${item.full_name.first_name} ${item.full_name.last_name}`) : 'N/A',
+  //         <span className={`status deleted haggsb-status`}>{item.status || 'Deleted'}</span>,
+  //         item.created_at ? new Date(item.created_at).toLocaleDateString('en-GB') : 'N/A',
+  //       ];
+  //       break;
+  //     case 'scheduled-interviews':
+  //       rowData = [
+  //         item.id || 'N/A',
+  //         item.job_requisition_title || 'N/A',
+  //         item.candidate_name || 'N/A',
+  //         item.interview_date_time
+  //           ? new Date(item.interview_date_time).toLocaleString('en-GB', {
+  //               day: '2-digit',
+  //               month: 'short',
+  //               year: 'numeric',
+  //               hour: 'numeric',
+  //               minute: '2-digit',
+  //               hour12: true,
+  //             })
+  //           : 'N/A',
+  //         <span className={`status deleted haggsb-status`}>{item.status || 'Deleted'}</span>,
+  //       ];
+  //       break;
+  //     default:
+  //       break;
+  //   }
+  //   return rowData.map((cell, index) => <td key={index}>{cell}</td>);
+  // };
 
+
+  const renderTableRow = (item) => {
+  let rowData = [];
+  switch (activeTab) {
+    case 'job-requisition':
+      rowData = [
+        item.id || 'N/A',
+        item.title || 'N/A',
+        <span className={`status deleted haggsb-status`}>{item.status || 'Deleted'}</span>,
+        item.requested_by
+          ? item.requested_by.first_name && item.requested_by.last_name
+            ? `${item.requested_by.first_name} ${item.requested_by.last_name}`
+            : item.requested_by.email || 'N/A'
+          : 'N/A',
+        item.created_at ? new Date(item.created_at).toLocaleDateString('en-GB') : 'N/A',
+      ];
+      break;
+    case 'applications':
+      rowData = [
+        item.id || 'N/A',
+        item.job_requisition_title || 'N/A',
+        item.full_name ? (typeof item.full_name === 'string' ? item.full_name : `${item.full_name.first_name} ${item.full_name.last_name}`) : 'N/A',
+        <span className={`status deleted haggsb-status`}>{item.status || 'Deleted'}</span>,
+        item.created_at ? new Date(item.created_at).toLocaleDateString('en-GB') : 'N/A',
+      ];
+      break;
+    case 'scheduled-interviews':
+      rowData = [
+        item.id || 'N/A',
+        item.job_requisition_title || 'N/A',
+        item.candidate_name || 'N/A',
+        item.interview_date_time
+          ? new Date(item.interview_date_time).toLocaleString('en-GB', {
+              day: '2-digit',
+              month: 'short',
+              year: 'numeric',
+              hour: 'numeric',
+              minute: '2-digit',
+              hour12: true,
+            })
+          : 'N/A',
+        <span className={`status deleted haggsb-status`}>{item.status || 'Deleted'}</span>,
+      ];
+      break;
+    default:
+      break;
+  }
+  return rowData.map((cell, index) => <td key={index}>{cell}</td>);
+};
   return (
     <div className="RecycleBin-sec">
       <AnimatePresence>
