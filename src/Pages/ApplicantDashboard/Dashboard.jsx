@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import usePageTitle from '../../hooks/useMainPageTitle';
 import { Link } from 'react-router-dom';
 import SampleCV from '../../assets/resume.pdf';
 import {
   ChevronRightIcon,
+  ChevronDownIcon,
   FolderIcon,
   PlusCircleIcon,
   Cog6ToothIcon,
@@ -79,6 +80,32 @@ const CircularProgress = ({ size = 70, strokeWidth = 6, percentage = 75, color =
   );
 };
 
+// Alert component for Framer Motion
+const Alert = ({ message, onClose }) => {
+  return (
+    <motion.div
+      className="alert"
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 50 }}
+      transition={{ duration: 0.3 }}
+      style={{
+        position: 'fixed',
+        bottom: '20px',
+        right: '20px',
+        backgroundColor: '#7226FF',
+        color: 'white',
+        padding: '12px 24px',
+        borderRadius: '8px',
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+        zIndex: 1000,
+      }}
+    >
+      {message}
+    </motion.div>
+  );
+};
+
 const stepTitles = [
   'Job Application',
   'Document Uploads',
@@ -132,9 +159,164 @@ const documentList = [
   },
 ];
 
+// Calendar Component
+const InterviewCalendar = ({ interviewDate }) => {
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(interviewDate);
+  
+  // Get current month and year
+  const month = currentDate.toLocaleString('default', { month: 'long' });
+  const year = currentDate.getFullYear();
+  
+  // Get the first day of the month
+  const firstDayOfMonth = new Date(
+    currentDate.getFullYear(),
+    currentDate.getMonth(),
+    1
+  );
+  
+  // Get the last day of the month
+  const lastDayOfMonth = new Date(
+    currentDate.getFullYear(),
+    currentDate.getMonth() + 1,
+    0
+  );
+  
+  // Get the last day of previous month
+  const lastDayOfPrevMonth = new Date(
+    currentDate.getFullYear(),
+    currentDate.getMonth(),
+    0
+  );
+  
+  // Generate days array including previous and next month days
+  const days = [];
+  
+  // Previous month days
+  const prevMonthDays = firstDayOfMonth.getDay();
+  for (let i = prevMonthDays - 1; i >= 0; i--) {
+    const day = lastDayOfPrevMonth.getDate() - i;
+    days.push({
+      date: new Date(
+        lastDayOfPrevMonth.getFullYear(),
+        lastDayOfPrevMonth.getMonth(),
+        day
+      ),
+      isCurrentMonth: false
+    });
+  }
+  
+  // Current month days
+  const daysInMonth = lastDayOfMonth.getDate();
+  for (let i = 1; i <= daysInMonth; i++) {
+    days.push({
+      date: new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+        i
+      ),
+      isCurrentMonth: true
+    });
+  }
+  
+  // Next month days
+  const nextMonthDays = 42 - days.length;
+  for (let i = 1; i <= nextMonthDays; i++) {
+    days.push({
+      date: new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth() + 1,
+        i
+      ),
+      isCurrentMonth: false
+    });
+  }
+  
+  // Navigation functions
+  const prevMonth = () => {
+    setCurrentDate(new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth() - 1,
+      1
+    ));
+  };
+  
+  const nextMonth = () => {
+    setCurrentDate(new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth() + 1,
+      1
+    ));
+  };
+  
+  // Check if a date is the interview date
+  const isInterviewDate = (date) => {
+    return (
+      date.getDate() === interviewDate.getDate() &&
+      date.getMonth() === interviewDate.getMonth() &&
+      date.getFullYear() === interviewDate.getFullYear()
+    );
+  };
+  
+  // Format time for display
+  const formatTime = (date) => {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  return (
+    <div className="calendar-container">
+      <div className="calendar-header">
+        <button onClick={prevMonth}>&lt;</button>
+        <h3>{month} {year}</h3>
+        <button onClick={nextMonth}>&gt;</button>
+      </div>
+      
+      <div className="calendar-weekdays">
+        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+          <div key={day} className="weekday">{day}</div>
+        ))}
+      </div>
+      
+      <div className="calendar-days">
+        {days.map((dayObj, index) => {
+          const day = dayObj.date.getDate();
+          const isCurrentMonth = dayObj.isCurrentMonth;
+          const isInterview = isInterviewDate(dayObj.date);
+          
+          return (
+            <div 
+              key={index} 
+              className={`calendar-day 
+                ${isCurrentMonth ? '' : 'other-month'} 
+                ${isInterview ? 'interview-day' : ''}
+                ${dayObj.date.getDate() === selectedDate?.getDate() && 
+                  dayObj.date.getMonth() === selectedDate?.getMonth() && 
+                  dayObj.date.getFullYear() === selectedDate?.getFullYear() 
+                  ? 'selected' : ''}`}
+            >
+              {day}
+              {isInterview && (
+                <div className="interview-time">
+                  {formatTime(interviewDate)}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 const Dashboard = () => {
   usePageTitle();
-  const [activeCard, setActiveCard] = useState(3); // Interview as default
+  const [activeCard, setActiveCard] = useState(3);
+  const [showAlert, setShowAlert] = useState(false);
+  
+  // Set interview date to June 26, 2025 at 1:02 PM
+  const interviewDate = new Date(2025, 5, 26, 13, 2);
+  // Dynamic meeting link
+  const meetingLink = 'https://teams.microsoft.com/l/meetup-join/19%3ameeting_NjA1Nzk4YzItNzU5Zi00YjQzLWEzNjEtNjAxODc1NDVhNDk2%40thread.v2/0?context=%7b%22Tid%22%3a%22d1234567-abcd-8901-efgh-1234567890ab%22%2c%22Oid%22%3a%2298765432-abcd-1234-efgh-0987654321cd%22%7d';
 
   const handleCardClick = (cardNumber) => {
     setActiveCard(cardNumber);
@@ -142,6 +324,22 @@ const Dashboard = () => {
 
   const handleViewDocument = (url) => {
     window.open(url, '_blank');
+  };
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(meetingLink)
+      .then(() => {
+        setShowAlert(true);
+        setTimeout(() => setShowAlert(false), 2000); // Hide alert after 2 seconds
+      })
+      .catch((err) => {
+        console.error('Failed to copy link: ', err);
+        alert('Failed to copy link. Please try again.');
+      });
+  };
+
+  const handleLaunchMeeting = () => {
+    window.open(meetingLink, '_blank');
   };
 
   // Animation variants for slide-down effect
@@ -153,7 +351,6 @@ const Dashboard = () => {
   return (
     <div className='Applicant-Dashboard'>
       <div className='site-container'>
-
         <div className='GHH-Top-GTga'>
           <p>
             <Link to='/'>Kaeft</Link>
@@ -201,6 +398,11 @@ const Dashboard = () => {
           ))}
         </div>
 
+        {/* Alert Component */}
+        <AnimatePresence>
+          {showAlert && <Alert message="Link copied" />}
+        </AnimatePresence>
+
         {/* === Independent Box Sections === */}
         {activeCard === 1 && (
           <motion.div
@@ -236,11 +438,9 @@ const Dashboard = () => {
                     </label>
                     <input type='email' name='email' value='prince@example.com' readOnly />
                   </div>
+                </div>
 
-                  </div>
-
-                  <div className='Grga-INpu-Grid'>
-
+                <div className='Grga-INpu-Grid'>
                   <div className="GHuh-Form-Input">
                     <label>
                       Confirm Email Address
@@ -251,7 +451,6 @@ const Dashboard = () => {
                     <input type='email' name='confirmEmail' value='prince@example.com' readOnly />
                   </div>
 
-                <div className='Grga-INpu-Grid'>
                   <div className="GHuh-Form-Input">
                     <label>
                       Phone Number
@@ -261,12 +460,9 @@ const Dashboard = () => {
                     </label>
                     <input type='tel' name='phone' value='+2348012345678' readOnly />
                   </div>
-
-                </div>
                 </div>
 
                 <div className='Grga-INpu-Grid'>
-
                   <div className="GHuh-Form-Input">
                     <label>
                       Date of Birth
@@ -299,15 +495,15 @@ const Dashboard = () => {
                     <input type='text' name='experience' value='4 years' readOnly />
                   </div>
 
-                <div className="GHuh-Form-Input">
-                  <label>
-                    Knowledge/Skill
-                    <span className="label-Sopppan">
-                      Checked <CheckIcon className="w-4 h-4 ml-1" />
-                    </span>
-                  </label>
-                  <input type='text' name='knowledgeSkill' value='React, JavaScript, Tailwind CSS, Figma' readOnly />
-                </div>
+                  <div className="GHuh-Form-Input">
+                    <label>
+                      Knowledge/Skill
+                      <span className="label-Sopppan">
+                        Checked <CheckIcon className="w-4 h-4 ml-1" />
+                      </span>
+                    </label>
+                    <input type='text' name='knowledgeSkill' value='React, JavaScript, Tailwind CSS, Figma' readOnly />
+                  </div>
                 </div>
               </form>
             </div>
@@ -388,7 +584,30 @@ const Dashboard = () => {
               <h3>Interview <span>Progress: 50% <b className='pending'>Pending <ClockIcon /></b></span></h3>
               <p>Your next step is the Interview phase, which is currently at 50% completion. Please monitor your email and application dashboard for further updates or interview scheduling.</p>
             </div>
-            <div className='OL-Boxas-Body'></div>
+            <div className='OL-Boxas-Body'>
+              <div className='OUjauj-DAS'>
+                <div className='OUjauj-DAS-1'>
+                  <div className='Calender-Dspy'>
+                    <InterviewCalendar interviewDate={interviewDate} />
+                  </div>
+                  <div className='OUauj-Biaoo'>
+                    <h3>Scheduled for this day:</h3>
+                    <div className='OUauj-Biaoo-ManD'>
+                      <h4>Date and Time</h4>
+                      <p>26, June 2025 - 1:02 PM</p>
+                    </div>
+                    <div className='OUauj-Biaoo-ManD'>
+                      <h4>Location <span>Virtual</span></h4>
+                      <h6 className='Gen-Boxshadow'>
+                        <span className="meeting-link" onClick={handleCopyLink} aria-label="Copy meeting link">{meetingLink}</span>
+                      </h6>
+                      <button className="launch-meeting-btn btn-primary-bg" onClick={handleLaunchMeeting} aria-label="Launch virtual meeting">Launch Meeting</button>
+                    </div>
+                  </div>
+                </div>
+                <div className='Meeting-Box'></div>
+              </div>
+            </div>
           </motion.div>
         )}
 

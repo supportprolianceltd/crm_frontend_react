@@ -525,6 +525,7 @@ const JobAdvert = () => {
                         <Link
                           to={`/jobs/${job.unique_link}`}
                           className="link-btn btn-primary-bg"
+                          target='_blank'
                         >
                           <GlobeAltIcon />
                           Site
