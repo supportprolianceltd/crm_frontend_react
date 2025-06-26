@@ -537,7 +537,7 @@ color: #7226FF !important;
 
 .calendar-day.interview-day {
   background-color: #ebe6ff;
-  border: 1px solid #7226FF;
+  border: 1px solid transparent !important;
   color: #7226FF;
   font-weight: 600;
 }
