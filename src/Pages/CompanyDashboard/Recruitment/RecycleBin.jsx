@@ -331,7 +331,7 @@ const RecycleBin = () => {
       setErrorMessage(error.message || 'Failed to restore.');
       setIsLoading(false);
       setTimeout(() => setErrorMessage(''), 5000);
-      console.error('Error restoring:', error);
+     // console.error('Error restoring:', error);
     }
   };
 
