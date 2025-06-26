@@ -424,3 +424,168 @@ color: #7226FF !important;
 .label-Sopppan svg{
     width: 10px;
 }
+
+
+
+/* OUjauj-DAS */
+
+.OUjauj-DAS{
+    position: relative;
+    width: 100%;
+    height: auto;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 20px;
+}
+
+.OUjauj-DAS-1{
+    position: relative;
+    width: 350px;
+    height: auto;
+    min-height: 500px;
+    background-color: #fff;
+    box-shadow: 0 0 20px rgb(74 45 197 / 0.1);
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.OUjauj-DAS-1-TTOp{
+    position: relative;
+    width: 100%;
+    height: auto;
+}
+
+.OUjauj-DAS-1-TTOp button{
+    position: relative;
+    width: auto;
+    padding:7px 15px;
+    background-color: #ebe6ff;
+    color: #7226FF;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border:1px solid #7226FF;
+    border-radius: 30px;
+    user-select: none;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.3s ease-in-out;
+}
+
+.OUjauj-DAS-1-TTOp button svg{
+    width: 13px;
+}
+
+.OUjauj-DAS-1-TTOp button:hover{
+    background-color: #f7f5ff;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Updated Calendar styles */
+.calendar-container {
+    position: relative;
+    width: 100%;
+    height: auto;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.calendar-header h3 {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.calendar-header button {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  color: #4b5563;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.calendar-header button:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-weight: 500;
+  color: #6b7280;
+  font-size: 10px;
+  margin-bottom: 10px;
+}
+
+.calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.calendar-day {
+  height: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-weight: 500;
+  color: #111827;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  border: 1px solid transparent;
+}
+
+.calendar-day:hover {
+  background-color: #f9fafb;
+}
+
+.calendar-day.other-month {
+  color: #9ca3af;
+}
+
+.calendar-day.selected {
+  border: 1px solid #7226FF;
+  background-color: #f5f0ff;
+}
+
+.calendar-day.interview-day {
+  background-color: #f0f9ff;
+  border: 1px solid #dbeafe;
+  color: #1e40af;
+  font-weight: 600;
+}
+
+.interview-time {
+  font-size: 10px;
+  font-weight: 500;
+  color: #3b82f6;
+  margin-top: 2px;
+  text-align: center;
+  line-height: 1.2;
+}

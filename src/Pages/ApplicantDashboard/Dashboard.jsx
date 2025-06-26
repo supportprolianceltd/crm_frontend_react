@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import SampleCV from '../../assets/resume.pdf';
 import {
   ChevronRightIcon,
+  ChevronDownIcon,
   FolderIcon,
   PlusCircleIcon,
   Cog6ToothIcon,
@@ -132,9 +133,161 @@ const documentList = [
   },
 ];
 
+// Calendar Component
+// Calendar Component (updated to show previous/next month dates)
+const InterviewCalendar = ({ interviewDate }) => {
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(interviewDate);
+  
+  // Get current month and year
+  const month = currentDate.toLocaleString('default', { month: 'long' });
+  const year = currentDate.getFullYear();
+  
+  // Get the first day of the month
+  const firstDayOfMonth = new Date(
+    currentDate.getFullYear(),
+    currentDate.getMonth(),
+    1
+  );
+  
+  // Get the last day of the month
+  const lastDayOfMonth = new Date(
+    currentDate.getFullYear(),
+    currentDate.getMonth() + 1,
+    0
+  );
+  
+  // Get the last day of previous month
+  const lastDayOfPrevMonth = new Date(
+    currentDate.getFullYear(),
+    currentDate.getMonth(),
+    0
+  );
+  
+  // Generate days array including previous and next month days
+  const days = [];
+  
+  // Previous month days
+  const prevMonthDays = firstDayOfMonth.getDay(); // 0 = Sunday, 1 = Monday, etc.
+  for (let i = prevMonthDays - 1; i >= 0; i--) {
+    const day = lastDayOfPrevMonth.getDate() - i;
+    days.push({
+      date: new Date(
+        lastDayOfPrevMonth.getFullYear(),
+        lastDayOfPrevMonth.getMonth(),
+        day
+      ),
+      isCurrentMonth: false
+    });
+  }
+  
+  // Current month days
+  const daysInMonth = lastDayOfMonth.getDate();
+  for (let i = 1; i <= daysInMonth; i++) {
+    days.push({
+      date: new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+        i
+      ),
+      isCurrentMonth: true
+    });
+  }
+  
+  // Next month days
+  const nextMonthDays = 42 - days.length; // 6 rows x 7 days
+  for (let i = 1; i <= nextMonthDays; i++) {
+    days.push({
+      date: new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth() + 1,
+        i
+      ),
+      isCurrentMonth: false
+    });
+  }
+  
+  // Navigation functions
+  const prevMonth = () => {
+    setCurrentDate(new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth() - 1,
+      1
+    ));
+  };
+  
+  const nextMonth = () => {
+    setCurrentDate(new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth() + 1,
+      1
+    ));
+  };
+  
+  // Check if a date is the interview date
+  const isInterviewDate = (date) => {
+    return (
+      date.getDate() === interviewDate.getDate() &&
+      date.getMonth() === interviewDate.getMonth() &&
+      date.getFullYear() === interviewDate.getFullYear()
+    );
+  };
+  
+  // Format time for display
+  const formatTime = (date) => {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  return (
+    <div className="calendar-container">
+      <div className="calendar-header">
+        <button onClick={prevMonth}>&lt;</button>
+        <h3>{month} {year}</h3>
+        <button onClick={nextMonth}>&gt;</button>
+      </div>
+      
+      <div className="calendar-weekdays">
+        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+          <div key={day} className="weekday">{day}</div>
+        ))}
+      </div>
+      
+      <div className="calendar-days">
+        {days.map((dayObj, index) => {
+          const day = dayObj.date.getDate();
+          const isCurrentMonth = dayObj.isCurrentMonth;
+          const isInterview = isInterviewDate(dayObj.date);
+          
+          return (
+            <div 
+              key={index} 
+              className={`calendar-day 
+                ${isCurrentMonth ? '' : 'other-month'} 
+                ${isInterview ? 'interview-day' : ''}
+                ${dayObj.date.getDate() === selectedDate?.getDate() && 
+                  dayObj.date.getMonth() === selectedDate?.getMonth() && 
+                  dayObj.date.getFullYear() === selectedDate?.getFullYear() 
+                  ? 'selected' : ''}`}
+            >
+              {day}
+              {isInterview && (
+                <div className="interview-time">
+                  {formatTime(interviewDate)}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
 const Dashboard = () => {
   usePageTitle();
   const [activeCard, setActiveCard] = useState(3); // Interview as default
+  
+  // Set interview date to June 26, 2025 at 1:02 PM
+  const interviewDate = new Date(2025, 5, 26, 13, 2);
 
   const handleCardClick = (cardNumber) => {
     setActiveCard(cardNumber);
@@ -388,7 +541,27 @@ const Dashboard = () => {
               <h3>Interview <span>Progress: 50% <b className='pending'>Pending <ClockIcon /></b></span></h3>
               <p>Your next step is the Interview phase, which is currently at 50% completion. Please monitor your email and application dashboard for further updates or interview scheduling.</p>
             </div>
-            <div className='OL-Boxas-Body'></div>
+            <div className='OL-Boxas-Body'>
+              <div className='OUjauj-DAS'>
+                <div className='OUjauj-DAS-1'>
+                  
+                  <div className='Calender-Dspy'>
+                    <InterviewCalendar interviewDate={interviewDate} />
+                  </div>
+                  <div className='OUauj-Biaoo'>
+                    <h3>Scheduled for this day:</h3>
+                    <div className='OUauj-Biaoo-ManD'>
+                      <h4>Date and Time</h4>
+                      <p>26, June 2025 - 1:02 PM</p>
+                    </div>
+                     <div className='OUauj-Biaoo-ManD'>
+                      <h4>Location <span>Virtual</span></h4>
+                      <p>Plot 5 Owule Ojuan Street, off Peter Odili Road, Trans Amadi, Port Harcourt, Rivers State</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </motion.div>
         )}
 
