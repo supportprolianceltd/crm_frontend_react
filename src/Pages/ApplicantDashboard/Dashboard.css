@@ -404,7 +404,9 @@ color: #7226FF !important;
 .Grga-INpu-Grid .GHuh-Form-Input{
     margin-top: 20px !important;
 }
-
+.Grga-INpu-Grid .GHuh-Form-Input input{
+    font-size: 11px !important;
+}
 .Ol-Boxxx-Forms label{
     display: flex;
     align-items: center;

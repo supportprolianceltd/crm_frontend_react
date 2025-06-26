@@ -237,6 +237,10 @@ const Dashboard = () => {
                     <input type='email' name='email' value='prince@example.com' readOnly />
                   </div>
 
+                  </div>
+
+                  <div className='Grga-INpu-Grid'>
+
                   <div className="GHuh-Form-Input">
                     <label>
                       Confirm Email Address
@@ -246,7 +250,6 @@ const Dashboard = () => {
                     </label>
                     <input type='email' name='confirmEmail' value='prince@example.com' readOnly />
                   </div>
-                </div>
 
                 <div className='Grga-INpu-Grid'>
                   <div className="GHuh-Form-Input">
@@ -259,6 +262,11 @@ const Dashboard = () => {
                     <input type='tel' name='phone' value='+2348012345678' readOnly />
                   </div>
 
+                </div>
+                </div>
+
+                <div className='Grga-INpu-Grid'>
+
                   <div className="GHuh-Form-Input">
                     <label>
                       Date of Birth
@@ -268,9 +276,7 @@ const Dashboard = () => {
                     </label>
                     <input type='date' name='dob' value='1998-07-15' readOnly />
                   </div>
-                </div>
 
-                <div className='Grga-INpu-Grid'>
                   <div className="GHuh-Form-Input">
                     <label>
                       Qualification
@@ -280,7 +286,9 @@ const Dashboard = () => {
                     </label>
                     <input type='text' name='qualification' value='B.Sc. Computer Science' readOnly />
                   </div>
+                </div>
 
+                <div className='Grga-INpu-Grid'>
                   <div className="GHuh-Form-Input">
                     <label>
                       Experience
@@ -290,7 +298,6 @@ const Dashboard = () => {
                     </label>
                     <input type='text' name='experience' value='4 years' readOnly />
                   </div>
-                </div>
 
                 <div className="GHuh-Form-Input">
                   <label>
@@ -300,6 +307,7 @@ const Dashboard = () => {
                     </span>
                   </label>
                   <input type='text' name='knowledgeSkill' value='React, JavaScript, Tailwind CSS, Figma' readOnly />
+                </div>
                 </div>
               </form>
             </div>

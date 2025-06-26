@@ -84,6 +84,7 @@ const Login = () => {
         localStorage.removeItem('tenantId');
         localStorage.removeItem('tenantSchema');
         localStorage.removeItem('user');
+        setError('Your session has expired or is invalid. Please log in again.');
         setIsCheckingAuth(false);
       }
     };
@@ -95,6 +96,12 @@ const Login = () => {
     e.preventDefault();
     setError('');
     setLoading(true);
+
+    if (!email || !password) {
+      setError('Please fill in both email and password fields.');
+      setLoading(false);
+      return;
+    }
 
     try {
       const response = await axios.post(`${config.API_BASE_URL}/api/token/`, {
@@ -111,7 +118,24 @@ const Login = () => {
       }
       navigate('/company', { replace: true });
     } catch (err) {
-      setError(err.response?.data?.detail || 'Invalid email or password. Please try again.');
+      let errorMessage = 'An error occurred during login. Please try again.';
+      if (err.response) {
+        const { status, data } = err.response;
+        if (status === 400) {
+          errorMessage = data.detail || 'Invalid email or password format. Please check your inputs.';
+        } else if (status === 401) {
+          errorMessage = 'Incorrect email or password. Please verify your credentials and try again.';
+        } else if (status === 403) {
+          errorMessage = 'Your account is disabled or you lack permission to log in. Contact support.';
+        } else if (status === 429) {
+          errorMessage = 'Too many login attempts. Please wait a few minutes and try again.';
+        } else if (status >= 500) {
+          errorMessage = 'Server error. Please try again later or contact support.';
+        }
+      } else if (err.request) {
+        errorMessage = 'No response from server. Please check your internet connection and try again.';
+      }
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -121,7 +145,7 @@ const Login = () => {
     try {
       window.location.href = `${config.API_BASE_URL}/accounts/google/login/?next=/api/users/social/callback/`;
     } catch (error) {
-      setError('Google login failed. Please try again.');
+      setError('Failed to initiate Google login. Please check your network connection or try again later.');
       console.error('Google login error:', error);
     }
   };
@@ -130,7 +154,7 @@ const Login = () => {
     try {
       window.location.href = `${config.API_BASE_URL}/accounts/apple/login/?next=/api/users/social/callback/`;
     } catch (error) {
-      setError('Apple login failed. Please try again.');
+      setError('Failed to initiate Apple login. Please check your network connection or try again later.');
       console.error('Apple login error:', error);
     }
   };
@@ -139,7 +163,7 @@ const Login = () => {
     try {
       window.location.href = `${config.API_BASE_URL}/accounts/microsoft/login/?next=/api/users/social/callback/`;
     } catch (error) {
-      setError('Microsoft login failed. Please try again.');
+      setError('Failed to initiate Microsoft login. Please check your network connection or try again later.');
       console.error('Microsoft login error:', error);
     }
   };
@@ -216,7 +240,7 @@ const Login = () => {
             <GoogleLogin
               onSuccess={handleGoogleSuccess}
               onError={() => {
-                setError('Google login failed. Please try again.');
+                setError('Google login failed. Please ensure your Google account is accessible and try again.');
                 console.log('Google Login Failed');
               }}
               render={(renderProps) => (
@@ -255,7 +279,7 @@ const Login = () => {
           <button className="social-btn apple" type="button" onClick={handleAppleLogin}>
             <span className="icon">
               <svg viewBox="0 0 24 24" fill="#000">
-                <path d="M16.365 1.43c0 1.14-.49 2.18-1.3 2.9-.81.72-1.9 1.14-3.01 1.05a3.4 3.4 0 0 1-.03-.52c0-1.11.49-2.19 1.3-2.91.81-.72 1.9-1.14 3.01-1.05.01.18.02.36.02.53zm3.35 17.6c-.4.92-.88 1.79-1.44 2.6-.76 1.08-1.38 1.83-1.94 2.24-.55.4-1.13.61-1.75.61-.45 0-1.01-.13-1.68-.38-.66-.25-1.27-.38-1.83-.38-.59 0-1.23.13-1.91.38-.68.25-1.2.38-1.56.38-.64 0-1.24-.2-1.8-.61-.56-.41-1.22-1.16-1.98-2.24-.61-.87-1.13-1.8-1.56-2.8-.49-1.15-.74-2.27-.74-3.37 0-1.24.29-2.31.87-3.22.58-.91 1.34-1.63 2.28-2.16.95-.53 1.98-.79 3.09-.79.6 0 1.38.16 2.35.48.96.32 1.58.48 1.85.48.2 0 .85-.20 1.94-.59 1.03-.36 1.9-.51 2.62-.46.78.07 1.45.23 2 .5a5.8 5.8 0 0 1 1.55 1.18c-.62.68-1.24 1.36-1.86 2.05-.8.84-1.2 1.77-1.2 2.8 0 .8.2 1.57.6 2.3.4.73.87 1.29 1.4 1.67z" />
+                <path d="M16.365 1.43c0 1.14-.49 2.18-1.3 2.9-.81.72-1.9 1.14-3.01 1.05a3.4 3.4 0 0 1-.03-.52c0-1.11.49-2.19 1.3-2.91.81-.72 1.9-1.14 3.01-1.05.01.18.02.36.02.53zm3.35 17.6c-.4.92-.88 1.79-1.44 2.6-.76 1.08-1.38 1.83-1.94 2.24-.55.4-1.13.61-1.75.61-.45 0-1.01-.13-1.68-.38-.66-.25-1.27.38-1.83-.38-.59 0-1.23.13-1.91.38-.68.25-1.2.38-1.56.38-.64 0-1.24-.20-1.8-.61-.56-.41-1.22-1.16-1.98-2.24-.61-.87-1.13-1.8-1.56-2.8-.49-1.15-.74-2.27-.74-3.37 0-1.24.29-2.31.87-3.22.58-.91 1.34-1.63 2.28-2.16.95-.53 1.98-.79 3.09-.79.6 0 1.38.16 2.35.48.96.32 1.58.48 1.85.48.2 0 .85-.20 1.94-.59 1.03-.36 1.9-.51 2.62-.46.78.07 1.45.23 2 .5a5.8 5.8 0 0 1 1.55 1.18c-.62.68-1.24 1.36-1.86 2.05-.8.84-1.2 1.77-1.2 2.8 0 .8.2 1.57.6 2.3.4.73.87 1.29 1.4 1.67z" />
               </svg>
             </span>
             Continue with Apple
