@@ -106,6 +106,11 @@ const JobDetails = ({ job, onClose, onShowEditRequisition }) => {
     ));
   };
 
+
+  // console.log("displayJob")
+  // console.log(displayJob)
+  // console.log("displayJob")
+
   return (
     <div className="VewRequisition">
       <div className="VewRequisition-Bodddy" onClick={onClose}></div>

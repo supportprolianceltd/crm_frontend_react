@@ -178,6 +178,11 @@ const JobAdvert = () => {
       try {
         const response = await fetchAllRequisitions();
         const publishedJobs = response
+
+        // console.log("publishedJobs")
+        // console.log(publishedJobs)
+        // console.log("publishedJobs")
+
           .filter((job) => job.publish_status === true)
           .map((job) => ({
 
@@ -210,6 +215,10 @@ const JobAdvert = () => {
             requested_date: job.requested_date || [],
           }));
         setJobData(publishedJobs);
+            // console.log("publishedJobs")
+            // console.log(publishedJobs)
+            // console.log("publishedJobs")
+
         setStats({
           total: publishedJobs.length,
           open: publishedJobs.filter((job) => job.status === 'Open').length,
@@ -225,6 +234,7 @@ const JobAdvert = () => {
         setIsLoading(false);
       }
     };
+
 
     fetchJobs();
   }, [trigger]);
