@@ -287,20 +287,39 @@ export const fetchPublishedRequisitionsWithShortlisted = async () => {
   }
 };
 
+// export const createSchedule = async (scheduleData) => {
+//   try {
+//     const response = await apiClient.post('/api/talent-engine-job-applications/schedules/', scheduleData);
+//     return response.data;
+//   } catch (error) {
+//     const errorDetails = error.response?.data || {};
+//     if (errorDetails.meeting_link) {
+//       throw new Error(errorDetails.meeting_link[0] || 'Invalid meeting link provided.');
+//     } else if (errorDetails.non_field_errors) {
+//       throw new Error(errorDetails.non_field_errors[0] || 'Invalid schedule data.');
+//     } else if (errorDetails.detail) {
+//       throw new Error(errorDetails.detail);
+//     }
+//     throw new Error('Failed to create schedule.');
+//   }
+// };
+
 export const createSchedule = async (scheduleData) => {
   try {
     const response = await apiClient.post('/api/talent-engine-job-applications/schedules/', scheduleData);
     return response.data;
   } catch (error) {
     const errorDetails = error.response?.data || {};
-    if (errorDetails.meeting_link) {
+    if (errorDetails.detail && errorDetails.detail.includes('EMAIL_USE_TLS/EMAIL_USE_SSL')) {
+      throw new Error('Email configuration error: EMAIL_USE_TLS and EMAIL_USE_SSL cannot both be enabled. Contact your administrator.');
+    } else if (errorDetails.meeting_link) {
       throw new Error(errorDetails.meeting_link[0] || 'Invalid meeting link provided.');
     } else if (errorDetails.non_field_errors) {
       throw new Error(errorDetails.non_field_errors[0] || 'Invalid schedule data.');
     } else if (errorDetails.detail) {
       throw new Error(errorDetails.detail);
     }
-    throw new Error('Failed to create schedule.');
+    throw new Error('Failed to create schedule. Please try again.');
   }
 };
 
