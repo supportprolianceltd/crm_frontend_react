@@ -14,6 +14,8 @@ import {
 import { CheckIcon } from '@heroicons/react/24/solid';
 import './Dashboard.css';
 
+import DailySchedule from './ScheduleTable';
+
 // CountUp component
 const CountUp = ({ end, duration = 1000 }) => {
   const [count, setCount] = useState(0);
@@ -313,8 +315,8 @@ const Dashboard = () => {
   const [activeCard, setActiveCard] = useState(3);
   const [showAlert, setShowAlert] = useState(false);
   
-  // Set interview date to June 26, 2025 at 1:02 PM
-  const interviewDate = new Date(2025, 5, 26, 13, 2);
+  // Set interview date to June 26, 2025 at 6:30 AM
+  const interviewDate = new Date(2025, 5, 26, 6, 30);
   // Dynamic meeting link
   const meetingLink = 'https://teams.microsoft.com/l/meetup-join/19%3ameeting_NjA1Nzk4YzItNzU5Zi00YjQzLWEzNjEtNjAxODc1NDVhNDk2%40thread.v2/0?context=%7b%22Tid%22%3a%22d1234567-abcd-8901-efgh-1234567890ab%22%2c%22Oid%22%3a%2298765432-abcd-1234-efgh-0987654321cd%22%7d';
 
@@ -587,6 +589,7 @@ const Dashboard = () => {
             <div className='OL-Boxas-Body'>
               <div className='OUjauj-DAS'>
                 <div className='OUjauj-DAS-1'>
+                  <div className='OUjauj-DAS-1Main'>
                   <div className='Calender-Dspy'>
                     <InterviewCalendar interviewDate={interviewDate} />
                   </div>
@@ -594,7 +597,7 @@ const Dashboard = () => {
                     <h3>Scheduled for this day:</h3>
                     <div className='OUauj-Biaoo-ManD'>
                       <h4>Date and Time</h4>
-                      <p>26, June 2025 - 1:02 PM</p>
+                      <p>26, June 2025 - 6:30 AM</p>
                     </div>
                     <div className='OUauj-Biaoo-ManD'>
                       <h4>Location <span>Virtual</span></h4>
@@ -605,7 +608,16 @@ const Dashboard = () => {
                     </div>
                   </div>
                 </div>
-                <div className='Meeting-Box'></div>
+                </div>
+
+            <div className='OUjauj-DAS-2'>
+              <div className='HYha-POla'>
+                  <div className='HYha-POla-Main'>
+                    <DailySchedule />
+                  </div>
+              </div>
+            </div>
+                
               </div>
             </div>
           </motion.div>

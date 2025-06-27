@@ -327,7 +327,7 @@ color: #7226FF !important;
     width: 100%;
     height: auto;
     border-bottom: 1px solid #ded9f3;
-    padding-bottom: 30px;
+    padding-bottom: 20px;
 }
 
 .OL-Boxas-Top h3{
@@ -439,13 +439,26 @@ color: #7226FF !important;
 }
 
 .OUjauj-DAS-1{
-    position: relative;
+    position: sticky;
+    top: 80px;
+    left: 0;
+    z-index: 100;
     width: 350px;
     height: auto;
+    min-height: 200px;
+    
+}
+
+.OUjauj-DAS-1Main{
+    position: inherit;
+    top: inherit;
+    left: inherit;
+    z-index: inherit;
+    width: 100%;
+    height: inherit;
+    min-height: inherit;
     background-color: #fff;
-    box-shadow: 0 0 20px rgb(74 45 197 / 0.1);
-    -webkit-box-shadow: 0 0 20px rgb(74 45 197 / 0.1);
-    -moz-box-shadow: 0 0 20px rgb(74 45 197 / 0.1);
+    border:1px solid #e2e8f0;
     border-radius: 10px;
     padding: 20px;
 }
@@ -632,3 +645,11 @@ color: #7226FF !important;
     user-select: none;
     cursor: pointer;
 }
+
+
+
+
+
+
+
+
