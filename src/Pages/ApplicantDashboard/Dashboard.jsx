@@ -15,6 +15,7 @@ import { CheckIcon } from '@heroicons/react/24/solid';
 import './Dashboard.css';
 
 import DailySchedule from './ScheduleTable';
+import ComplianceCheckTable from './ComplianceCheckTable';
 
 // CountUp component
 const CountUp = ({ end, duration = 1000 }) => {
@@ -630,11 +631,13 @@ const Dashboard = () => {
             initial="hidden"
             animate="visible"
           >
-            <div className='OL-Boxas-Top'>
+            <div className='OL-Boxas-Top ooik-PPOla'>
               <h3>Compliance Check <span>Progress: 0%</span></h3>
               <p>The compliance check has not yet started. You will be notified once this stage begins.</p>
             </div>
-            <div className='OL-Boxas-Body'></div>
+            <div className='OL-Boxas-Body'>
+              <ComplianceCheckTable />
+            </div>
           </motion.div>
         )}
 
