@@ -1637,20 +1637,7 @@ function JobApplication() {
                   </div>
                 ) : (
                   <>
-                    <div className="hhgh-btbs">
-                      <span
-                        className={activeTab === 'upload' ? 'active-Hgh' : ''}
-                        onClick={() => setActiveTab('upload')}
-                      >
-                        Upload CV
-                      </span>
-                      <span
-                        className={activeTab === 'noresume' ? 'active-Hgh' : ''}
-                        onClick={() => setActiveTab('noresume')}
-                      >
-                        Don't have Resume
-                      </span>
-                    </div>
+                  
                     <div className="gtht-secs-Part2-Box-Mainna">
                       {activeTab === 'upload' && (
                         <div className="cv-upload-sec">
@@ -1883,8 +1870,7 @@ function JobApplication() {
             style={{
               position: 'fixed',
               top: 10,
-              right: 10,
-              backgroundColor: '#38a169',
+              backgroundColor: '#4caf50',
               color: 'white',
               padding: '10px 20px',
               fontSize: '12px',

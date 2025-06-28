@@ -1521,3 +1521,9 @@ background-color: rgba(255,255,255,0.2);
   margin-top: 5px;
   color: #f43232;
 }
+
+
+.success-alert{
+    transform: translateX(-50%) !important;
+    left: 50% !important;
+}

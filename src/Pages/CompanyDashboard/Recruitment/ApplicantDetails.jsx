@@ -165,6 +165,7 @@ const ApplicantDetails = ({ job, applicant, onClose, onStatusChange }) => {
                   <p><span>Full Name:</span> {name}</p>
                   <p><span>Email Address:</span> {email}</p>
                   <p><span>Phone Number:</span> {phone}</p>
+                  <p><span>Date of Birth:</span> Jun 26, 2025</p>
                   <p><span>Qualification:</span> {qualification}</p>
                   <p><span>Experience:</span> {experience}</p>
                   <p><span>Knowledge/Skill:</span> {knowledge_skill}</p>

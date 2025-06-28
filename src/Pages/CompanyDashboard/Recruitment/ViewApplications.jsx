@@ -497,11 +497,11 @@ const handleScreenResumes = async (documentType) => {
   //           />
   //         </div>
   // }
-  if (loading) {
-    return <div className="Alll_OOo_LODer">
-      <p className="loader">Screening Applications...</p>
-      </div>;
-  }
+  // if (loading) {
+  //   return <div className="Alll_OOo_LODer">
+  //     <p className="loader">Screening Applications...</p>
+  //     </div>;
+  // }
 
 
 
