@@ -42,6 +42,7 @@ const ComplianceCheckTable = () => {
   const [alertMessage, setAlertMessage] = useState(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRefs = useRef([]);
 
   const triggerFileInput = (index) => {
@@ -88,16 +89,21 @@ const ComplianceCheckTable = () => {
   };
 
   const confirmSubmit = () => {
-    const updated = complianceData.map((item) => {
-      if (item.file && item.status === 'Uploaded') {
-        return { ...item, status: 'In Review' };
-      }
-      return item;
-    });
-    setComplianceData(updated);
-    setShowPrompt(false);
-    setIsSubmitted(true);
-    showAlert('Successfully submitted for compliance review.', 'success');
+    setIsSubmitting(true);
+
+    setTimeout(() => {
+      const updated = complianceData.map((item) => {
+        if (item.file && item.status === 'Uploaded') {
+          return { ...item, status: 'In Review' };
+        }
+        return item;
+      });
+      setComplianceData(updated);
+      setShowPrompt(false);
+      setIsSubmitted(true);
+      setIsSubmitting(false);
+      showAlert('Successfully submitted for compliance review.', 'success');
+    }, 3000);
   };
 
   const showAlert = (message, type = 'success') => {
@@ -140,10 +146,38 @@ const ComplianceCheckTable = () => {
             >
               <p>Are you sure you want to submit all uploaded documents for compliance check?</p>
               <div className="confirm-actions">
-                <button onClick={confirmSubmit} className="confirm-yes btn-primary-bg">
-                  Yes, Submit
+                <button
+                  onClick={confirmSubmit}
+                  className="confirm-yes btn-primary-bg"
+                  disabled={isSubmitting}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <motion.div
+                        initial={{ rotate: 0 }}
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                        style={{
+                          width: 16,
+                          height: 16,
+                          borderRadius: '50%',
+                          border: '3px solid #fff',
+                          borderTopColor: '#646669',
+                          display: 'inline-block',
+                        }}
+                      />
+                      Submitting...
+                    </>
+                  ) : (
+                    'Yes, Submit'
+                  )}
                 </button>
-                <button onClick={() => setShowPrompt(false)} className="confirm-cancel">
+                <button
+                  onClick={() => setShowPrompt(false)}
+                  className="confirm-cancel"
+                  disabled={isSubmitting}
+                >
                   Cancel
                 </button>
               </div>

@@ -165,9 +165,6 @@ function NavBar() {
                   <Link to="/" onClick={() => setShowProfileDropdown(false)}>
                     <QuestionMarkCircleIcon /> Help & Support
                   </Link>
-                  <Link to="/" onClick={() => setShowProfileDropdown(false)}>
-                    <Cog6ToothIcon /> Settimgs
-                  </Link>
                   <button
                     className="logout-btn btn-primary-bg"
                     onClick={(e) => {

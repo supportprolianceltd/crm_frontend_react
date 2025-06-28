@@ -13,7 +13,6 @@ import {
 } from '@heroicons/react/24/outline';
 import { CheckIcon } from '@heroicons/react/24/solid';
 import './Dashboard.css';
-
 import DailySchedule from './ScheduleTable';
 import ComplianceCheckTable from './ComplianceCheckTable';
 
@@ -65,7 +64,7 @@ const CircularProgress = ({ size = 70, strokeWidth = 6, percentage = 75, color =
         strokeDasharray={circumference}
         strokeDashoffset={circumference}
         animate={{ strokeDashoffset: offset }}
-        transition={{ duration: 1, ease: "easeInOut" }}
+        transition={{ duration: 1, ease: 'easeInOut' }}
         style={{ transform: 'rotate(-90deg)', transformOrigin: '50% 50%' }}
       />
       <text
@@ -84,7 +83,7 @@ const CircularProgress = ({ size = 70, strokeWidth = 6, percentage = 75, color =
 };
 
 // Alert component for Framer Motion
-const Alert = ({ message, onClose }) => {
+const Alert = ({ message }) => {
   return (
     <motion.div
       className="alert"
@@ -166,92 +165,60 @@ const documentList = [
 const InterviewCalendar = ({ interviewDate }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(interviewDate);
-  
+
   // Get current month and year
   const month = currentDate.toLocaleString('default', { month: 'long' });
   const year = currentDate.getFullYear();
-  
+
   // Get the first day of the month
-  const firstDayOfMonth = new Date(
-    currentDate.getFullYear(),
-    currentDate.getMonth(),
-    1
-  );
-  
+  const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+
   // Get the last day of the month
-  const lastDayOfMonth = new Date(
-    currentDate.getFullYear(),
-    currentDate.getMonth() + 1,
-    0
-  );
-  
+  const lastDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+
   // Get the last day of previous month
-  const lastDayOfPrevMonth = new Date(
-    currentDate.getFullYear(),
-    currentDate.getMonth(),
-    0
-  );
-  
+  const lastDayOfPrevMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0);
+
   // Generate days array including previous and next month days
   const days = [];
-  
+
   // Previous month days
   const prevMonthDays = firstDayOfMonth.getDay();
   for (let i = prevMonthDays - 1; i >= 0; i--) {
     const day = lastDayOfPrevMonth.getDate() - i;
     days.push({
-      date: new Date(
-        lastDayOfPrevMonth.getFullYear(),
-        lastDayOfPrevMonth.getMonth(),
-        day
-      ),
-      isCurrentMonth: false
+      date: new Date(lastDayOfPrevMonth.getFullYear(), lastDayOfPrevMonth.getMonth(), day),
+      isCurrentMonth: false,
     });
   }
-  
+
   // Current month days
   const daysInMonth = lastDayOfMonth.getDate();
   for (let i = 1; i <= daysInMonth; i++) {
     days.push({
-      date: new Date(
-        currentDate.getFullYear(),
-        currentDate.getMonth(),
-        i
-      ),
-      isCurrentMonth: true
+      date: new Date(currentDate.getFullYear(), currentDate.getMonth(), i),
+      isCurrentMonth: true,
     });
   }
-  
+
   // Next month days
   const nextMonthDays = 42 - days.length;
   for (let i = 1; i <= nextMonthDays; i++) {
     days.push({
-      date: new Date(
-        currentDate.getFullYear(),
-        currentDate.getMonth() + 1,
-        i
-      ),
-      isCurrentMonth: false
+      date: new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, i),
+      isCurrentMonth: false,
     });
   }
-  
+
   // Navigation functions
   const prevMonth = () => {
-    setCurrentDate(new Date(
-      currentDate.getFullYear(),
-      currentDate.getMonth() - 1,
-      1
-    ));
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
   };
-  
+
   const nextMonth = () => {
-    setCurrentDate(new Date(
-      currentDate.getFullYear(),
-      currentDate.getMonth() + 1,
-      1
-    ));
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
   };
-  
+
   // Check if a date is the interview date
   const isInterviewDate = (date) => {
     return (
@@ -260,7 +227,7 @@ const InterviewCalendar = ({ interviewDate }) => {
       date.getFullYear() === interviewDate.getFullYear()
     );
   };
-  
+
   // Format time for display
   const formatTime = (date) => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -273,36 +240,32 @@ const InterviewCalendar = ({ interviewDate }) => {
         <h3>{month} {year}</h3>
         <button onClick={nextMonth}>&gt;</button>
       </div>
-      
+
       <div className="calendar-weekdays">
         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
           <div key={day} className="weekday">{day}</div>
         ))}
       </div>
-      
+
       <div className="calendar-days">
         {days.map((dayObj, index) => {
           const day = dayObj.date.getDate();
           const isCurrentMonth = dayObj.isCurrentMonth;
           const isInterview = isInterviewDate(dayObj.date);
-          
+
           return (
-            <div 
-              key={index} 
-              className={`calendar-day 
-                ${isCurrentMonth ? '' : 'other-month'} 
-                ${isInterview ? 'interview-day' : ''}
-                ${dayObj.date.getDate() === selectedDate?.getDate() && 
-                  dayObj.date.getMonth() === selectedDate?.getMonth() && 
-                  dayObj.date.getFullYear() === selectedDate?.getFullYear() 
-                  ? 'selected' : ''}`}
+            <div
+              key={index}
+              className={`calendar-day ${isCurrentMonth ? '' : 'other-month'} ${isInterview ? 'interview-day' : ''} ${
+                dayObj.date.getDate() === selectedDate?.getDate() &&
+                dayObj.date.getMonth() === selectedDate?.getMonth() &&
+                dayObj.date.getFullYear() === selectedDate?.getFullYear()
+                  ? 'selected'
+                  : ''
+              }`}
             >
               {day}
-              {isInterview && (
-                <div className="interview-time">
-                  {formatTime(interviewDate)}
-                </div>
-              )}
+              {isInterview && <div className="interview-time">{formatTime(interviewDate)}</div>}
             </div>
           );
         })}
@@ -313,13 +276,14 @@ const InterviewCalendar = ({ interviewDate }) => {
 
 const Dashboard = () => {
   usePageTitle();
-  const [activeCard, setActiveCard] = useState(3);
+  const [activeCard, setActiveCard] = useState(3); // Default to Interview (3)
   const [showAlert, setShowAlert] = useState(false);
-  
+
   // Set interview date to June 26, 2025 at 6:30 AM
   const interviewDate = new Date(2025, 5, 26, 6, 30);
   // Dynamic meeting link
-  const meetingLink = 'https://teams.microsoft.com/l/meetup-join/19%3ameeting_NjA1Nzk4YzItNzU5Zi00YjQzLWEzNjEtNjAxODc1NDVhNDk2%40thread.v2/0?context=%7b%22Tid%22%3a%22d1234567-abcd-8901-efgh-1234567890ab%22%2c%22Oid%22%3a%2298765432-abcd-1234-efgh-0987654321cd%22%7d';
+  const meetingLink =
+    'https://teams.microsoft.com/l/meetup-join/19%3ameeting_NjA1Nzk4YzItNzU5Zi00YjQzLWEzNjEtNjAxODc1NDVhNDk2%40thread.v2/0?context=%7b%22Tid%22%3a%22d1234567-abcd-8901-efgh-1234567890ab%22%2c%22Oid%22%3a%2298765432-abcd-1234-efgh-0987654321cd%22%7d';
 
   const handleCardClick = (cardNumber) => {
     setActiveCard(cardNumber);
@@ -330,15 +294,13 @@ const Dashboard = () => {
   };
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(meetingLink)
-      .then(() => {
-        setShowAlert(true);
-        setTimeout(() => setShowAlert(false), 2000); // Hide alert after 2 seconds
-      })
-      .catch((err) => {
-        console.error('Failed to copy link: ', err);
-        alert('Failed to copy link. Please try again.');
-      });
+    navigator.clipboard.writeText(meetingLink).then(() => {
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 2000); // Hide alert after 2 seconds
+    }).catch((err) => {
+      console.error('Failed to copy link: ', err);
+      alert('Failed to copy link. Please try again.');
+    });
   };
 
   const handleLaunchMeeting = () => {
@@ -352,41 +314,47 @@ const Dashboard = () => {
   };
 
   return (
-    <div className='Applicant-Dashboard'>
-      <div className='site-container'>
-        <div className='GHH-Top-GTga'>
+    <div className="Applicant-Dashboard">
+      <div className="site-container">
+        <div className="GHH-Top-GTga">
           <p>
-            <Link to='/'>Kaeft</Link>
-            <ChevronRightIcon className='chevron-icon' />
-            <Link to='/'>My applications</Link>
-            <ChevronRightIcon className='chevron-icon' />
+            <Link to="/">Kaeft</Link>
+            <ChevronRightIcon className="chevron-icon" />
+            <Link to="/application-dashboard">New applications</Link>
+            <ChevronRightIcon className="chevron-icon" />
             <span>Frontend website developer</span>
           </p>
         </div>
 
-        <div className='OLIK-NAVVVB'>
-          <Link to='/'><FolderIcon className='icon-nav' /> My applications</Link>
-          <Link to='/' className='active-OLika'><PlusCircleIcon className='icon-nav' /> New application</Link>
-          <Link to='/'><Cog6ToothIcon className='icon-nav' /> Settings</Link>
+        <div className="OLIK-NAVVVB">
+          {stepTitles.map((title, index) => (
+            <button
+              key={index}
+              className={activeCard === index + 1 ? 'active-OLika' : ''}
+              onClick={() => handleCardClick(index + 1)}
+            >
+              {title}
+            </button>
+          ))}
         </div>
 
-        <div className='Gyhat-HG'>
+        <div className="Gyhat-HG">
           <h3>Frontend website developer</h3>
           <p>Application Progress: <span>90%</span></p>
         </div>
 
-        <div className='oik-pa'>
-          <p>Posted by: <a href='#'>Proliance LTD</a></p>
+        <div className="oik-pa">
+          <p>Posted by: <a href="#">Proliance LTD</a></p>
         </div>
 
-        <div className='GYhh-Cardss-SesC'>
+        <div className="GYhh-Cardss-SesC">
           {[1, 2, 3, 4, 5].map((num) => (
             <div
               key={num}
               className={`GYhh-Card ${activeCard === num ? 'active' : ''}`}
               onClick={() => handleCardClick(num)}
             >
-              <div className='progress-Chat'>
+              <div className="progress-Chat">
                 <CircularProgress
                   percentage={stepPercentages[num - 1]}
                   color="#7226FF"
@@ -409,19 +377,27 @@ const Dashboard = () => {
         {/* === Independent Box Sections === */}
         {activeCard === 1 && (
           <motion.div
-            className='OL-Boxas'
+            className="OL-Boxas"
             variants={slideDownVariants}
             initial="hidden"
             animate="visible"
           >
-            <div className='OL-Boxas-Top'>
-              <h3>Job Application <span>Progress: 100% <b className='completed'>Completed <CheckIcon /></b></span></h3>
-              <p>You’ve successfully completed the first phase of your application for the Frontend Website Developer role. All required application information has been submitted and confirmed.</p>
+            <div className="OL-Boxas-Top">
+              <h3>
+                Job Application{' '}
+                <span>
+                  Progress: 100% <b className="completed">Completed <CheckIcon className="w-4 h-4 ml-1" /></b>
+                </span>
+              </h3>
+              <p>
+                You've successfully completed the first phase of your application for the Frontend Website Developer role.
+                All required application information has been submitted and confirmed.
+              </p>
             </div>
 
-            <div className='OL-Boxas-Body'>
-              <form className='Ol-Boxxx-Forms'>
-                <div className='Grga-INpu-Grid'>
+            <div className="OL-Boxas-Body">
+              <div className="Ol-Boxxx-Forms">
+                <div className="Grga-INpu-Grid">
                   <div className="GHuh-Form-Input">
                     <label>
                       Full Name
@@ -429,7 +405,7 @@ const Dashboard = () => {
                         Checked <CheckIcon className="w-4 h-4 ml-1" />
                       </span>
                     </label>
-                    <input type='text' name='fullName' value='Prince Godson' readOnly />
+                    <input type="text" name="fullName" value="Prince Godson" readOnly />
                   </div>
 
                   <div className="GHuh-Form-Input">
@@ -439,11 +415,11 @@ const Dashboard = () => {
                         Checked <CheckIcon className="w-4 h-4 ml-1" />
                       </span>
                     </label>
-                    <input type='email' name='email' value='prince@example.com' readOnly />
+                    <input type="email" name="email" value="prince@example.com" readOnly />
                   </div>
                 </div>
 
-                <div className='Grga-INpu-Grid'>
+                <div className="Grga-INpu-Grid">
                   <div className="GHuh-Form-Input">
                     <label>
                       Confirm Email Address
@@ -451,7 +427,7 @@ const Dashboard = () => {
                         Checked <CheckIcon className="w-4 h-4 ml-1" />
                       </span>
                     </label>
-                    <input type='email' name='confirmEmail' value='prince@example.com' readOnly />
+                    <input type="email" name="confirmEmail" value="prince@example.com" readOnly />
                   </div>
 
                   <div className="GHuh-Form-Input">
@@ -461,11 +437,11 @@ const Dashboard = () => {
                         Checked <CheckIcon className="w-4 h-4 ml-1" />
                       </span>
                     </label>
-                    <input type='tel' name='phone' value='+2348012345678' readOnly />
+                    <input type="tel" name="phone" value="+2348012345678" readOnly />
                   </div>
                 </div>
 
-                <div className='Grga-INpu-Grid'>
+                <div className="Grga-INpu-Grid">
                   <div className="GHuh-Form-Input">
                     <label>
                       Date of Birth
@@ -473,7 +449,7 @@ const Dashboard = () => {
                         Checked <CheckIcon className="w-4 h-4 ml-1" />
                       </span>
                     </label>
-                    <input type='date' name='dob' value='1998-07-15' readOnly />
+                    <input type="date" name="dob" value="1998-07-15" readOnly />
                   </div>
 
                   <div className="GHuh-Form-Input">
@@ -483,11 +459,11 @@ const Dashboard = () => {
                         Checked <CheckIcon className="w-4 h-4 ml-1" />
                       </span>
                     </label>
-                    <input type='text' name='qualification' value='B.Sc. Computer Science' readOnly />
+                    <input type="text" name="qualification" value="B.Sc. Computer Science" readOnly />
                   </div>
                 </div>
 
-                <div className='Grga-INpu-Grid'>
+                <div className="Grga-INpu-Grid">
                   <div className="GHuh-Form-Input">
                     <label>
                       Experience
@@ -495,7 +471,7 @@ const Dashboard = () => {
                         Checked <CheckIcon className="w-4 h-4 ml-1" />
                       </span>
                     </label>
-                    <input type='text' name='experience' value='4 years' readOnly />
+                    <input type="text" name="experience" value="4 years" readOnly />
                   </div>
 
                   <div className="GHuh-Form-Input">
@@ -505,32 +481,32 @@ const Dashboard = () => {
                         Checked <CheckIcon className="w-4 h-4 ml-1" />
                       </span>
                     </label>
-                    <input type='text' name='knowledgeSkill' value='React, JavaScript, Tailwind CSS, Figma' readOnly />
+                    <input type="text" name="knowledgeSkill" value="React, JavaScript, Tailwind CSS, Figma" readOnly />
                   </div>
                 </div>
-              </form>
+              </div>
             </div>
           </motion.div>
         )}
-        
+
         {activeCard === 2 && (
           <motion.div
-            className='OL-Boxas'
+            className="OL-Boxas"
             variants={slideDownVariants}
             initial="hidden"
             animate="visible"
           >
-            <div className='OL-Boxas-Top'>
+            <div className="OL-Boxas-Top">
               <h3>
-                Document Uploads
+                Document Uploads{' '}
                 <span>
-                  Progress: 100% <b className='completed'>Completed <CheckIcon /></b>
+                  Progress: 100% <b className="completed">Completed <CheckIcon className="w-4 h-4 ml-1" /></b>
                 </span>
               </h3>
-              <p>You’ve successfully uploaded all required supporting documents for your application.</p>
+              <p>You've successfully uploaded all required supporting documents for your application.</p>
             </div>
 
-            <div className='OL-Boxas-Body'>
+            <div className="OL-Boxas-Body">
               <div className="table-container">
                 <table className="Gen-Sys-table">
                   <thead>
@@ -578,47 +554,68 @@ const Dashboard = () => {
 
         {activeCard === 3 && (
           <motion.div
-            className='OL-Boxas'
+            className="OL-Boxas"
             variants={slideDownVariants}
             initial="hidden"
             animate="visible"
           >
-            <div className='OL-Boxas-Top'>
-              <h3>Interview <span>Progress: 50% <b className='pending'>Pending <ClockIcon /></b></span></h3>
-              <p>Your next step is the Interview phase, which is currently at 50% completion. Please monitor your email and application dashboard for further updates or interview scheduling.</p>
+            <div className="OL-Boxas-Top">
+              <h3>
+                Interview{' '}
+                <span>
+                  Progress: 50% <b className="pending">Pending <ClockIcon className="w-4 h-4 ml-1" /></b>
+                </span>
+              </h3>
+              <p>
+                You are invited to interview for the Frontend Website Developer Role at <b>Proliance Ltd</b> — Scheduled
+                for Thursday, June 26, 2025, at 6:30 AM.
+              </p>
             </div>
-            <div className='OL-Boxas-Body'>
-              <div className='OUjauj-DAS'>
-                <div className='OUjauj-DAS-1'>
-                  <div className='OUjauj-DAS-1Main'>
-                  <div className='Calender-Dspy'>
-                    <InterviewCalendar interviewDate={interviewDate} />
-                  </div>
-                  <div className='OUauj-Biaoo'>
-                    <h3>Scheduled for this day:</h3>
-                    <div className='OUauj-Biaoo-ManD'>
-                      <h4>Date and Time</h4>
-                      <p>26, June 2025 - 6:30 AM</p>
+            <div className="OL-Boxas-Body">
+              <div className="OUjauj-DAS">
+                <div className="OUjauj-DAS-1">
+                  <div className="OUjauj-DAS-1Main">
+                    <div className="Calender-Dspy">
+                      <InterviewCalendar interviewDate={interviewDate} />
                     </div>
-                    <div className='OUauj-Biaoo-ManD'>
-                      <h4>Location <span>Virtual</span></h4>
-                      <h6 className='Gen-Boxshadow'>
-                        <span className="meeting-link" onClick={handleCopyLink} aria-label="Copy meeting link">{meetingLink}</span>
-                      </h6>
-                      <button className="launch-meeting-btn btn-primary-bg" onClick={handleLaunchMeeting} aria-label="Launch virtual meeting">Launch Meeting</button>
+                    <div className="OUauj-Biaoo">
+                      <h3>Scheduled for this day:</h3>
+                      <div className="OUauj-Biaoo-ManD">
+                        <h4>Date and Time</h4>
+                        <p>June 26, 2025 - 6:30 AM</p>
+                      </div>
+                      <div className="OUauj-Biaoo-ManD">
+                        <h4>
+                          Location <span>Virtual</span>
+                        </h4>
+                        <h6 className="Gen-Boxshadow">
+                          <span
+                            className="meeting-link"
+                            onClick={handleCopyLink}
+                            aria-label="Copy meeting link"
+                          >
+                            {meetingLink}
+                          </span>
+                        </h6>
+                        <button
+                          className="launch-meeting-btn btn-primary-bg"
+                          onClick={handleLaunchMeeting}
+                          aria-label="Launch virtual meeting"
+                        >
+                          Launch Meeting
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
                 </div>
 
-            <div className='OUjauj-DAS-2'>
-              <div className='HYha-POla'>
-                  <div className='HYha-POla-Main'>
-                    <DailySchedule />
+                <div className="OUjauj-DAS-2">
+                  <div className="HYha-POla">
+                    <div className="HYha-POla-Main">
+                      <DailySchedule />
+                    </div>
                   </div>
-              </div>
-            </div>
-                
+                </div>
               </div>
             </div>
           </motion.div>
@@ -626,16 +623,22 @@ const Dashboard = () => {
 
         {activeCard === 4 && (
           <motion.div
-            className='OL-Boxas'
+            className="OL-Boxas"
             variants={slideDownVariants}
             initial="hidden"
             animate="visible"
           >
-            <div className='OL-Boxas-Top ooik-PPOla'>
-              <h3>Compliance Check <span>Progress: 0%</span></h3>
-              <p>The compliance check has not yet started. You will be notified once this stage begins.</p>
+            <div className="OL-Boxas-Top ooik-PPOla">
+              <h3>
+                Compliance Check <span>Progress: 0%</span>
+              </h3>
+              <p>
+                As part of the final stages of our recruitment process, we kindly request that you upload the listed
+                documents for a mandatory compliance check. This step is necessary to verify your identity and credentials
+                before we proceed further.
+              </p>
             </div>
-            <div className='OL-Boxas-Body'>
+            <div className="OL-Boxas-Body">
               <ComplianceCheckTable />
             </div>
           </motion.div>
@@ -643,16 +646,18 @@ const Dashboard = () => {
 
         {activeCard === 5 && (
           <motion.div
-            className='OL-Boxas'
+            className="OL-Boxas"
             variants={slideDownVariants}
             initial="hidden"
             animate="visible"
           >
-            <div className='OL-Boxas-Top'>
-              <h3>Decision <span>Progress: 0%</span></h3>
+            <div className="OL-Boxas-Top">
+              <h3>
+                Decision <span>Progress: 0%</span>
+              </h3>
               <p>Final decisions will be made and communicated once previous stages are complete.</p>
             </div>
-            <div className='OL-Boxas-Body'></div>
+            <div className="OL-Boxas-Body"></div>
           </motion.div>
         )}
       </div>
