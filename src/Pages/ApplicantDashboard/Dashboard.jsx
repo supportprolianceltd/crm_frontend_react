@@ -15,6 +15,7 @@ import { CheckIcon } from '@heroicons/react/24/solid';
 import './Dashboard.css';
 import DailySchedule from './ScheduleTable';
 import ComplianceCheckTable from './ComplianceCheckTable';
+import JobDecision from './JobDecision';
 
 // CountUp component
 const CountUp = ({ end, duration = 1000 }) => {
@@ -651,13 +652,14 @@ const Dashboard = () => {
             initial="hidden"
             animate="visible"
           >
-            <div className="OL-Boxas-Top">
+            <div className="OL-Boxas-Top ooik-PPOla LLok-PPola">
               <h3>
                 Decision <span>Progress: 0%</span>
               </h3>
-              <p>Final decisions will be made and communicated once previous stages are complete.</p>
             </div>
-            <div className="OL-Boxas-Body"></div>
+            <div className="OL-Boxas-Body">
+              <JobDecision />
+            </div>
           </motion.div>
         )}
       </div>

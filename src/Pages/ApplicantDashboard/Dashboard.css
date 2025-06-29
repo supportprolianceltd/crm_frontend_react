@@ -335,6 +335,10 @@ color: #7226FF !important;
     padding-bottom: 10px !important;
 }
 
+.LLok-PPola{
+    padding-bottom: 5px !important;
+}
+
 .OL-Boxas-Top h3{
     position: relative;
     width: 100%;
@@ -657,4 +661,119 @@ color: #7226FF !important;
 
 
 
+
+
+
+
+
+
+
+
+/* job-decision-wrapper */
+
+
+.job-decision-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  width: 100%;
+}
+
+.job-decision-box {
+  padding: 30px;
+  border-radius: 10px;
+  max-width: 600px;
+  width: 100%;
+  position: relative;
+  /* border: 1px solid #e2e8f0; */
+}
+
+.job-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+.job-status {
+  font-size: 15px;
+  margin-bottom: 20px;
+}
+
+.status-hired {
+  color: #007b5e;
+  font-weight: 700;
+  background-color: #e6ffed;
+  padding: 5px 10px;
+  border-radius: 8px;
+}
+
+.job-details p {
+  margin: 6px 0;
+  color: #453a61;
+  font-size: 14px;
+}
+
+.job-details p strong{
+    font-weight: 600;
+}
+
+.congrats-message {
+  margin-top: 30px;
+  padding: 20px;
+  background-color: #ebe6ff;
+  border-left: 5px solid #7226FF;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.congrats-message h3 {
+  color: #7226FF;
+  margin-bottom: 10px;
+  font-size: 18px;
+  font-weight:700;
+}
+
+
+.dashboard-button {
+  margin-top: 30px;
+  padding: 12px 24px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  width: 100%;
+  border-radius: 30px;
+}
+
+
+.job-progress-summary{
+    position: relative;
+    margin-top: 20px;
+}
+.job-progress-summary h4{
+    font-size: 16px;
+    font-weight: 600;
+}
+.checklist {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+}
+
+.checklist li {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  font-size: 14px;
+  color: #453a61;
+}
+
+.check-icon {
+  width: 15px;
+  color: #7226FF;
+  margin-right: 0.5rem;
+}
 
