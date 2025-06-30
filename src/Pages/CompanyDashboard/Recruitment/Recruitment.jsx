@@ -11,6 +11,8 @@ import ScheduleList from './ScheduleList';
 import APISettings from './APISettings';
 import EmailSettings from './EmailSettings';
 import RecycleBin from './RecycleBin';
+import ComplianceCheckPage from './ComplianceCheckPage';
+
 
 
 // class ErrorBoundary extends React.Component {
@@ -58,6 +60,7 @@ const Recruitment = () => {
             <Route path="/api-settings" element={<APISettings />} />
             <Route path="/email-configuration" element={<EmailSettings />} />
             <Route path="/recycle-bin" element={<RecycleBin />} />
+            <Route path="/compliance" element={<ComplianceCheckPage />} />
           </Routes>
         </div>
       </div>

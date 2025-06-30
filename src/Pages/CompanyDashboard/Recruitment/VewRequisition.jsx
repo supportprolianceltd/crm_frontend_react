@@ -621,6 +621,7 @@ useEffect(() => {
     exit: { opacity: 0, x: 20, transition: { duration: 0.2 } },
   };
 
+  
   return (
     <div className='VewRequisition'>
       <AnimatePresence>

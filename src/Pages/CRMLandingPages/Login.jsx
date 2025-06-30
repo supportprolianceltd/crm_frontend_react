@@ -300,7 +300,7 @@ const Login = () => {
 
         <div className="Reg-Foot">
           <Link to="/terms">Terms of Use</Link>
-          <Link to="/privacy-policy">Permissions</Link>
+          <Link to="/privacy-policy">Privacy Policy</Link>
         </div>
       </form>
     </div>

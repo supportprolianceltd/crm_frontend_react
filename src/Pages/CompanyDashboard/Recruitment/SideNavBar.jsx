@@ -215,7 +215,7 @@ const SideNavBar = ({ setShrinkNav }) => {
           />
           <MenuItem
             name="compliance"
-            label="Compliance Reports"
+            label="Compliance Check"
             OutlineIcon={ClipboardOutline}
             SolidIcon={ClipboardSolid}
             to={`${basePath}/compliance`}
