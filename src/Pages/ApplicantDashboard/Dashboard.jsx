@@ -14,6 +14,7 @@ import DailySchedule from './ScheduleTable';
 import ComplianceCheckTable from './ComplianceCheckTable';
 import JobDecision from './JobDecision';
 import InterviewCalendar from './InterviewCalendar';
+import config from '../../config';
 
 // CircularProgress component
 const CircularProgress = ({ size = 70, strokeWidth = 6, percentage = 75, color = '#7226FF', number = 1, isActive }) => {
@@ -128,7 +129,7 @@ const Dashboard = () => {
     const fetchApplicationData = async () => {
       try {
         const response = await axios.get(
-          `http://127.0.0.1:9090/api/talent-engine-job-applications/applications/code/${job_application_code}/email/${email}/with-schedules/schedules/?unique_link=${unique_link}`
+          `${config.API_BASE_URL}/api/talent-engine-job-applications/applications/code/${job_application_code}/email/${email}/with-schedules/schedules/?unique_link=${unique_link}`
         );
         setData(response.data);
         setLoading(false);
