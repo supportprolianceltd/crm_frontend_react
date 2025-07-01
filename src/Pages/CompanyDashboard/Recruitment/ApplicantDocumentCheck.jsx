@@ -59,18 +59,18 @@ import { pdf, Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer
     header: {
       marginBottom: 20,
       paddingBottom: 15,
-      borderBottom: '1px solid #1e3a8a'
+      borderBottom: '1px solid #7226FF'
     },
     title: {
       fontSize: 24,
       fontWeight: 'bold',
-      color: '#1e3a8a',
+      color: '#372580',
       textAlign: 'center',
       marginBottom: 5
     },
     subtitle: {
       fontSize: 12,
-      color: '#6b7280',
+      color: '#372580',
       textAlign: 'center',
       marginBottom: 15
     },
@@ -80,7 +80,7 @@ import { pdf, Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer
     sectionHeader: {
       fontSize: 16,
       fontWeight: 'bold',
-      color: '#1e3a8a',
+      color: '#372580',
       marginBottom: 10,
       paddingBottom: 3,
       borderBottom: '1px solid #e5e7eb'
@@ -100,16 +100,16 @@ import { pdf, Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer
       fontSize: 11
     },
     summaryBox: {
-      backgroundColor: '#f0f7ff',
+      backgroundColor: '#f7f5ff',
       padding: 15,
       borderRadius: 5,
-      borderLeft: '4px solid #1e3a8a',
+      borderLeft: '4px solid #7226FF',
       marginBottom: 20
     },
     summaryTitle: {
       fontSize: 14,
       fontWeight: 'bold',
-      color: '#1e3a8a',
+      color: '#372580',
       marginBottom: 5
     },
     summaryStatus: {
@@ -121,10 +121,10 @@ import { pdf, Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer
     complianceScore: {
       fontSize: 14,
       fontWeight: 'bold',
-      color: '#1e3a8a',
+      color: '#372580',
       marginTop: 10,
       textAlign: 'center',
-      backgroundColor: '#f0f7ff',
+      backgroundColor: '#ebe6ff',
       padding: 8,
       borderRadius: 4
     },
@@ -147,7 +147,7 @@ import { pdf, Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer
       width: 30,
       fontSize: 10,
       fontWeight: 'bold',
-      color: '#16a34a',
+      color: '#7226FF',
       marginRight: 5,
       textAlign: 'right'
     },
@@ -171,7 +171,7 @@ import { pdf, Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer
     },
     footerText: {
       fontSize: 8,
-      color: '#6b7280',
+      color: '#372580',
       marginTop: 3
     },
     signatureArea: {
@@ -238,8 +238,8 @@ import { pdf, Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer
             </View>
             
             <View style={styles.grid}>
+            <Text style={styles.gridLabel}>Applicat  Name:</Text>
               <Text style={styles.gridValue}>{applicant?.name || 'Emma Johnson'}</Text>
-              <Text style={styles.gridValue}>{applicant?.dateApplied || '06-30-2025'}</Text>
             </View>
             
             <View style={styles.grid}>
