@@ -179,10 +179,6 @@ const JobAdvert = () => {
         const response = await fetchAllRequisitions();
         const publishedJobs = response
 
-        // console.log("publishedJobs")
-        // console.log(publishedJobs)
-        // console.log("publishedJobs")
-
           .filter((job) => job.publish_status === true)
           .map((job) => ({
 
@@ -207,6 +203,7 @@ const JobAdvert = () => {
             experience_requirement: job.experience_requirement || 'N/A',
             knowledge_requirement: job.knowledge_requirement || 'N/A',
             reason: job.reason || 'N/A',
+            job_application_code: job.job_application_code || 'N/A',
             responsibilities: job.responsibilities || 'N/A',
             start_date: job.start_date || 'N/A',
             documents_required: job.documents_required || [],
@@ -215,6 +212,7 @@ const JobAdvert = () => {
             requested_date: job.requested_date || [],
           }));
         setJobData(publishedJobs);
+
             // console.log("publishedJobs")
             // console.log(publishedJobs)
             // console.log("publishedJobs")
@@ -263,6 +261,10 @@ const JobAdvert = () => {
 
     return matchesSearch && matchesStatus;
   });
+
+  // console.log("filteredJobs")
+  // console.log(filteredJobs)
+  // console.log("filteredJobs")
 
   const totalPages = Math.ceil(filteredJobs.length / rowsPerPage);
   const startIdx = (currentPage - 1) * rowsPerPage;
@@ -487,7 +489,7 @@ const JobAdvert = () => {
                         onChange={() => handleCheckboxChange(job.id)}
                       />
                     </td>
-                    <td>{job.id}</td>
+                    <td>{job.job_application_code}</td>
                     <td>{job.title}</td>
                     <td>{job.jobType}</td>
                     <td>{job.location}</td>

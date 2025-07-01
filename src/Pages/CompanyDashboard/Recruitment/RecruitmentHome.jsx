@@ -333,12 +333,39 @@ const RecruitmentHome = () => {
         role: roleFilter !== 'All' ? roleFilter.toLowerCase() : undefined,
       };
       const response = await fetchAllRequisitions(params);
-      const normalizedData = response.map((job) => ({
-        ...job,
-        requestedDate: job.requested_date,
-        requestedBy: job.requested_by,
-      }));
-      normalizedData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+      // Log response for debugging
+     // console.log("fetchAllRequisitions response:", response, typeof response);
+
+      // Ensure response is an array
+      let normalizedData = [];
+      if (Array.isArray(response)) {
+        normalizedData = response;
+      } else if (response && Array.isArray(response.results)) {
+        normalizedData = response.results;
+      } else if (response && response.detail) {
+        // Handle API error response
+        setErrorMessage(response.detail || 'Invalid response format from API');
+        normalizedData = [];
+      } else if (!response || response === '') {
+        // Handle null, undefined, or empty string as empty response
+        normalizedData = [];
+      } else {
+        // Handle unexpected types (e.g., string, number, object without results)
+        setErrorMessage(`Unexpected response format: ${typeof response} received`);
+        normalizedData = [];
+      }
+
+      // Map the data if not empty
+      if (normalizedData.length > 0) {
+        normalizedData = normalizedData.map((job) => ({
+          ...job,
+          requestedDate: job.requested_date,
+          requestedBy: job.requested_by,
+        }));
+        normalizedData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      }
+
       setJobData(normalizedData);
       setCardStats({
         total: normalizedData.length,
@@ -346,10 +373,15 @@ const RecruitmentHome = () => {
         pending: normalizedData.filter((job) => job.status === 'pending').length,
         closed: normalizedData.filter((job) => job.status === 'closed').length,
       });
-      setErrorMessage('');
+      // Only clear errorMessage if no error was set above
+      if (normalizedData.length > 0 && errorMessage) {
+        setErrorMessage('');
+      }
     } catch (error) {
-      setErrorMessage(error.message);
+      const errorMsg = error.message || 'Failed to fetch job requisitions';
+      setErrorMessage(errorMsg);
       console.error('Error fetching jobs:', error);
+      setJobData([]);
     } finally {
       setIsLoading(false);
     }
@@ -374,8 +406,8 @@ const RecruitmentHome = () => {
 
   useEffect(() => {
     const maxPage = Math.ceil(filteredJobs.length / rowsPerPage);
-    if (currentPage > maxPage) {
-      setCurrentPage(maxPage || 1);
+    if (currentPage > maxPage && maxPage > 0) {
+      setCurrentPage(maxPage);
     }
   }, [rowsPerPage, filteredJobs.length, currentPage]);
 
@@ -424,7 +456,7 @@ const RecruitmentHome = () => {
       setErrorMessage('');
     } catch (error) {
       setShowConfirmDelete(false);
-      setErrorMessage(error.message);
+      setErrorMessage(error.message || 'Failed to soft delete requisitions');
       console.error('Error soft deleting requisitions:', error);
     }
   };
@@ -434,10 +466,6 @@ const RecruitmentHome = () => {
   };
 
   const handleViewClick = (job) => {
-
-    // console.log("JOB")
-    // console.log(job)
-    // console.log("JOB")
     setSelectedJob(job);
     setShowViewRequisition(true);
   };
@@ -682,7 +710,7 @@ const RecruitmentHome = () => {
                           onChange={() => handleCheckboxChange(job.id)}
                         />
                       </td>
-                      <td>{job.id}</td>
+                      <td>{job.job_requisition_code}</td>
                       <td>{job.title}</td>
                       <td>
                         <span className={`status ${job.status.toLowerCase()}`}>{job.status}</span>
