@@ -417,13 +417,6 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
                     onClick={handleCancelInitiate}
                     disabled={isCancelling || isCompleting || isSaving}
                     className="btn-cancel-bg"
-                    style={{
-                      cursor: 'pointer',
-                      backgroundColor: '#dc2626',
-                      color: '#fff',
-                      padding: '0.5rem 1rem',
-                      borderRadius: '4px',
-                    }}
                   >
                     {isCancelling ? (
                       <>
@@ -451,13 +444,6 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
                     onClick={handleCompleteSchedule}
                     disabled={isCompleting || isCancelling || isSaving}
                     className="btn-complete-bg"
-                    style={{
-                      cursor: 'pointer',
-                      backgroundColor: '#15803d',
-                      color: '#fff',
-                      padding: '0.5rem 1rem',
-                      borderRadius: '4px',
-                    }}
                   >
                     {isCompleting ? (
                       <>
@@ -667,12 +653,6 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
                 <button
                   onClick={onClose}
                   className="CLCLCjm-BNtn"
-                  style={{
-                    padding: '0.5rem 1rem',
-                    borderRadius: '4px',
-                    background: '#d1d5db',
-                    color: '#111827',
-                  }}
                 >
                   Close
                 </button>
@@ -682,10 +662,6 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
                     disabled={isSaving || isCompleting || isCancelling}
                     className="btn-primary-bg"
                     style={{
-                      padding: '0.5rem 1rem',
-                      borderRadius: '4px',
-                      background: '#2563eb',
-                      color: '#fff',
                       cursor: (isSaving || isCompleting || isCancelling) ? 'not-allowed' : 'pointer',
                     }}
                   >
@@ -1051,22 +1027,18 @@ const ScheduleList = () => {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr>
-                  <td colSpan="8" style={{ textAlign: 'center', padding: '20px' }}>
-                    <motion.div
-                      initial={{ rotate: 0 }}
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                      style={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: '50%',
-                        border: '4px solid rgba(114, 38, 255, 0.3)',
-                        borderTopColor: '#7226FF',
-                        margin: '0 auto',
-                      }}
-                    />
-                    <p style={{ marginTop: '10px', color: '#666' }}>Loading schedules...</p>
+               <tr>
+                  <td colSpan={9} style={{ textAlign: 'center', padding: '20px', fontStyle: 'italic' }}>
+                    <ul className="tab-Loadding-AniMMA">
+                      <li></li>
+                      <li></li>
+                      <li></li>
+                      <li></li>
+                      <li></li>
+                      <li></li>
+                      <li></li>
+                      <li></li>
+                    </ul>
                   </td>
                 </tr>
               ) : currentSchedules.length === 0 ? (
@@ -1133,12 +1105,6 @@ const ScheduleList = () => {
                           className="view-btn btn-primary-bg"
                           onClick={() => handleViewSchedule(item)}
                           disabled={isLoading}
-                          style={{
-                            padding: '0.5rem 1rem',
-                            borderRadius: '4px',
-                            background: '#2563eb',
-                            color: '#fff',
-                          }}
                         >
                           View Schedule
                         </button>

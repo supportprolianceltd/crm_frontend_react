@@ -253,7 +253,7 @@
     align-items: center;
     gap: 10px;
 }
-.filter-dropdowns select{
+.filter-select{
     position: relative;
     width: 200px;
     height: 40px;
@@ -263,7 +263,7 @@
     font-size: 12px;
     border: 1px solid #e3defc;
 }
-.filter-dropdowns select:focus{
+.filter-select:focus{
     border: 2px solid #cfb8fa !important;
     background-color: #fff;
 }
@@ -3773,12 +3773,12 @@ background: linear-gradient(135deg, #FF6FD8 0%, #FF42A1 50%, #FF9770 100%) !impo
 }
 
 .btn-cancel-bg{
-     color: #d32e2e !important;
+     color: #bf2323 !important;
     background-color: #fff2f2 !important;
     border-color: #fccaca !important;
 }
 .btn-complete-bg{
-      color: #199534 !important;
+      color: #0f7225 !important;
     background-color: #edfef0  !important;
     border-color: #b0febe !important;
 }

@@ -1,0 +1,316 @@
+/* ComplianceCheckPage */
+.ComplianceCheckPage{
+    position: relative;
+    width: 100%;
+    height: auto;
+}
+.ComplianceCheckPage-TOop{
+    position: relative;
+    width: 100%;
+    height: auto;
+    margin-top: 15px;
+    padding: 10px 20px;
+    background:#ebe6ff;
+    border-radius: 10px;
+}
+
+.ComplianceCheckPage-TOop-Grid{
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.ComplianceCheckPage-TOop-1{
+    position: relative;
+}
+
+.ComplianceCheckPage-TOop-1 h2{
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.ComplianceCheckPage-TOop-2{
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ComplianceCheckPage-TOop-2 h4{
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.ComplianceCheckPage-TOop-2 select{
+    color: #372580 !important;
+    height: 35px !important;
+}
+
+
+/* Uijauj-UUplao */
+
+.Uijauj-UUplao{
+    position: relative;
+    width: 100%;
+    height: auto;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.Uijauj-UUplao ul{
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.Uijauj-UUplao ul li{
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    font-size: 11px;
+}
+.Uijauj-UUplao li span{
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 15px;
+    background-color: rgba(255,255,255,0.3);
+    border-radius: 30px;
+    border: 1px solid rgba(255,255,255,0.7);
+}
+.Uijauj-UUplao li span svg{
+    width: 17px;
+}
+
+.Uijauj-UUplao p{
+    font-size: 10px;
+}
+
+.Uijauj-UUplao p span{
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 7px;
+    border-radius: 30px;
+    border: 1px solid #7226FF;
+    font-weight: 500;
+    color: #7226FF;
+}
+
+.OUkas-POka{
+    position: relative;
+    width: 100%;
+    height: auto;
+    margin-top: 20px;
+    border-top: 1px solid #ddd5f7;;
+    padding-top: 10px;
+}
+
+.OUkas-POka h2{
+    font-size: 23px;
+    font-weight: 600;
+    margin-bottom: 3px;
+}
+.OUkas-POka h2 a{
+    color: #7226FF;
+}
+.OUkas-POka h2 a:hover{
+    text-decoration: underline;
+}
+.OUkas-POka p{
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.OUkas-POka p b{
+    font-weight: 600;
+}
+
+.OUkas-POka p svg{
+    width:13px;
+}
+
+
+/* dOikpO-PPol */
+
+.dOikpO-PPol{
+    background-color: transparent !important;
+    border: none !important;
+    border-radius: 0px !important;
+    padding: 0px !important;
+}
+
+
+/* ouk0UUJal-POl */
+
+.ouk0UUJal-POl{
+    display: flex !important;
+    align-items: center !important;
+    gap: 5px;
+}
+.ouk0UUJal-POl svg{
+    width: 14px;
+}
+.ouk0UUJal-POl p{
+    line-height: 100% !important;
+}
+
+.ouka-OpOl{
+    padding: 12px 15px;
+    border-radius: 10px;
+    background-color: #fff;
+    border: 1px solid #eeeafa;;
+}
+
+.OILUJ-Pla{
+    margin-top: 10px !important;
+}
+.oluja-PPPl{
+  margin-top: 10px !important;  
+}
+
+
+
+
+
+
+
+
+/* DocComplianceCheck */
+.DocComplianceCheck{
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 3000;
+}
+
+.DocComplianceCheck-Bodddy{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: -1000;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+
+
+
+.DocComplianceCheck-btn{
+    position:absolute;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    transition: all 0.3s ease-in-out;
+    background-color: transparent;
+    user-select: none;
+    cursor: pointer;
+    right: 15px;
+    top: 10px;
+    z-index: 100;
+}
+.DocComplianceCheck-btn svg{
+    width: 65%;
+}
+
+.DocComplianceCheck-btn:hover{
+     background-color: #f4f1ff;
+}
+
+
+.DocComplianceCheck-Main{
+    position: absolute;
+    width: 90%;
+    height: 100%;
+    top: 0;
+    right: 0;
+    background-color: #fff;
+    display: grid;
+    grid-template-columns: 1fr 0.5fr;
+}
+
+.DocComplianceCheck-Part{
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-left: 1px solid #e3defc;
+}
+
+.DocComplianceCheck-Part:first-child{
+    border-left: none;
+}
+
+
+
+
+
+
+.DocComplianceCheck-Part-Top{
+    position: relative;
+    width: 100%;
+    height: auto;
+    padding:0px 20px;
+    border-bottom: 1px solid #e3defc;
+    height: 50px;
+    display: flex;
+    align-items: center;
+}
+
+.DocComplianceCheck-Part-Top h3{
+    font-size: 14px;
+    font-weight: 600;
+}
+
+
+
+/* PPPOl-Seacs */
+
+.PPPOl-Seacs{
+    position: relative;
+    width: 100%;
+    height: auto;
+    padding: 10px 20px;
+    background-color: #ebe6ff;
+}
+.PPPOl-Seacs ul{
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.PPPOl-Seacs ul li{
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.PPPOl-Seacs ul li span{
+    font-size: 10px;
+    font-weight: 400;
+    padding: 5px 10px;
+    border-radius: 30px;
+    background-color: rgba(255,255,255,0.5);
+    border: 1px solid #fff;
+}
