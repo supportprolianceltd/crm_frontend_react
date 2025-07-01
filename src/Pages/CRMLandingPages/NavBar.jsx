@@ -134,7 +134,7 @@ function NavBar() {
               )}
             </li>
           </ul>
-
+{/* 
           <div
             className='AAPpl-NAvsb'
             onClick={toggleProfileDropdown}
@@ -178,7 +178,7 @@ function NavBar() {
                 </motion.div>
               )}
             </AnimatePresence>
-          </div>
+          </div> */}
         </div>
       </div>
     </nav>

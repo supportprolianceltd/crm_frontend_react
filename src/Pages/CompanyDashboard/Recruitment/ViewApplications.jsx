@@ -657,11 +657,11 @@ const ViewApplications = () => {
                           onChange={() => handleCheckboxChange(applicant.id)}
                         />
                       </td>
-                      <td>
+                      <td className='POL-SPPAN'>
                         {applicant.name}
                         {applicant.employment_gaps.length > 0 && (
-                          <span className="gap-badge" title="Employment gap detected">GAP DEY
-                            {/* <svg
+                          <span className="gap-badge" title="Employment gap detected">
+                            <svg
                               className="w-4 h-4 inline ml-1 text-yellow-500"
                               fill="none"
                               stroke="currentColor"
@@ -674,7 +674,8 @@ const ViewApplications = () => {
                                 strokeWidth="2"
                                 d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                               />
-                            </svg> */}
+                            </svg>
+                            GAP
                           </span>
                         )}
                       </td>

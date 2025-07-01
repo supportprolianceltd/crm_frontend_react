@@ -15,7 +15,6 @@
 }
 
 .AAPpl-NAvsb{
-    display: none;
     position: relative;
 }
 
@@ -777,3 +776,11 @@ color: #7226FF !important;
   margin-right: 0.5rem;
 }
 
+/* Add to existing Dashboard.css */
+.status-shortlisted {
+  color: #e5ad2b;
+  font-weight: 700;
+  background-color: #f9f1df;
+  padding: 5px 10px;
+  border-radius: 8px;
+}
