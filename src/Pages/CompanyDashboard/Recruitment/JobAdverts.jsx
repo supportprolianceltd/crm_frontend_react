@@ -390,7 +390,7 @@ const JobAdvert = () => {
       <div className="Dash-OO-Boas Gen-Boxshadow">
         <div className="Dash-OO-Boas-Top">
           <div className="Dash-OO-Boas-Top-1">
-            <span onClick={toggleSection}>
+            <span onClick={toggleSection} title='Filter'>
               <AdjustmentsHorizontalIcon />
             </span>
             <h3>Job Advertisements</h3>

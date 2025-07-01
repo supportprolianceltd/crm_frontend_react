@@ -1,7 +1,7 @@
 import React from 'react';
 import './ComplianceCheckPage.css';
 import { UserGroupIcon } from '@heroicons/react/24/solid';
-import { InformationCircleIcon } from '@heroicons/react/24/outline';
+import { InformationCircleIcon, HandThumbUpIcon } from '@heroicons/react/24/outline';
 import ApplicantTable from './ApplicantTable';
 import { Link } from 'react-router-dom';
 
@@ -46,11 +46,11 @@ const ComplianceCheckPage = () => {
                 <li><span>Status: Active</span></li>
             </ul>
 
-            <p>Total file size: <span>0MB</span></p>
+            <button className='Deecc-NNBYna'><HandThumbUpIcon /> Make Decision</button>
             
         </div>
         <div className='OUkas-POka'>
-          <h2><Link to='/jobs/'>Frontend Developer </Link></h2>
+          <h2><Link to='/jobs/' title='View Job'>Frontend Developer </Link></h2>
           <p><InformationCircleIcon /> Last complaince check is <b>June 26, Thursday 2025</b> by <b> Mr. Prince Godson</b></p>
         </div>
     </div>

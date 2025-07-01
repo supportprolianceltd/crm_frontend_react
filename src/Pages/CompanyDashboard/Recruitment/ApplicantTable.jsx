@@ -3,14 +3,15 @@ import { motion } from 'framer-motion';
 import {
   MagnifyingGlassIcon,
   DocumentTextIcon,
-  EyeIcon,
   CheckCircleIcon,
   TrashIcon,
   ChevronLeftIcon,
-  ChevronRightIcon
+  ChevronRightIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 
 import ApplicantDocumentCheck from './ApplicantDocumentCheck';
+import SampleCV from '../../../assets/resume.pdf';
 
 const generateMockApplicants = () => {
   const applicants = [];
@@ -49,6 +50,12 @@ const ApplicantTable = () => {
   const [selectedJob, setSelectedJob] = useState(null);
   const masterCheckboxRef = useRef(null);
 
+  // Track two applicants (by ID) to show danger icon
+  const checkedWithWarningIds = applicants
+    .filter(app => app.status === 'Checked')
+    .slice(0, 2)
+    .map(app => app.id);
+
   const handleViewClick = (job) => {
     setSelectedJob(job);
     setShowApplicantDocumentCheck(true);
@@ -59,12 +66,10 @@ const ApplicantTable = () => {
     setSelectedJob(null);
   };
 
-  const filteredApplicants = applicants.filter((applicant) => {
-    return (
-      applicant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      applicant.id.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  });
+  const filteredApplicants = applicants.filter((applicant) =>
+    applicant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    applicant.id.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const totalPages = Math.ceil(filteredApplicants.length / rowsPerPage);
   const startIndex = (currentPage - 1) * rowsPerPage;
@@ -140,13 +145,14 @@ const ApplicantTable = () => {
                 <th>Submitted Documents</th>
                 <th>Total File Size</th>
                 <th>Status</th>
+                <th>Compliance Report</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {currentApplicants.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-4 italic">
+                  <td colSpan={8} className="text-center py-4 italic">
                     No matching applicants found
                   </td>
                 </tr>
@@ -170,19 +176,40 @@ const ApplicantTable = () => {
                     </td>
                     <td>{applicant.totalFileSize}</td>
                     <td>
-                      <span className={`status ${applicant.status.toLowerCase()} haggsb-status`}>
+                      <div className='oaiks-OOikakushj'>
+                      <span className={`status ${applicant.status.toLowerCase()} haggsb-status ${applicant.status === 'Checked' ? 'status-padge completed' : ''}`}>
                         {applicant.status}
                       </span>
+                      {checkedWithWarningIds.includes(applicant.id) && (
+                        <ExclamationTriangleIcon className="Warrri-Iocn" title='Rejected file(s)' />
+                      )}
+                      </div>
+                    </td>
+                    <td>
+                      {applicant.status === 'Checked' ? (
+                        <div className="gen-td-btns">
+                          <a
+                            href={SampleCV}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="view-btn inline-flex items-center"
+                          >
+                            <DocumentTextIcon className="h-5 w-5 mr-1" />
+                            View Report
+                          </a>
+                        </div>
+                      ) : (
+                        <span>—</span>
+                      )}
                     </td>
                     <td>
                       <div className="gen-td-btns">
-                        <button className="view-btn" onClick={() => handleViewClick(applicant)}>
+                        <button
+                          className="link-btn btn-primary-bg"
+                          onClick={() => handleViewClick(applicant)}
+                        >
                           <CheckCircleIcon className="h-5 w-5 mr-1" />
                           Check Documents
-                        </button>
-                        <button className="link-btn btn-primary-bg">
-                          <CheckCircleIcon className="h-5 w-5 mr-1" />
-                          Make Decision
                         </button>
                       </div>
                     </td>
@@ -249,13 +276,12 @@ const ApplicantTable = () => {
         )}
       </div>
 
-      {/* ✅ Show Document Check Section */}
       {showApplicantDocumentCheck && selectedJob && (
-      <ApplicantDocumentCheck 
-        applicant={selectedJob}  // Changed prop name to "applicant"
-        onHide={handleHideApplicantDocumentCheck}  // Changed prop name to "onHide"
-      />
-    )}
+        <ApplicantDocumentCheck 
+          applicant={selectedJob}
+          onHide={handleHideApplicantDocumentCheck}
+        />
+      )}
     </div>
   );
 };

@@ -604,7 +604,7 @@ const RecruitmentHome = () => {
         <div className="Dash-OO-Boas Gen-Boxshadow">
           <div className="Dash-OO-Boas-Top">
             <div className="Dash-OO-Boas-Top-1">
-              <span onClick={toggleSection}>
+              <span onClick={toggleSection} title='Filter'>
                 <AdjustmentsHorizontalIcon className="w-6 h-6" />
               </span>
               <h3>Job Requisitions</h3>
