@@ -46,12 +46,6 @@ const JobDetails = ({ job, onClose, onShowEditRequisition }) => {
   const [jobDetails, setJobDetails] = useState(null);
   const [alertModal, setAlertModal] = useState(null);
 
-
-  // console.log("job")
-  // console.log(job)
-  // console.log("job")
-
-
   // Format date for display
   const formatDate = (dateString) => {
     if (!dateString) return 'Not Specified';
@@ -106,7 +100,6 @@ const JobDetails = ({ job, onClose, onShowEditRequisition }) => {
     ));
   };
 
-
   // console.log("displayJob")
   // console.log(displayJob)
   // console.log("displayJob")
@@ -141,7 +134,7 @@ const JobDetails = ({ job, onClose, onShowEditRequisition }) => {
               {displayJob.advert_banner ? (
                 <div className="advert-banner">
                   <img
-                    src={`${config.API_BASE_URL}${displayJob.advert_banner}`}
+                    src={`${displayJob.advert_banner}`}
                     alt="Job Advert Banner"
                     className="w-full h-auto object-cover rounded-md mb-4"
                     onError={(e) => (e.target.src = AdvertBanner)} // Fallback if image fails

@@ -1038,13 +1038,6 @@
 
 
 
-
-
-
-
-
-
-
 import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import usePageTitle from '../../hooks/usePageTitle';
@@ -1145,6 +1138,8 @@ function JobApplication() {
           company_address: data.company_address,
           company_web_address: data.tenant_domain,
           salary_range: data.salary_range,
+          job_application_code: data.job_application_code,
+          advert_banner: data.advert_banner,
           job_description: data.job_description,
           qualification_requirement: data.qualification_requirement,
           experience_requirement: data.experience_requirement,
@@ -1213,7 +1208,6 @@ function JobApplication() {
       type: selectedResumeType,
     });
 
-    // Parse resume to autofill form fields
     try {
       const formDataToSend = new FormData();
       formDataToSend.append('resume', file);
@@ -1327,7 +1321,7 @@ function JobApplication() {
       return;
     }
 
-    const requiredFields = ['fullName', 'email', 'confirmEmail', 'phone', 'date_of_birth', 'qualification', 'experience'];
+    const requiredFields = ['fullName', 'email', 'confirmEmail', 'phone', 'qualification', 'experience'];
     const isFormValid = requiredFields.every((field) => formData[field].trim() !== '');
     const isResumeUploaded = activeTab === 'noresume' || !!uploadedFile;
 
@@ -1341,7 +1335,7 @@ function JobApplication() {
 
     if (!isFormValid) {
       setErrorMessage(
-        'Please fill all required fields: Full Name, Email, Phone, Date of Birth, Qualification, and Experience.'
+        'Please fill all required fields: Full Name, Email, Phone, Qualification, and Experience.'
       );
       return;
     }
@@ -1365,6 +1359,21 @@ function JobApplication() {
       return;
     }
 
+    // Validate date_of_birth format
+    if (formData.date_of_birth) {
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      if (!dateRegex.test(formData.date_of_birth)) {
+        setErrorMessage('Date of Birth must be in YYYY-MM-DD format (e.g., 2025-07-01).');
+        return;
+      }
+      // Optionally, validate if the date is valid
+      const date = new Date(formData.date_of_birth);
+      if (isNaN(date.getTime())) {
+        setErrorMessage('Invalid Date of Birth. Please select a valid date.');
+        return;
+      }
+    }
+
     setErrorMessage('');
     setIsSubmitting(true);
 
@@ -1375,7 +1384,10 @@ function JobApplication() {
       formDataToSend.append('full_name', formData.fullName);
       formDataToSend.append('email', formData.email);
       formDataToSend.append('phone', formData.phone);
-      formDataToSend.append('date_of_birth', formData.date_of_birth);
+      // Only append date_of_birth if it exists and is valid
+      if (formData.date_of_birth) {
+        formDataToSend.append('date_of_birth', formData.date_of_birth);
+      }
       formDataToSend.append('qualification', formData.qualification);
       formDataToSend.append('experience', formData.experience);
       formDataToSend.append('knowledge_skill', formData.knowledgeSkill);
@@ -1446,6 +1458,8 @@ function JobApplication() {
             })
             .join('; ');
           setErrorMessage(errorMessages || errorData.detail || 'Failed to submit application');
+        } else if (errorData.date_of_birth) {
+          setErrorMessage('Date of Birth must be in YYYY-MM-DD format or left empty.');
         } else {
           setErrorMessage(errorData.detail || 'Failed to submit application');
         }
@@ -1523,10 +1537,10 @@ function JobApplication() {
       <div className='gggyh-dalik'>
         <div className='large-container gggyh-dalik-main'>
           <Link to="/" className="Nav-Brand GUK-Loffoa">
-            <img src={LOGO} alt="logo" />
+            <img src={job.advert_banner} alt="logo" />
             <span>Jobs</span>
           </Link>
-          <h4><TagIcon /> #JOB ID: POL-00002</h4>
+          <h4><TagIcon /> {job.job_application_code}</h4>
         </div>
       </div>
       <header className="ool-Apply-Seco-header">
@@ -1637,7 +1651,6 @@ function JobApplication() {
                   </div>
                 ) : (
                   <>
-                  
                     <div className="gtht-secs-Part2-Box-Mainna">
                       {activeTab === 'upload' && (
                         <div className="cv-upload-sec">
@@ -1720,11 +1733,11 @@ function JobApplication() {
                             required: true,
                           },
                           {
-                            label: 'Date of Birth',
+                            label: 'Date of Birth (Optional)',
                             placeholder: 'Enter your date of birth',
                             name: 'date_of_birth',
                             type: 'date',
-                            required: true,
+                            required: false,
                           },
                           {
                             label: 'Qualification',

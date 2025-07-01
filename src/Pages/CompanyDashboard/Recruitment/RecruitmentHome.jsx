@@ -333,12 +333,19 @@ const RecruitmentHome = () => {
         role: roleFilter !== 'All' ? roleFilter.toLowerCase() : undefined,
       };
       const response = await fetchAllRequisitions(params);
+
+
+
       const normalizedData = response.map((job) => ({
         ...job,
         requestedDate: job.requested_date,
         requestedBy: job.requested_by,
       }));
       normalizedData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      // console.log("normalizedData")
+      // console.log(normalizedData)
+      // console.log("normalizedData")
+
       setJobData(normalizedData);
       setCardStats({
         total: normalizedData.length,
@@ -682,7 +689,7 @@ const RecruitmentHome = () => {
                           onChange={() => handleCheckboxChange(job.id)}
                         />
                       </td>
-                      <td>{job.id}</td>
+                      <td>{job.job_requisition_code}</td>
                       <td>{job.title}</td>
                       <td>
                         <span className={`status ${job.status.toLowerCase()}`}>{job.status}</span>

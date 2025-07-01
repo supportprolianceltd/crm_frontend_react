@@ -3,17 +3,9 @@ import { motion } from 'framer-motion';
 import { XMarkIcon, EyeIcon, TrashIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import PDFICON from '../../../assets/Img/pdf-icon.png';
 import config from '../../../config';
+
 const ApplicantDetails = ({ job, applicant, onClose, onStatusChange }) => {
-
-  // console.log("job")
-  // console.log(job)
-  // console.log("job")
-
-  // console.log("applicant")
-  // console.log(applicant)
-  // console.log("applicant")
   // Fallback if applicant or job data is missing
-
   if (!applicant || !job) {
     return (
       <div className="VewRequisition">
@@ -52,11 +44,9 @@ const ApplicantDetails = ({ job, applicant, onClose, onStatusChange }) => {
     cover_letter = 'No cover letter provided.',
     documents = [],
     screening_score = 0,
+    employment_gaps = [], // Add employment_gaps
+    date_of_birth = null, // Add date_of_birth
   } = applicant;
-
-  console.log("applicant")
-  console.log(applicant)
-  console.log("applicant")
 
   // Extract job fields with fallbacks
   const {
@@ -110,6 +100,9 @@ const ApplicantDetails = ({ job, applicant, onClose, onStatusChange }) => {
     });
   };
 
+  // Format date of birth
+  const formattedDateOfBirth = formatDate(date_of_birth);
+
   // Handle status change
   const handleStatusChange = (newStatus) => {
     onStatusChange(applicant.id, newStatus);
@@ -139,18 +132,13 @@ const ApplicantDetails = ({ job, applicant, onClose, onStatusChange }) => {
             <div className="preview-buttons">
               <div>
                 <a
-                  href={`${config.API_BASE_URL}/${applicant.resumeUrl}`}
+                  href={`${config.API_BASE_URL}/${resumeUrl}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="publish-btn btn-primary-bg"
-              >
-               <EyeIcon className="w-5 h-5 inline mr-1" /> View Resume
-              </a>
-
-
-                {/* <a href={resumeUrl} target="_blank" rel="noopener noreferrer" className="publish-btn btn-primary-bg">
+                >
                   <EyeIcon className="w-5 h-5 inline mr-1" /> View Resume
-                </a> */}
+                </a>
               </div>
               <div>
                 <button className="delete-btn" onClick={() => onStatusChange(applicant.id, 'Deleted')}>
@@ -165,12 +153,25 @@ const ApplicantDetails = ({ job, applicant, onClose, onStatusChange }) => {
                   <p><span>Full Name:</span> {name}</p>
                   <p><span>Email Address:</span> {email}</p>
                   <p><span>Phone Number:</span> {phone}</p>
-                  <p><span>Date of Birth:</span> Jun 26, 2025</p>
+                  <p><span>Date of Birth:</span> {formattedDateOfBirth}</p>
                   <p><span>Qualification:</span> {qualification}</p>
                   <p><span>Experience:</span> {experience}</p>
                   <p><span>Knowledge/Skill:</span> {knowledge_skill}</p>
                   <p><span>Screening Score:</span> {screening_score ? `${screening_score}%` : 'Not Screened'}</p>
                   <p><span>Application Date:</span> {dateApplied}</p>
+                  <p><span>Employment Gaps:</span> 
+                    {employment_gaps.length > 0 ? (
+                      <ul className="list-disc pl-5 mt-1">
+                        {employment_gaps.map((gap, index) => (
+                          <li key={index}>
+                            {gap.gap_start} to {gap.gap_end} ({gap.duration_months} months)
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      ' None detected'
+                    )}
+                  </p>
                 </div>
 
                 <div className="preview-section">
@@ -180,7 +181,7 @@ const ApplicantDetails = ({ job, applicant, onClose, onStatusChange }) => {
                   <p><span>Job Type:</span> {formattedJobType}</p>
                   <p><span>Company Address:</span> {company_address}</p>
                   <p><span>Salary Range:</span> {salary_range}</p>
-                  <p><span>Deadline Date:</span> {deadline_date}</p>
+                  <p><span>Deadline Date:</span> {formatDate(deadline_date)}</p>
                   <p><span>Start Date:</span> {formatDate(start_date)}</p>
                   <p><span>Requested By:</span> {`${requested_by.first_name} ${requested_by.last_name}`}</p>
                 </div>
@@ -190,30 +191,10 @@ const ApplicantDetails = ({ job, applicant, onClose, onStatusChange }) => {
                   <p>{job_description}</p>
                 </div>
 
-                {/* <div className="preview-section">
-                  <h3>Requirements</h3>
-                  <p><span>Qualification:</span> {qualification_requirement}</p>
-                  <p><span>Experience:</span> {experience_requirement}</p>
-                  <p><span>Knowledge:</span> {knowledge_requirement}</p>
-                </div> */}
-{/* 
-                <div className="preview-section">
-                  <h3>Responsibilities</h3>
-                  {responsibilities.length > 0 ? (
-                    <ul>
-                      {responsibilities.map((item, index) => (
-                        <li key={index}>{item}</li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p>No responsibilities listed.</p>
-                  )}
-                </div> */}
-
                 <div className="preview-section">
                   <h3>Documents Required</h3>
                   {documents_required.length > 0 ? (
-                    <ul>
+                    <ul className="list-disc pl-5">
                       {documents_required.map((doc, index) => (
                         <li key={index}>{doc}</li>
                       ))}
@@ -226,7 +207,7 @@ const ApplicantDetails = ({ job, applicant, onClose, onStatusChange }) => {
                 <div className="preview-section">
                   <h3>Compliance Checklist</h3>
                   {compliance_checklist.length > 0 ? (
-                    <ul>
+                    <ul className="list-disc pl-5">
                       {compliance_checklist.map((item, index) => (
                         <li key={index}>{item}</li>
                       ))}
@@ -280,7 +261,7 @@ const ApplicantDetails = ({ job, applicant, onClose, onStatusChange }) => {
                             </div>
                           </div>
                           <div className="Gtahy-SSa-2">
-                            <a href={doc.file_url || '#'} target="_blank" rel="noopener noreferrer">
+                            <a href={`${config.API_BASE_URL}/${doc.file_url}`} target="_blank" rel="noopener noreferrer">
                               <EyeIcon className="w-5 h-5" />
                             </a>
                           </div>
