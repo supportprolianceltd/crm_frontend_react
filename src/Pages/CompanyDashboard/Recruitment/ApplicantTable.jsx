@@ -44,6 +44,9 @@ const generateMockApplicants = () => {
 
 // Main ApplicantTable component
 const ApplicantTable = () => {
+
+  // console.log("YEAR HERE")
+
   // State declarations
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
