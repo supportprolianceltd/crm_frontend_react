@@ -332,7 +332,7 @@
 .haggsb-status svg{
     width: 10px;
 }
-
+.status.completed,
 .status.active,
 .status.hired,
 .status.open {
@@ -3576,7 +3576,8 @@ background: linear-gradient(135deg, #FF6FD8 0%, #FF42A1 50%, #FF9770 100%) !impo
 .oujka-Inpuauy{
       width: 100%;
   font-size: 14px;
-  border: 1.5px solid #dcdae3;
+  border: 1.5px solid  #e2e8f0;
+  /* #dcdae3 */
   outline: none;
   background: transparent;
   transition: border-color 0.3s;

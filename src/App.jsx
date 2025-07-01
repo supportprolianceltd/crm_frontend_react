@@ -7,6 +7,8 @@ import ScrollToTop from './assets/ScrollToTop';
 import JobApplication from './Pages/CRMLandingPages/JobApplication';
 import PrivateRoute from './PrivateRoute'; // Import the PrivateRoute component
 
+
+
 function App() {
   return (
     <div className='App'>
