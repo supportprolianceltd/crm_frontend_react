@@ -1,43 +1,19 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useParams, Link } from 'react-router-dom';
+import axios from 'axios';
+import CountUp from 'react-countup';
 import usePageTitle from '../../hooks/useMainPageTitle';
-import { Link } from 'react-router-dom';
-import SampleCV from '../../assets/resume.pdf';
 import {
   ChevronRightIcon,
-  ChevronDownIcon,
-  FolderIcon,
-  PlusCircleIcon,
-  Cog6ToothIcon,
+  CheckIcon,
   ClockIcon,
 } from '@heroicons/react/24/outline';
-import { CheckIcon } from '@heroicons/react/24/solid';
 import './Dashboard.css';
 import DailySchedule from './ScheduleTable';
 import ComplianceCheckTable from './ComplianceCheckTable';
 import JobDecision from './JobDecision';
-
-// CountUp component
-const CountUp = ({ end, duration = 1000 }) => {
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    let current = 0;
-    const increment = end / (duration / 16); // ~60fps
-    const counter = setInterval(() => {
-      current += increment;
-      if (current >= end) {
-        setCount(end);
-        clearInterval(counter);
-      } else {
-        setCount(Math.floor(current));
-      }
-    }, 16);
-    return () => clearInterval(counter);
-  }, [end, duration]);
-
-  return <span>{count}%</span>;
-};
+import InterviewCalendar from './InterviewCalendar';
 
 // CircularProgress component
 const CircularProgress = ({ size = 70, strokeWidth = 6, percentage = 75, color = '#7226FF', number = 1, isActive }) => {
@@ -84,10 +60,10 @@ const CircularProgress = ({ size = 70, strokeWidth = 6, percentage = 75, color =
 };
 
 // Alert component for Framer Motion
-const Alert = ({ message }) => {
+const Alert = ({ message, type = 'success' }) => {
   return (
     <motion.div
-      className="alert"
+      className={`alert alert-${type}`}
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 50 }}
@@ -96,7 +72,7 @@ const Alert = ({ message }) => {
         position: 'fixed',
         bottom: '20px',
         right: '20px',
-        backgroundColor: '#7226FF',
+        backgroundColor: type === 'success' ? '#7226FF' : '#f44336',
         color: 'white',
         padding: '12px 24px',
         borderRadius: '8px',
@@ -109,6 +85,12 @@ const Alert = ({ message }) => {
   );
 };
 
+// Animation variants for slide-down effect
+const slideDownVariants = {
+  hidden: { y: -5, opacity: 0 },
+  visible: { y: 0, opacity: 1, transition: { duration: 0.5, ease: 'easeOut' } },
+};
+
 const stepTitles = [
   'Job Application',
   'Document Uploads',
@@ -117,213 +99,97 @@ const stepTitles = [
   'Decision',
 ];
 
-const stepPercentages = [100, 100, 50, 0, 0];
-
-const documentList = [
-  {
-    id: 1,
-    type: 'CV',
-    name: 'Curriculum Vitae',
-    date: 'June 25, 2025',
-    format: 'PDF',
-    url: SampleCV,
-  },
-  {
-    id: 2,
-    type: 'Date of Birth',
-    name: 'Birth Certificate',
-    date: 'June 25, 2025',
-    format: 'JPG',
-    url: SampleCV,
-  },
-  {
-    id: 3,
-    type: 'Passport Photo',
-    name: 'Passport Image',
-    date: 'June 25, 2025',
-    format: 'PNG',
-    url: SampleCV,
-  },
-  {
-    id: 4,
-    type: 'National ID',
-    name: 'NIN Slip',
-    date: 'June 25, 2025',
-    format: 'PDF',
-    url: SampleCV,
-  },
-  {
-    id: 5,
-    type: 'Academic Transcript',
-    name: 'University Transcript',
-    date: 'June 25, 2025',
-    format: 'PDF',
-    url: SampleCV,
-  },
-];
-
-// Calendar Component
-const InterviewCalendar = ({ interviewDate }) => {
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState(interviewDate);
-
-  // Get current month and year
-  const month = currentDate.toLocaleString('default', { month: 'long' });
-  const year = currentDate.getFullYear();
-
-  // Get the first day of the month
-  const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-
-  // Get the last day of the month
-  const lastDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
-
-  // Get the last day of previous month
-  const lastDayOfPrevMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0);
-
-  // Generate days array including previous and next month days
-  const days = [];
-
-  // Previous month days
-  const prevMonthDays = firstDayOfMonth.getDay();
-  for (let i = prevMonthDays - 1; i >= 0; i--) {
-    const day = lastDayOfPrevMonth.getDate() - i;
-    days.push({
-      date: new Date(lastDayOfPrevMonth.getFullYear(), lastDayOfPrevMonth.getMonth(), day),
-      isCurrentMonth: false,
-    });
-  }
-
-  // Current month days
-  const daysInMonth = lastDayOfMonth.getDate();
-  for (let i = 1; i <= daysInMonth; i++) {
-    days.push({
-      date: new Date(currentDate.getFullYear(), currentDate.getMonth(), i),
-      isCurrentMonth: true,
-    });
-  }
-
-  // Next month days
-  const nextMonthDays = 42 - days.length;
-  for (let i = 1; i <= nextMonthDays; i++) {
-    days.push({
-      date: new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, i),
-      isCurrentMonth: false,
-    });
-  }
-
-  // Navigation functions
-  const prevMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
-  };
-
-  const nextMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
-  };
-
-  // Check if a date is the interview date
-  const isInterviewDate = (date) => {
-    return (
-      date.getDate() === interviewDate.getDate() &&
-      date.getMonth() === interviewDate.getMonth() &&
-      date.getFullYear() === interviewDate.getFullYear()
-    );
-  };
-
-  // Format time for display
-  const formatTime = (date) => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
-
-  return (
-    <div className="calendar-container">
-      <div className="calendar-header">
-        <button onClick={prevMonth}>&lt;</button>
-        <h3>{month} {year}</h3>
-        <button onClick={nextMonth}>&gt;</button>
-      </div>
-
-      <div className="calendar-weekdays">
-        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-          <div key={day} className="weekday">{day}</div>
-        ))}
-      </div>
-
-      <div className="calendar-days">
-        {days.map((dayObj, index) => {
-          const day = dayObj.date.getDate();
-          const isCurrentMonth = dayObj.isCurrentMonth;
-          const isInterview = isInterviewDate(dayObj.date);
-
-          return (
-            <div
-              key={index}
-              className={`calendar-day ${isCurrentMonth ? '' : 'other-month'} ${isInterview ? 'interview-day' : ''} ${
-                dayObj.date.getDate() === selectedDate?.getDate() &&
-                dayObj.date.getMonth() === selectedDate?.getMonth() &&
-                dayObj.date.getFullYear() === selectedDate?.getFullYear()
-                  ? 'selected'
-                  : ''
-              }`}
-            >
-              {day}
-              {isInterview && <div className="interview-time">{formatTime(interviewDate)}</div>}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-};
-
 const Dashboard = () => {
-  usePageTitle();
-  const [activeCard, setActiveCard] = useState(3); // Default to Interview (3)
+  usePageTitle('Applicant Dashboard');
+  const { job_application_code, email, unique_link } = useParams();
+  const [activeCard, setActiveCard] = useState(1);
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [showAlert, setShowAlert] = useState(false);
 
-  // Set interview date to June 26, 2025 at 6:30 AM
-  const interviewDate = new Date(2025, 5, 26, 6, 30);
-  // Dynamic meeting link
-  const meetingLink =
-    'https://teams.microsoft.com/l/meetup-join/19%3ameeting_NjA1Nzk4YzItNzU5Zi00YjQzLWEzNjEtNjAxODc1NDVhNDk2%40thread.v2/0?context=%7b%22Tid%22%3a%22d1234567-abcd-8901-efgh-1234567890ab%22%2c%22Oid%22%3a%2298765432-abcd-1234-efgh-0987654321cd%22%7d';
+  // Calculate step percentages based on data
+  const getStepPercentages = (data) => {
+    if (!data) return [0, 0, 0, 0, 0];
+    return [
+      100, // Job Application: Always 100% if data is fetched
+      data.job_application.documents.length >= data.job_requisition.documents_required.length ? 100 : 50,
+      data.schedule_count > 0 ? 50 : 0, // Interview: 50% if scheduled, 0% if not
+      data.job_requisition.compliance_checklist.every((item) =>
+        data.job_application.documents.some((doc) => doc.document_type === item)
+      ) ? 100 : 0, // Compliance Check: 100% if all required documents uploaded
+      data.job_application.status === 'hired' ? 100 : 0, // Decision: 100% if hired
+    ];
+  };
+
+  const stepPercentages = data ? getStepPercentages(data) : [0, 0, 0, 0, 0];
+
+  useEffect(() => {
+    const fetchApplicationData = async () => {
+      try {
+        const response = await axios.get(
+          `http://127.0.0.1:9090/api/talent-engine-job-applications/applications/code/${job_application_code}/email/${email}/with-schedules/schedules/?unique_link=${unique_link}`
+        );
+        setData(response.data);
+        setLoading(false);
+      } catch (err) {
+        setError(err.response?.data?.detail || 'Failed to fetch application data');
+        setLoading(false);
+      }
+    };
+
+    fetchApplicationData();
+  }, [job_application_code, email, unique_link]);
+
+  // Function to generate initials from full name
+  const getInitials = (fullName) => {
+    if (!fullName) return 'NA';
+    const nameParts = fullName.trim().split(' ').filter(part => part);
+    if (nameParts.length === 0) return 'NA';
+    if (nameParts.length === 1) return nameParts[0][0]?.toUpperCase() || 'NA';
+    return `${nameParts[0][0]?.toUpperCase() || ''}${nameParts[nameParts.length - 1][0]?.toUpperCase() || ''}` || 'NA';
+  };
 
   const handleCardClick = (cardNumber) => {
     setActiveCard(cardNumber);
   };
 
-  const handleViewDocument = (url) => {
-    window.open(url, '_blank');
-  };
+  if (loading) {
+    return <div className="Applicant-Dashboard">Loading...</div>;
+  }
 
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(meetingLink).then(() => {
-      setShowAlert(true);
-      setTimeout(() => setShowAlert(false), 2000); // Hide alert after 2 seconds
-    }).catch((err) => {
-      console.error('Failed to copy link: ', err);
-      alert('Failed to copy link. Please try again.');
-    });
-  };
-
-  const handleLaunchMeeting = () => {
-    window.open(meetingLink, '_blank');
-  };
-
-  // Animation variants for slide-down effect
-  const slideDownVariants = {
-    hidden: { y: -5, opacity: 0 },
-    visible: { y: 0, opacity: 1, transition: { duration: 0.5, ease: 'easeOut' } },
-  };
+  if (error) {
+    return (
+      <div className="Applicant-Dashboard">
+        <div className="site-container">
+          <p>Error: {error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="Applicant-Dashboard">
       <div className="site-container">
+        <div className="AAPpl-NAvsb">
+          <div className="AAPpl-NAvsb-Main">
+            <div className="AAPpl-NAvsb-1">
+              <span>{data ? getInitials(data.job_application.full_name) : 'NA'}</span>
+            </div>
+            <div className="AAPpl-NAvsb-2">
+              <h3>{data?.job_application.full_name || 'N/A'}</h3>
+              <p>{data?.job_application.email || 'N/A'}</p>
+            </div>
+            <div className="AAPpl-NAvsb-3"></div>
+          </div>
+        </div>
         <div className="GHH-Top-GTga">
           <p>
             <Link to="/">Kaeft</Link>
             <ChevronRightIcon className="chevron-icon" />
-            <Link to="/application-dashboard">New applications</Link>
+            <Link to="/application-dashboard">Applications</Link>
             <ChevronRightIcon className="chevron-icon" />
-            <span>Frontend website developer</span>
+            <span>{data.job_requisition.title}</span>
           </p>
         </div>
 
@@ -340,12 +206,16 @@ const Dashboard = () => {
         </div>
 
         <div className="Gyhat-HG">
-          <h3>Frontend website developer</h3>
-          <p>Application Progress: <span>90%</span></p>
+          <h3>{data.job_requisition.title}</h3>
+          <p>
+            Application Progress: <span><CountUp end={Math.max(...stepPercentages)} duration={2} />%</span>
+          </p>
         </div>
 
         <div className="oik-pa">
-          <p>Posted by: <a href="#">Proliance LTD</a></p>
+          <p>
+            Posted by: <a href="#">{data.job_requisition.company_name}</a>
+          </p>
         </div>
 
         <div className="GYhh-Cardss-SesC">
@@ -364,18 +234,16 @@ const Dashboard = () => {
                 />
               </div>
               <p>
-                <CountUp end={stepPercentages[num - 1]} /> {stepTitles[num - 1]}
+                <CountUp end={stepPercentages[num - 1]} duration={2} />% {stepTitles[num - 1]}
               </p>
             </div>
           ))}
         </div>
 
-        {/* Alert Component */}
         <AnimatePresence>
           {showAlert && <Alert message="Link copied" />}
         </AnimatePresence>
 
-        {/* === Independent Box Sections === */}
         {activeCard === 1 && (
           <motion.div
             className="OL-Boxas"
@@ -387,12 +255,15 @@ const Dashboard = () => {
               <h3>
                 Job Application{' '}
                 <span>
-                  Progress: 100% <b className="completed">Completed <CheckIcon className="w-4 h-4 ml-1" /></b>
+                  Progress: 100%{' '}
+                  <b className="completed">
+                    Completed <CheckIcon className="w-4 h-4 ml-1" />
+                  </b>
                 </span>
               </h3>
               <p>
-                You've successfully completed the first phase of your application for the Frontend Website Developer role.
-                All required application information has been submitted and confirmed.
+                You've successfully completed the first phase of your application for the{' '}
+                {data.job_requisition.title} role.
               </p>
             </div>
 
@@ -406,9 +277,8 @@ const Dashboard = () => {
                         Checked <CheckIcon className="w-4 h-4 ml-1" />
                       </span>
                     </label>
-                    <input type="text" name="fullName" value="Prince Godson" readOnly />
+                    <input type="text" name="fullName" value={data.job_application.full_name} readOnly />
                   </div>
-
                   <div className="GHuh-Form-Input">
                     <label>
                       Email Address
@@ -416,21 +286,10 @@ const Dashboard = () => {
                         Checked <CheckIcon className="w-4 h-4 ml-1" />
                       </span>
                     </label>
-                    <input type="email" name="email" value="prince@example.com" readOnly />
+                    <input type="email" name="email" value={data.job_application.email} readOnly />
                   </div>
                 </div>
-
                 <div className="Grga-INpu-Grid">
-                  <div className="GHuh-Form-Input">
-                    <label>
-                      Confirm Email Address
-                      <span className="label-Sopppan">
-                        Checked <CheckIcon className="w-4 h-4 ml-1" />
-                      </span>
-                    </label>
-                    <input type="email" name="confirmEmail" value="prince@example.com" readOnly />
-                  </div>
-
                   <div className="GHuh-Form-Input">
                     <label>
                       Phone Number
@@ -438,11 +297,8 @@ const Dashboard = () => {
                         Checked <CheckIcon className="w-4 h-4 ml-1" />
                       </span>
                     </label>
-                    <input type="tel" name="phone" value="+2348012345678" readOnly />
+                    <input type="tel" name="phone" value={data.job_application.phone || 'N/A'} readOnly />
                   </div>
-                </div>
-
-                <div className="Grga-INpu-Grid">
                   <div className="GHuh-Form-Input">
                     <label>
                       Date of Birth
@@ -450,9 +306,15 @@ const Dashboard = () => {
                         Checked <CheckIcon className="w-4 h-4 ml-1" />
                       </span>
                     </label>
-                    <input type="date" name="dob" value="1998-07-15" readOnly />
+                    <input
+                      type="date"
+                      name="dob"
+                      value={data.job_application.date_of_birth || ''}
+                      readOnly
+                    />
                   </div>
-
+                </div>
+                <div className="Grga-INpu-Grid">
                   <div className="GHuh-Form-Input">
                     <label>
                       Qualification
@@ -460,11 +322,13 @@ const Dashboard = () => {
                         Checked <CheckIcon className="w-4 h-4 ml-1" />
                       </span>
                     </label>
-                    <input type="text" name="qualification" value="B.Sc. Computer Science" readOnly />
+                    <input
+                      type="text"
+                      name="qualification"
+                      value={data.job_application.qualification || 'N/A'}
+                      readOnly
+                    />
                   </div>
-                </div>
-
-                <div className="Grga-INpu-Grid">
                   <div className="GHuh-Form-Input">
                     <label>
                       Experience
@@ -472,9 +336,15 @@ const Dashboard = () => {
                         Checked <CheckIcon className="w-4 h-4 ml-1" />
                       </span>
                     </label>
-                    <input type="text" name="experience" value="4 years" readOnly />
+                    <input
+                      type="text"
+                      name="experience"
+                      value={data.job_application.experience || 'N/A'}
+                      readOnly
+                    />
                   </div>
-
+                </div>
+                <div className="Grga-INpu-Grid">
                   <div className="GHuh-Form-Input">
                     <label>
                       Knowledge/Skill
@@ -482,7 +352,12 @@ const Dashboard = () => {
                         Checked <CheckIcon className="w-4 h-4 ml-1" />
                       </span>
                     </label>
-                    <input type="text" name="knowledgeSkill" value="React, JavaScript, Tailwind CSS, Figma" readOnly />
+                    <input
+                      type="text"
+                      name="knowledgeSkill"
+                      value={data.job_application.knowledge_skill || 'N/A'}
+                      readOnly
+                    />
                   </div>
                 </div>
               </div>
@@ -501,54 +376,58 @@ const Dashboard = () => {
               <h3>
                 Document Uploads{' '}
                 <span>
-                  Progress: 100% <b className="completed">Completed <CheckIcon className="w-4 h-4 ml-1" /></b>
+                  Progress: {stepPercentages[1]}%{' '}
+                  <b className={stepPercentages[1] === 100 ? 'completed' : 'pending'}>
+                    {stepPercentages[1] === 100 ? 'Completed' : 'Pending'}{' '}
+                    <CheckIcon className="w-4 h-4 ml-1" />
+                  </b>
                 </span>
               </h3>
-              <p>You've successfully uploaded all required supporting documents for your application.</p>
+              <p>
+                You've {stepPercentages[1] === 100 ? 'successfully uploaded all' : 'partially uploaded the'} required
+                supporting documents for your application.
+              </p>
             </div>
-
             <div className="OL-Boxas-Body">
-              <div className="table-container">
-                <table className="Gen-Sys-table">
-                  <thead>
-                    <tr>
-                      <th>#</th>
-                      <th>Document Type</th>
-                      <th>Document Name</th>
-                      <th>Upload Date</th>
-                      <th>File Format</th>
-                      <th>Status</th>
-                      <th>Action</th>
+              <table className="Gen-Sys-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Document Type</th>
+                    <th>Document Name</th>
+                    <th>Upload Date</th>
+                    <th>File Format</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.job_application.documents.map((doc, index) => (
+                    <tr key={doc.id || index}>
+                      <td>{index + 1}</td>
+                      <td>{doc.document_type}</td>
+                      <td>{doc.file_url.split('/').pop()}</td>
+                      <td>{new Date(doc.uploaded_at).toLocaleDateString()}</td>
+                      <td>{doc.file_url.split('.').pop().toUpperCase()}</td>
+                      <td>
+                        <span className="label-Sopppan">
+                          Checked <CheckIcon className="w-4 h-4 ml-1" />
+                        </span>
+                      </td>
+                      <td>
+                        <div className="gen-td-btns">
+                          <button
+                            className="link-btn btn-primary-bg"
+                            onClick={() => window.open(doc.file_url, '_blank')}
+                          >
+                            View Document
+                          </button>
+                        </div>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {documentList.map((doc, index) => (
-                      <tr key={doc.id}>
-                        <td>{index + 1}</td>
-                        <td>{doc.type}</td>
-                        <td>{doc.name}</td>
-                        <td>{doc.date}</td>
-                        <td>{doc.format}</td>
-                        <td>
-                          <span className="label-Sopppan">
-                            Checked <CheckIcon className="w-4 h-4 ml-1" />
-                          </span>
-                        </td>
-                        <td>
-                          <div className="gen-td-btns">
-                            <button
-                              className="link-btn btn-primary-bg"
-                              onClick={() => handleViewDocument(doc.url)}
-                            >
-                              View Document
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </motion.div>
         )}
@@ -564,60 +443,72 @@ const Dashboard = () => {
               <h3>
                 Interview{' '}
                 <span>
-                  Progress: 50% <b className="pending">Pending <ClockIcon className="w-4 h-4 ml-1" /></b>
+                  Progress: {stepPercentages[2]}%{' '}
+                  <b className={stepPercentages[2] === 50 ? 'pending' : 'not-started'}>
+                    {stepPercentages[2] === 50 ? 'Pending' : 'Not Started'}{' '}
+                    <ClockIcon className="w-4 h-4 ml-1" />
+                  </b>
                 </span>
               </h3>
               <p>
-                You are invited to interview for the Frontend Website Developer Role at <b>Proliance Ltd</b> — Scheduled
-                for Thursday, June 26, 2025, at 6:30 AM.
+                {data.schedules.length > 0
+                  ? `You are invited to interview for the ${data.job_requisition.title} role at ${data.job_requisition.company_name} — Scheduled for ${new Date(data.schedules[0].interview_date_time).toLocaleString()}.`
+                  : `No interview has been scheduled yet for the ${data.job_requisition.title} role.`}
               </p>
             </div>
             <div className="OL-Boxas-Body">
-              <div className="OUjauj-DAS">
-                <div className="OUjauj-DAS-1">
-                  <div className="OUjauj-DAS-1Main">
-                    <div className="Calender-Dspy">
-                      <InterviewCalendar interviewDate={interviewDate} />
-                    </div>
-                    <div className="OUauj-Biaoo">
-                      <h3>Scheduled for this day:</h3>
-                      <div className="OUauj-Biaoo-ManD">
-                        <h4>Date and Time</h4>
-                        <p>June 26, 2025 - 6:30 AM</p>
+              {data.schedules.length > 0 ? (
+                <div className="OUjauj-DAS">
+                  <div className="OUjauj-DAS-1">
+                    <div className="OUjauj-DAS-1Main">
+                      <div className="Calender-Dspy">
+                        <InterviewCalendar interviewDate={new Date(data.schedules[0].interview_date_time)} />
                       </div>
-                      <div className="OUauj-Biaoo-ManD">
-                        <h4>
-                          Location <span>Virtual</span>
-                        </h4>
-                        <h6 className="Gen-Boxshadow">
-                          <span
-                            className="meeting-link"
-                            onClick={handleCopyLink}
-                            aria-label="Copy meeting link"
-                          >
-                            {meetingLink}
-                          </span>
-                        </h6>
-                        <button
-                          className="launch-meeting-btn btn-primary-bg"
-                          onClick={handleLaunchMeeting}
-                          aria-label="Launch virtual meeting"
-                        >
-                          Launch Meeting
-                        </button>
+                      <div className="OUauj-Biaoo">
+                        <h3>Scheduled for this day:</h3>
+                        <div className="OUauj-Biaoo-ManD">
+                          <h4>Date and Time</h4>
+                          <p>{new Date(data.schedules[0].interview_date_time).toLocaleString()}</p>
+                        </div>
+                        <div className="OUauj-Biaoo-ManD">
+                          <h4>
+                            Location <span>{data.schedules[0].meeting_mode}</span>
+                          </h4>
+                          {data.schedules[0].meeting_link && (
+                            <>
+                              <h6
+                                className="Gen-Boxshadow"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(data.schedules[0].meeting_link);
+                                  setShowAlert(true);
+                                  setTimeout(() => setShowAlert(false), 2000);
+                                }}
+                              >
+                                <span className="meeting-link">{data.schedules[0].meeting_link}</span>
+                              </h6>
+                              <button
+                                className="launch-meeting-btn btn-primary-bg"
+                                onClick={() => window.open(data.schedules[0].meeting_link, '_blank')}
+                              >
+                                Launch Meeting
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="OUjauj-DAS-2">
+                    <div className="HYha-POla">
+                      <div className="HYha-POla-Main">
+                        <DailySchedule schedules={data.schedules} />
                       </div>
                     </div>
                   </div>
                 </div>
-
-                <div className="OUjauj-DAS-2">
-                  <div className="HYha-POla">
-                    <div className="HYha-POla-Main">
-                      <DailySchedule />
-                    </div>
-                  </div>
-                </div>
-              </div>
+              ) : (
+                <p>No interviews scheduled yet.</p>
+              )}
             </div>
           </motion.div>
         )}
@@ -631,16 +522,15 @@ const Dashboard = () => {
           >
             <div className="OL-Boxas-Top ooik-PPOla">
               <h3>
-                Compliance Check <span>Progress: 0%</span>
+                Compliance Check <span>Progress: {stepPercentages[3]}%</span>
               </h3>
               <p>
                 As part of the final stages of our recruitment process, we kindly request that you upload the listed
-                documents for a mandatory compliance check. This step is necessary to verify your identity and credentials
-                before we proceed further.
+                documents for a mandatory compliance check.
               </p>
             </div>
             <div className="OL-Boxas-Body">
-              <ComplianceCheckTable />
+              <ComplianceCheckTable complianceChecklist={data.job_requisition.compliance_checklist} />
             </div>
           </motion.div>
         )}
@@ -654,11 +544,11 @@ const Dashboard = () => {
           >
             <div className="OL-Boxas-Top ooik-PPOla LLok-PPola">
               <h3>
-                Decision <span>Progress: 0%</span>
+                Decision <span>Progress: {stepPercentages[4]}%</span>
               </h3>
             </div>
             <div className="OL-Boxas-Body">
-              <JobDecision />
+              <JobDecision jobApplication={data.job_application} jobRequisition={data.job_requisition} />
             </div>
           </motion.div>
         )}
