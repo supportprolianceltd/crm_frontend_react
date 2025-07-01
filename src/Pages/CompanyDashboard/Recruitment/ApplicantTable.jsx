@@ -12,24 +12,21 @@ import {
 
 import ApplicantDocumentCheck from './ApplicantDocumentCheck';
 
-// Function to generate mock applicant data
 const generateMockApplicants = () => {
   const applicants = [];
   const names = [
     'Emma Johnson', 'Noah Williams', 'Olivia Brown', 'Liam Jones', 'Ava Garcia',
     'Lucas Miller', 'Mia Davis', 'Ethan Rodriguez', 'Isabella Martinez', 'James Wilson'
   ];
-  
   const statuses = ['Pending', 'Checked'];
-  
+
   for (let i = 1; i <= 50; i++) {
     const appliedDate = new Date();
     appliedDate.setDate(appliedDate.getDate() - Math.floor(Math.random() * 30));
     const formattedDate = appliedDate.toISOString().split('T')[0];
-    
     const submitted = `${Math.floor(Math.random() * 7) + 1} out of 7`;
     const fileSize = `${(Math.random() * 15 + 0.5).toFixed(1)} MB`;
-    
+
     applicants.push({
       id: `APP-${String(i).padStart(3, '0')}`,
       name: names[i % names.length],
@@ -42,17 +39,26 @@ const generateMockApplicants = () => {
   return applicants;
 };
 
-// Main ApplicantTable component
 const ApplicantTable = () => {
-  // State declarations
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [selectedIds, setSelectedIds] = useState([]);
   const [applicants, setApplicants] = useState(generateMockApplicants());
+  const [showApplicantDocumentCheck, setShowApplicantDocumentCheck] = useState(false);
+  const [selectedJob, setSelectedJob] = useState(null);
   const masterCheckboxRef = useRef(null);
 
-  // Filter applicants based on search term only
+  const handleViewClick = (job) => {
+    setSelectedJob(job);
+    setShowApplicantDocumentCheck(true);
+  };
+
+  const handleHideApplicantDocumentCheck = () => {
+    setShowApplicantDocumentCheck(false);
+    setSelectedJob(null);
+  };
+
   const filteredApplicants = applicants.filter((applicant) => {
     return (
       applicant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -60,19 +66,16 @@ const ApplicantTable = () => {
     );
   });
 
-  // Pagination logic
   const totalPages = Math.ceil(filteredApplicants.length / rowsPerPage);
   const startIndex = (currentPage - 1) * rowsPerPage;
   const currentApplicants = filteredApplicants.slice(startIndex, startIndex + rowsPerPage);
 
-  // Handle checkbox selection for individual applicants
   const handleCheckboxChange = (id) => {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((appId) => appId !== id) : [...prev, id]
     );
   };
 
-  // Handle select all visible applicants
   const handleSelectAllVisible = () => {
     if (currentApplicants.every((app) => selectedIds.includes(app.id))) {
       setSelectedIds((prev) => prev.filter((id) => !currentApplicants.some((app) => app.id === id)));
@@ -84,15 +87,12 @@ const ApplicantTable = () => {
     }
   };
 
-  // Handle bulk delete
   const handleBulkDelete = () => {
     if (selectedIds.length === 0) return;
-    
     setApplicants(prev => prev.filter(app => !selectedIds.includes(app.id)));
     setSelectedIds([]);
   };
 
-  // Reset master checkbox when page or rows change
   useEffect(() => {
     if (masterCheckboxRef.current) {
       masterCheckboxRef.current.checked = false;
@@ -160,17 +160,12 @@ const ApplicantTable = () => {
                         onChange={() => handleCheckboxChange(applicant.id)}
                       />
                     </td>
-                    <td>
-                      <div>
-                        <div />
-                        {applicant.name}
-                      </div>
-                    </td>
+                    <td>{applicant.name}</td>
                     <td>{applicant.dateApplied}</td>
                     <td>
                       <div className='ouk0UUJal-POl'>
-                        <DocumentTextIcon />
-                       <p>{applicant.documentsSubmitted}</p> 
+                        <DocumentTextIcon className="h-5 w-5 mr-1" />
+                        <p>{applicant.documentsSubmitted}</p> 
                       </div>
                     </td>
                     <td>{applicant.totalFileSize}</td>
@@ -180,13 +175,13 @@ const ApplicantTable = () => {
                       </span>
                     </td>
                     <td>
-                       <div className="gen-td-btns">
-                        <button className="view-btn">
-                          <CheckCircleIcon />
+                      <div className="gen-td-btns">
+                        <button className="view-btn" onClick={() => handleViewClick(applicant)}>
+                          <CheckCircleIcon className="h-5 w-5 mr-1" />
                           Check Documents
                         </button>
                         <button className="link-btn btn-primary-bg">
-                          <CheckCircleIcon />
+                          <CheckCircleIcon className="h-5 w-5 mr-1" />
                           Make Decision
                         </button>
                       </div>
@@ -253,7 +248,14 @@ const ApplicantTable = () => {
           </div>
         )}
       </div>
-      <ApplicantDocumentCheck />
+
+      {/* ✅ Show Document Check Section */}
+      {showApplicantDocumentCheck && selectedJob && (
+      <ApplicantDocumentCheck 
+        applicant={selectedJob}  // Changed prop name to "applicant"
+        onHide={handleHideApplicantDocumentCheck}  // Changed prop name to "onHide"
+      />
+    )}
     </div>
   );
 };

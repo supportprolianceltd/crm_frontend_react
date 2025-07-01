@@ -199,7 +199,7 @@
     z-index: 3000;
 }
 
-.DocComplianceCheck-Bodddy{
+.DocComplianceCheck-Body{
     position: absolute;
     width: 100%;
     height: 100%;
@@ -254,6 +254,7 @@
     width: 100%;
     height: 100%;
     border-left: 1px solid #e3defc;
+    overflow: hidden;
 }
 
 .DocComplianceCheck-Part:first-child{
@@ -291,10 +292,15 @@
     height: auto;
     padding: 10px 20px;
     background-color: #ebe6ff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 .PPPOl-Seacs ul{
     position: relative;
-    width: 100%;
+    width:auto;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -309,8 +315,547 @@
 .PPPOl-Seacs ul li span{
     font-size: 10px;
     font-weight: 400;
+    padding: 5px 8px;
+    border-radius: 30px;
+    background-color: rgba(255,255,255,0.5);
+    border: 1px solid #fff;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 33px;
+}
+.PPPOl-Seacs ul li span b{
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    font-weight: 600;
+}
+.PPPOl-Seacs ul li span b svg{
+    width: 10px;
+}
+.PPPOl-Seacs ul li span b.status{
+    width: auto !important;
+}
+
+
+.OIUkuja-BBtns{
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.OIUkuja-BBtns button{
+      font-size: 10px;
+    font-weight: 400;
     padding: 5px 10px;
     border-radius: 30px;
     background-color: rgba(255,255,255,0.5);
     border: 1px solid #fff;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    height: 32px;
+    user-select: none;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+}
+
+.OIUkuja-BBtns button svg{
+    width: 11px;
+    height: 11px;
+}
+
+.ClearDatt-BTn{
+    background-color: transparent !important;
+    color: #7226FF;
+    border-color: #7226FF !important;
+}
+
+.ClearDatt-BTn:hover{
+    background-color: #fff !important;
+}
+
+.clOIkka-BBBTn{
+    padding:10px 20px;
+    border-top: 1px solid #dcdae3;
+}
+
+/* POlail-AAPAPl-Secc */
+
+.POlail-AAPAPl-Secc{
+    position: relative;
+    width: 100%;
+    height: auto;
+    max-height: 530px;
+}
+
+.POlail-AAPAPl-Secc .table-container{
+    margin-top: 0px !important;
+}
+
+.status-badge.pending{
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+.status-badge.pending svg{
+   width: 14px;
+   height: 14px;
+    color: #f59e0b;
+}
+
+
+/* POlails-Gtha */
+
+.POlails-Gtha{
+    position: relative;
+    width: 100%;
+    height: auto;
+    padding: 20px;
+    max-height: 570px;
+}
+
+.POlails-Gtha h4{
+    margin-bottom: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.oikauk-Ola li{
+    font-size: 12px !important;
+}
+
+.Resss-POla{
+    position: relative;
+    display: inline-flex !important;
+    align-items: center;
+    background-color: #f8d7da;
+    color: #721c24;
+    justify-content: center;
+    height: 18px;
+    border-radius: 5px;
+    font-size: 9px;
+    padding: 0px 5px;
+    gap: 3px;
+    user-select: none;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.3s ease-in-out;
+}
+
+.Resss-POla svg{
+    width: 11px;
+    height: 11px;
+}
+.Resss-POla:hover{
+    border-color: #721c24;
+}
+.oaika{
+    width: auto !important;
+}
+.mmmo-BBTH-Drop {
+    position: relative;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    cursor: pointer;
+    -webkit-user-select: none;
+    user-select: none;
+    transition: all .3s ease-in-out;
+    border: 1px solid #ebe6ff !important;
+    background-color: #fff;
+}
+
+.mmmo-BBTH-Drop svg{
+    width: 16px;
+    height: 16px;
+}
+
+.mmmo-BBTH-Drop:hover{
+    background-color: #f7f5ff !important;
+}
+
+
+/* oooo-Dropdiakm */
+
+.oooo-Dropdiakm{
+    position: absolute;
+    width: 100%;
+    min-width: 100px;
+    height: auto;
+    z-index: 800;
+    background-color: #fff;
+    border: 1px solid #ececef;
+    border-radius: 8px;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.not-last-row-dropdown{
+    top: 95%;
+}
+.last-row-dropdown{
+    bottom: 90% !important;
+}
+
+.oooo-Dropdiakm button{
+    position: relative;
+    width: 100%;
+    text-align: left;
+    background-color: transparent !important;
+    padding:7px 15px;
+    font-size: 10px;
+    transition: all 0.3s ease-in-out;
+    cursor: pointer;
+    user-select: none;
+    color: #736a92;
+}
+
+.oooo-Dropdiakm button:hover{
+    background-color: #f7f5ff !important;
+    color: #372580;
+}
+
+.oLL-TTDD{
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.oLL-TTDD .status-badge.accepted{
+    /* background-color: #d1ecf1 !important; */
+    color: #0c5460 !important;
+}
+
+
+
+
+.oikau-OOIl{
+    padding: 0px 20px !important;
+    margin-top: 0px !important;
+}
+
+.oikau-OOIl button{
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+}
+
+.oikau-OOIl button svg{
+    width: 14px;
+}
+
+
+
+
+
+
+.compliance-consent-text{
+    position: relative;
+    margin-top: 10px;
+}
+
+.compliance-consent-text p{
+    font-size: 12px;
+    font-style: italic;
+    color: #7b7299;
+}
+
+
+.POlails-Gtha .GGtg-DDDVa label{
+    margin-bottom: 10px !important;
+    display: flex !important;
+    font-size: 10px;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.POlails-Gtha .GGtg-DDDVa:first-child{
+    margin-top: 0px !important;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* PDF Viewer Modal */
+.pdf-viewer-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pdf-viewer-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+.pdf-viewer-container {
+  position: relative;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 1000px;
+  height: 90vh;
+  overflow: hidden;
+  z-index: 1001;
+}
+
+.pdf-viewer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: #7226FF;
+  color: white;
+}
+
+.pdf-viewer-header h3 {
+  margin: 0;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+}
+
+.pdf-viewer-header .icon {
+  width: 17px;
+  height: 17px;
+}
+
+.pdf-viewer-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.download-btn {
+  background: #fff;
+  color: #7226FF;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  border:1px solid rgba(255,255,255,0.2);
+}
+
+.download-btn:hover {
+  background: rgba(255,255,255,0.8);
+  transform: translateY(-1px);
+}
+
+.download-btn .icon {
+  width: 16px;
+  height: 16px;
+  color: #7226FF !important;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 5px;
+  margin-left: 10px;
+}
+
+.close-btn .icon {
+  width: 24px;
+  height: 24px;
+}
+
+.pdf-viewer-content {
+  height: calc(100% - 60px);
+  width: 100%;
+}
+
+
+
+
+
+
+.success-text h3{
+    font-size: 17px;
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+
+
+
+
+
+
+
+
+
+
+/* Add to your CSS file */
+.success-buttons-container {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.btn-danger-bg {
+  background-color: #dc2626;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-danger-bg:hover {
+  background-color: #b91c1c;
+}
+
+.confirmation-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.confirmation-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.confirmation-content {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  width: 90%;
+  max-width: 500px;
+  z-index: 1001;
+  overflow: hidden;
+}
+
+.confirmation-header {
+  padding: 15px 20px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.confirmation-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #212529;
+}
+
+.confirmation-header .close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6c757d;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.confirmation-body {
+  padding: 20px;
+}
+.confirmation-body svg{
+    width: 70px;
+    color: #f59e0b;
+}
+.confirmation-body p {
+  margin: 0 0 10px;
+  color: #675e84;
+  line-height: 1.5;
+  font-size: 12px;
+}
+
+.confirmation-actions {
+  padding: 15px 20px;
+  background-color: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn-cancel, .btn-confirm {
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.btn-cancel {
+  background-color: #e9ecef;
+  color: #495057;
+  border: 1px solid #dee2e6;
+}
+
+.btn-cancel:hover {
+  background-color: #dee2e6;
+}
+
+.btn-confirm {
+  background-color: #dc2626;
+  color: white;
+  border: none;
+}
+
+.btn-confirm:hover {
+  background-color: #b91c1c;
 }
