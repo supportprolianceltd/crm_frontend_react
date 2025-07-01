@@ -517,7 +517,7 @@ const APISettings = () => {
       <div className="Dash-OO-Boas OOOP-LOa">
         <div className="Dash-OO-Boas-Top">
           <div className="Dash-OO-Boas-Top-1">
-            <span onClick={toggleSection}><AdjustmentsHorizontalIcon className="h-6 w-6" /></span>
+            <span onClick={toggleSection} title='Filter'><AdjustmentsHorizontalIcon className="h-6 w-6" /></span>
             <h3>Job Board Integrations</h3>
           </div>
           <div className="Dash-OO-Boas-Top-2">

@@ -108,6 +108,31 @@
     color: #7226FF;
 }
 
+.Deecc-NNBYna{
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 15px;
+    border-radius: 30px;
+    border: 1px solid #7226FF;
+    color: #7226FF;
+    background-color: transparent;
+    font-size: 11px;
+    white-space: nowrap;
+    gap: 5px;
+    transition: all 0.3s ease-in-out;
+    cursor: pointer;
+}
+
+.Deecc-NNBYna:hover{
+    background-color: #decdfd;
+}
+
+.Deecc-NNBYna svg{
+    width: 14px;
+}
+
 .OUkas-POka{
     position: relative;
     width: 100%;
@@ -858,4 +883,19 @@
 
 .btn-confirm:hover {
   background-color: #b91c1c;
+}
+
+
+
+
+
+
+.oaiks-OOikakushj{
+    display: flex !important;
+    align-items: center;
+    gap: 5px;
+}
+.Warrri-Iocn{
+    width: 13px;
+    color: #b91c1c;
 }
