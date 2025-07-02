@@ -58,6 +58,10 @@ const JobDecision = ({ jobApplication, jobRequisition }) => {
     window.location.href = '/staff-dashboard';
   };
 
+  console.log(jobApplication)
+  console.log(jobApplication)
+  console.log(jobApplication)
+
   const isHired = jobApplication.status === 'hired';
 
   return (
@@ -87,7 +91,7 @@ const JobDecision = ({ jobApplication, jobRequisition }) => {
             </li>
             <li>
               <CheckCircleIcon className="check-icon" /> Interview{' '}
-              {jobApplication.schedule_count > 0 ? 'Scheduled' : 'Not Scheduled'}
+              Scheduled
             </li>
             <li>
               <CheckCircleIcon className="check-icon" /> Compliance Check{' '}

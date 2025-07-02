@@ -735,7 +735,13 @@ color: #7226FF !important;
 .job-details p strong{
     font-weight: 600;
 }
+.job-status .status-hired,
+.job-status .status-rejected,
+.job-status .status-shortlisted{
+    font-weight: 600 !important;
+    text-transform: capitalize !important;
 
+}
 .congrats-message {
   margin-top: 30px;
   padding: 20px;
