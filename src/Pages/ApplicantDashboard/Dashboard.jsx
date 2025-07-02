@@ -10,7 +10,7 @@ import {
   ClockIcon,
 } from '@heroicons/react/24/outline';
 import './Dashboard.css';
-import DailySchedule from './ScheduleTable';
+import ScheduleTable from './ScheduleTable';
 import ComplianceCheckTable from './ComplianceCheckTable';
 import JobDecision from './JobDecision';
 import InterviewCalendar from './InterviewCalendar';
@@ -64,7 +64,7 @@ const CircularProgress = ({ size = 70, strokeWidth = 6, percentage = 75, color =
 const Alert = ({ message, type = 'success' }) => {
   return (
     <motion.div
-      className={`alert alert-${type}`}
+      className={`olik-ALlter alert alert-${type}`}
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 50 }}
@@ -75,7 +75,7 @@ const Alert = ({ message, type = 'success' }) => {
         right: '20px',
         backgroundColor: type === 'success' ? '#7226FF' : '#f44336',
         color: 'white',
-        padding: '12px 24px',
+        padding: '8px 18px',
         borderRadius: '8px',
         boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
         zIndex: 1000,
@@ -156,7 +156,30 @@ const Dashboard = () => {
   };
 
   if (loading) {
-    return <div className="Applicant-Dashboard">Loading...</div>;
+    return (
+      <div
+        className="Applicant-Dashboard"
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+          width: '100vw',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          backgroundColor: '#fff',
+          fontSize: '1.5rem',
+          color: '#111827',
+          zIndex: 9999,
+        }}
+      >
+         <div className="Alll_OOo_LODer">
+        <div className="loader"></div>
+          <p>Loading job details...</p>
+      </div>
+      </div>
+    );
   }
 
   if (error) {
@@ -184,6 +207,7 @@ const Dashboard = () => {
             <div className="AAPpl-NAvsb-3"></div>
           </div>
         </div>
+
         <div className="GHH-Top-GTga">
           <p>
             <Link to="/">Kaeft</Link>
@@ -209,7 +233,7 @@ const Dashboard = () => {
         <div className="Gyhat-HG">
           <h3>{data.job_requisition.title}</h3>
           <p>
-            Application Progress: <span><CountUp end={Math.max(...stepPercentages)} duration={2} />%</span>
+            Application Progress: <span><CountUp end={Math.max(...stepPercentages)} duration={2} suffix="%" /></span>
           </p>
         </div>
 
@@ -235,7 +259,7 @@ const Dashboard = () => {
                 />
               </div>
               <p>
-                <CountUp end={stepPercentages[num - 1]} duration={2} />% {stepTitles[num - 1]}
+                <CountUp end={stepPercentages[num - 1]} duration={2} suffix="%" /> {stepTitles[num - 1]}
               </p>
             </div>
           ))}
@@ -270,7 +294,7 @@ const Dashboard = () => {
 
             <div className="OL-Boxas-Body">
               <div className="Ol-Boxxx-Forms">
-                <div className="Grga-INpu-Grid">
+                <div className="Gr or-INpu-Grid">
                   <div className="GHuh-Form-Input">
                     <label>
                       Full Name
@@ -278,7 +302,9 @@ const Dashboard = () => {
                         Checked <CheckIcon className="w-4 h-4 ml-1" />
                       </span>
                     </label>
-                    <input type="text" name="fullName" value={data.job_application.full_name} readOnly />
+                    <input type="text" name="fullName"
+
+ value={data.job_application.full_name} readOnly />
                   </div>
                   <div className="GHuh-Form-Input">
                     <label>
@@ -406,7 +432,7 @@ const Dashboard = () => {
                   {data.job_application.documents.map((doc, index) => (
                     <tr key={doc.id || index}>
                       <td>{index + 1}</td>
-                      <td>{doc.document_type}</td>
+                      <td>{doc.documentEc_type}</td>
                       <td>{doc.file_url.split('/').pop()}</td>
                       <td>{new Date(doc.uploaded_at).toLocaleDateString()}</td>
                       <td>{doc.file_url.split('.').pop().toUpperCase()}</td>
@@ -502,7 +528,7 @@ const Dashboard = () => {
                   <div className="OUjauj-DAS-2">
                     <div className="HYha-POla">
                       <div className="HYha-POla-Main">
-                        <DailySchedule schedules={data.schedules} />
+                        <ScheduleTable schedules={data.schedules} />
                       </div>
                     </div>
                   </div>
