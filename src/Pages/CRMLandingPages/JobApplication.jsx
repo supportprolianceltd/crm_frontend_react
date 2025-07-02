@@ -1536,8 +1536,8 @@ function JobApplication() {
     <div className="ool-Apply-Seco">
       <div className='gggyh-dalik'>
         <div className='large-container gggyh-dalik-main'>
-          <Link to="/" className="Nav-Brand GUK-Loffoa">
-            <img src={job.advert_banner} alt="logo" />
+          <Link to="" className="Nav-Brand GUK-Loffoa">
+            <img src={LOGO} alt="logo" />
             <span>Jobs</span>
           </Link>
           <h4><TagIcon /> {job.job_application_code}</h4>
@@ -1580,8 +1580,13 @@ function JobApplication() {
       </header>
       <section className="gtht-secs">
         <div className="large-container">
+          
           <div className="gtht-secs-Main">
             <div className="gtht-secs-Part1">
+
+              <div className='jjab-Banner'>
+                <img src={job.advert_banner} alt="Job banner" />
+              </div>
               <div className="gtht-secs-IIjah-Box">
                 <h3>Job Description</h3>
                 <div className="gtht-secs-IIjah-Box-Ddfa">

@@ -328,6 +328,17 @@
 // };
 
 // export default ComplianceCheckTable;
+
+
+
+
+
+
+
+
+
+
+
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './ComplianceCheckTable.css';
