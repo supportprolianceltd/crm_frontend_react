@@ -177,15 +177,13 @@
 //   );
 // }
 
-
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import './ScheduleTable.css';
 
-const getTopOffset = (startHour) => {
+const getTopOffset = (start) => {
   const slotHeight = 60;
-  return (startHour - 6) * slotHeight;
+  return start * slotHeight;
 };
 
 const parseTimeToHours = (dateTime) => {
@@ -193,57 +191,83 @@ const parseTimeToHours = (dateTime) => {
   return date.getHours() + date.getMinutes() / 60;
 };
 
-const formatTime = (dateTime) => {
-  return new Date(dateTime).toLocaleTimeString('en-US', {
+const formatTime = (dateTime, timeZone) => {
+  return new Intl.DateTimeFormat('en-US', {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
-  });
+    timeZone,
+  }).format(new Date(dateTime));
+};
+
+const formatHeaderDate = (dateTime, timeZone) => {
+  const date = new Date(dateTime);
+  return new Intl.DateTimeFormat('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone,
+  }).format(date);
 };
 
 const DailySchedule = ({ schedules = [] }) => {
   const [appointments, setAppointments] = useState([]);
+  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
   const slotHeight = 60;
-  const startHour = 6;
-  const endHour = 19;
-  const hours = endHour - startHour + 1;
+  const startHour = 0;
+  const endHour = 24;
+  const hours = endHour - startHour;
 
   useEffect(() => {
-    const formattedAppointments = schedules.map((schedule) => ({
-      name: 'Virtual Interview',
-      time: formatTime(schedule.interview_date_time),
-      role: schedule.meeting_mode,
-      start: parseTimeToHours(schedule.interview_date_time),
-      duration: 1, // Assuming 1-hour duration; adjust if API provides duration
-    }));
-    setAppointments(formattedAppointments);
-  }, [schedules]);
+    const formatted = schedules.map((sch) => {
+      const localDate = new Date(sch.interview_date_time);
+      const localHours = localDate.getHours() + localDate.getMinutes() / 60;
+
+      return {
+        name: 'Virtual Interview',
+        time: formatTime(sch.interview_date_time, userTimeZone),
+        role: sch.meeting_mode,
+        start: localHours,
+        duration: 1,
+      };
+    });
+    setAppointments(formatted);
+  }, [schedules, userTimeZone]);
 
   return (
     <div className="schedule-container">
-     <h2 className="schedule-header">
-  {schedules.length > 0 ? (
-    <>
-      {new Date(schedules[0].interview_date_time).toLocaleDateString('en-US', {
-        month: 'long',
-        day: 'numeric',
-        weekday: 'long',
-      })}{' '}
-      <span className="year">
-        {new Date(schedules[0].interview_date_time).getFullYear()}
-      </span>
-    </>
-  ) : (
-    'No Scheduled Interviews'
-  )}
-</h2>
+      <h2 className="schedule-header">
+        {schedules.length ? (
+          <>
+            {formatHeaderDate(schedules[0].interview_date_time, userTimeZone).replace(
+              /, \d{4}$/,
+              ''
+            )}
+            {' '}
+            <span className="year">
+              {new Date(schedules[0].interview_date_time).getFullYear()}
+            </span>
+          </>
+        ) : (
+          'No Scheduled Interviews'
+        )}
+      </h2>
 
       {schedules.length > 0 && (
-        <div className="schedule-body" style={{ height: `${hours * slotHeight}px` }}>
+        <div
+          className="schedule-body"
+          style={{ height: `${hours * slotHeight}px` }}
+        >
           {Array.from({ length: hours }, (_, i) => {
             const hour = startHour + i;
             return (
-              <div key={i} className="time-slot" style={{ top: `${i * slotHeight}px` }}>
+              <div
+                key={hour}
+                className="time-slot"
+                style={{ top: `${i * slotHeight}px` }}
+              >
                 <div className="time-label">
                   {hour === 0
                     ? '12am'
@@ -251,12 +275,15 @@ const DailySchedule = ({ schedules = [] }) => {
                     ? `${hour}am`
                     : hour === 12
                     ? '12pm'
+                    : hour === 24
+                    ? '12am'
                     : `${hour - 12}pm`}
                 </div>
                 <div className="time-line" />
               </div>
             );
           })}
+
           {appointments.map((appt, idx) => (
             <motion.div
               key={idx}

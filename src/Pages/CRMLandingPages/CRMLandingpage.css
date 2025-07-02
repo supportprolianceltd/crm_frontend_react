@@ -1568,3 +1568,15 @@ background-color: rgba(255,255,255,0.2);
     flex-wrap: wrap;
     gap: 15px;
  }
+
+ .timezone-info {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+
+.timezone-info .flag {
+  font-size: 20px;
+}
