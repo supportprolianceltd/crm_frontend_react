@@ -119,11 +119,13 @@ const SuccessModal = ({ title, message, onClose }) => (
       <div className="flex justify-end">
         <button
           onClick={onClose}
-          className="rounded bg-green-600 px-4 py-2 font-semibold text-white hover:bg-green-700"
+          className="rounded bg-blue-600 px-6 py-2 font-semibold text-white hover:bg-blue-700"
           autoFocus
         >
           OK
         </button>
+
+
       </div>
     </motion.div>
   </AnimatePresence>
@@ -701,25 +703,12 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
                   onChange={(e) => setCancelReason(e.target.value)}
                   placeholder="Enter the reason for cancelling the interview..."
                   className="oujka-Inpuauy OIUja-Tettxa"
-                  style={{
-                    width: '100%',
-                    padding: '0.5rem',
-                    borderRadius: '4px',
-                    border: '3px solid #ccc',
-                    minHeight: '100px',
-                  }}
                 />
               </div>
               <div className="oioak-POldj-BTn" style={{ marginTop: '1rem', display: 'flex', justifyContent: 'space-between' }}>
                 <button
                   onClick={handleGoBack}
                   className="CLCLCjm-BNtn"
-                  style={{
-                    padding: '0.5rem 1rem',
-                    borderRadius: '4px',
-                    background: '#d1d5db',
-                    color: '#111827',
-                  }}
                 >
                   Go Back
                 </button>
@@ -727,13 +716,6 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
                   onClick={handleSubmitCancelReason}
                   disabled={isSubmittingReason}
                   className="btn-primary-bg"
-                  style={{
-                    padding: '0.5rem 1rem',
-                    borderRadius: '4px',
-                    background: '#2563eb',
-                    color: '#fff',
-                    cursor: isSubmittingReason ? 'not-allowed' : 'pointer',
-                  }}
                 >
                   {isSubmittingReason ? (
                     <>
