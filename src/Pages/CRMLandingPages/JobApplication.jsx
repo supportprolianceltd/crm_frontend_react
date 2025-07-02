@@ -1036,7 +1036,6 @@
 
 
 
-
 import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import usePageTitle from '../../hooks/usePageTitle';
@@ -1066,6 +1065,8 @@ function JobApplication() {
   const [selectedResumeType, setSelectedResumeType] = useState('');
   const [isLinkCopied, setIsLinkCopied] = useState(false);
   const [isDeadlineExpired, setIsDeadlineExpired] = useState(false);
+  const [showResumePrompt, setShowResumePrompt] = useState(false);
+  const [pendingFile, setPendingFile] = useState(null);
 
   const handleCopyLink = () => {
     const jobLink = window.location.href;
@@ -1172,12 +1173,27 @@ function JobApplication() {
   const handleFileDrop = (e) => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
-    processFile(file);
+    setPendingFile(file);
+    setShowResumePrompt(true);
   };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    processFile(file);
+    setPendingFile(file);
+    setShowResumePrompt(true);
+  };
+
+  const handleResumePromptConfirm = () => {
+    setShowResumePrompt(false);
+    if (pendingFile) {
+      processFile(pendingFile);
+    }
+  };
+
+  const handleResumePromptCancel = () => {
+    setShowResumePrompt(false);
+    setPendingFile(null);
+    fileInputRef.current.value = null;
   };
 
   const processFile = async (file) => {
@@ -1224,6 +1240,7 @@ function JobApplication() {
         return;
       }
 
+     
       const { data } = await response.json();
       setFormData((prev) => ({
         ...prev,
@@ -1893,6 +1910,62 @@ function JobApplication() {
             }}
           >
             Application sent successfully!
+          </motion.div>
+        )}
+        {showResumePrompt && (
+          <motion.div
+            className="resume-prompt"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.3 }}
+            style={{
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              backgroundColor: '#fff',
+              padding: '20px',
+              borderRadius: '8px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+              zIndex: 10000,
+              maxWidth: '400px',
+              width: '90%',
+              textAlign: 'center',
+            }}
+          >
+            <h3 style={{ marginBottom: '15px' }}>Allow Resume Parsing?</h3>
+            <p style={{ marginBottom: '20px' }}>
+              Do you grant permission to parse your resume to auto-fill the application form?
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+              <button
+                onClick={handleResumePromptConfirm}
+                style={{
+                  backgroundColor: '#4caf50',
+                  color: 'white',
+                  padding: '8px 16px',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                }}
+              >
+                Allow
+              </button>
+              <button
+                onClick={handleResumePromptCancel}
+                style={{
+                  backgroundColor: '#f44336',
+                  color: 'white',
+                  padding: '8px 16px',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

@@ -46,7 +46,7 @@ const ComplianceCheckPage = () => {
                 <li><span>Status: Active</span></li>
             </ul>
 
-            <button className='Deecc-NNBYna'><HandThumbUpIcon /> Make Decision</button>
+            <button className='Deecc-NNBYna'><HandThumbUpIcon /> Employment Decision</button>
             
         </div>
         <div className='OUkas-POka'>
