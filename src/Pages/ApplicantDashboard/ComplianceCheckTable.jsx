@@ -336,15 +336,12 @@
 
 
 
-
-
-
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './ComplianceCheckTable.css';
 import pdfIcon from '../../assets/icons/pdf.png';
 import imageIcon from '../../assets/icons/image.png';
-import { CloudArrowUpIcon, PencilIcon } from '@heroicons/react/24/outline';
+import { CloudArrowUpIcon, PencilIcon, XMarkIcon, EyeIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
 const getFileTypeInfo = (filename) => {
   const extension = filename.split('.').pop().toLowerCase();
@@ -360,26 +357,56 @@ const getFileTypeInfo = (filename) => {
 
 const ComplianceCheckTable = ({ complianceChecklist = [] }) => {
   const [complianceData, setComplianceData] = useState(
-    complianceChecklist.map((item) => ({
-      title: item,
-      file: null,
-      fileName: '',
-      fileType: '',
-      fileIcon: '',
-      fileUrl: '',
-      status: 'Not Uploaded',
-    }))
+    complianceChecklist.map((item, index) => {
+      if (index === 0) {
+        return {
+          title: item,
+          file: null,
+          fileName: 'invalid_passport.pdf',
+          fileType: 'PDF',
+          fileIcon: pdfIcon,
+          fileUrl: '',
+          status: 'Rejected',
+          rejectionReason: 'The document uploaded was blurry and unreadable.',
+        };
+      }
+      return {
+        title: item,
+        file: null,
+        fileName: '',
+        fileType: '',
+        fileIcon: '',
+        fileUrl: '',
+        status: 'Not Uploaded',
+      };
+    })
   );
+
   const [alertMessage, setAlertMessage] = useState(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showRejectionModal, setShowRejectionModal] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState('');
   const fileInputRefs = useRef([]);
+
+  // Close modals when clicking outside modal content
+  const handleOutsideClick = (e, closeFunc) => {
+    // If clicked on the overlay (currentTarget), close modal
+    if (e.target === e.currentTarget) {
+      closeFunc(false);
+    }
+  };
 
   const triggerFileInput = (index) => {
     if (fileInputRefs.current[index]) {
       fileInputRefs.current[index].click();
     }
+  };
+
+  const handleViewRejectionReason = (reason) => {
+    setRejectionReason(reason);
+    setShowRejectionModal(true);
   };
 
   const handleFileChange = (index, file) => {
@@ -414,6 +441,8 @@ const ComplianceCheckTable = ({ complianceChecklist = [] }) => {
     newData[index].fileIcon = fileInfo.icon;
     newData[index].fileUrl = fileUrl;
     newData[index].status = 'Uploaded';
+    delete newData[index].rejectionReason;
+
     setComplianceData(newData);
 
     showAlert(isEdit ? 'Successfully edited file.' : 'Successfully uploaded file.', 'success');
@@ -444,6 +473,7 @@ const ComplianceCheckTable = ({ complianceChecklist = [] }) => {
 
   return (
     <div className="table-container">
+      {/* Alerts */}
       <AnimatePresence>
         {alertMessage && (
           <motion.div
@@ -458,6 +488,7 @@ const ComplianceCheckTable = ({ complianceChecklist = [] }) => {
         )}
       </AnimatePresence>
 
+      {/* Confirmation Prompt */}
       <AnimatePresence>
         {showPrompt && (
           <motion.div
@@ -465,6 +496,7 @@ const ComplianceCheckTable = ({ complianceChecklist = [] }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            onClick={(e) => handleOutsideClick(e, setShowPrompt)}
           >
             <motion.div
               className="confirm-box"
@@ -472,6 +504,7 @@ const ComplianceCheckTable = ({ complianceChecklist = [] }) => {
               animate={{ scale: 1 }}
               exit={{ scale: 0.9 }}
               transition={{ duration: 0.3 }}
+              onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside box
             >
               <p>Are you sure you want to submit all uploaded documents for compliance check?</p>
               <div className="confirm-actions">
@@ -502,11 +535,7 @@ const ComplianceCheckTable = ({ complianceChecklist = [] }) => {
                     'Yes, Submit'
                   )}
                 </button>
-                <button
-                  onClick={() => setShowPrompt(false)}
-                  className="confirm-cancel"
-                  disabled={isSubmitting}
-                >
+                <button onClick={() => setShowPrompt(false)} className="confirm-cancel" disabled={isSubmitting}>
                   Cancel
                 </button>
               </div>
@@ -515,6 +544,50 @@ const ComplianceCheckTable = ({ complianceChecklist = [] }) => {
         )}
       </AnimatePresence>
 
+      {/* Rejection Modal */}
+      <AnimatePresence>
+        {showRejectionModal && (
+          <motion.div
+            className="confirm-modal"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={(e) => handleOutsideClick(e, setShowRejectionModal)}
+          >
+            <motion.div
+              className="confirm-box"
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.9 }}
+              transition={{ duration: 0.3 }}
+              onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside box
+              style={{ position: 'relative' }}
+            >
+                 <motion.div
+                    style={{ display: "inline-block" }}
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 500,
+                      damping: 10,
+                    }}
+                  >
+                    <ExclamationTriangleIcon className="h-6 w-6 text-yellow-500" />
+                  </motion.div>
+                <h3 style={{ margin: 0 }}>Rejection Reason</h3>
+              <p style={{ marginBottom: '1rem' }}>{rejectionReason}</p>
+              <div className="confirm-actions">
+                <button className="confirm-cancel" onClick={() => setShowRejectionModal(false)}>
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Table */}
       <table className="Gen-Sys-table Complt-Sys-table">
         <thead>
           <tr>
@@ -532,87 +605,81 @@ const ComplianceCheckTable = ({ complianceChecklist = [] }) => {
             return (
               <tr key={index}>
                 <td>{item.title}</td>
-                <td>
-                  {item.file ? (
-                    <a
-                      href={item.fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      title={`View uploaded file: ${item.fileName}`}
-                    >
-                      <img src={item.fileIcon} alt="file icon" className="file-icon" />
-                    </a>
-                  ) : (
-                    <span className="no-file">—</span>
-                  )}
-                </td>
+                <td>{item.fileName ? <img src={item.fileIcon} alt="file icon" className="file-icon" /> : <span className="no-file">—</span>}</td>
                 <td>{item.fileName || <span className="no-file">No file</span>}</td>
                 <td>{item.fileType || <span className="no-file">—</span>}</td>
                 <td>
-                  {item.status === 'In Review' ? (
-                    <span className={`status-badge in-review`}>
-                      <motion.div
-                        initial={{ rotate: 0 }}
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                        style={{
-                          width: 15,
-                          height: 15,
-                          borderRadius: '50%',
-                          border: '3px solid #fff',
-                          borderTopColor: '#646669',
-                          marginRight: 5,
-                          display: 'inline-block',
-                        }}
-                      />
-                      In Review
-                    </span>
-                  ) : (
-                    <span className={`status-badge ${statusClass}`}>{item.status}</span>
-                  )}
+                  <div className="oLL-TTDD">
+                    {item.status === 'In Review' ? (
+                      <span className="status-badge in-review">
+                        <motion.div
+                          initial={{ rotate: 0 }}
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                          style={{
+                            width: 15,
+                            height: 15,
+                            borderRadius: '50%',
+                            border: '3px solid #fff',
+                            borderTopColor: '#646669',
+                            marginRight: 5,
+                            display: 'inline-block',
+                          }}
+                        />
+                        In Review
+                      </span>
+                    ) : item.status === 'Rejected' ? (
+                      <span className="status-badge rejected" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <XMarkIcon
+                          className="status-icon"
+                          title="Rejected"
+                          style={{ width: 14, height: 14 }}
+                        />
+                        Rejected{' '}
+                        <button
+                          className="Resss-POla"
+                          title="View/Edit Rejection Reason"
+                          onClick={() => handleViewRejectionReason(item.rejectionReason)}
+                        >
+                          <EyeIcon /> Reason
+                        </button>
+                      </span>
+                    ) : (
+                      <span className={`status-badge ${statusClass}`}>{item.status}</span>
+                    )}
+                  </div>
                 </td>
+
                 <td>
                   {isSubmitted ? (
                     item.fileUrl ? (
-                      <a
-                        href={item.fileUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="submitted-link"
-                      >
-                        Submitted
-                      </a>
+                      <a href={item.fileUrl} target="_blank" rel="noopener noreferrer" className="submitted-link">Submitted</a>
                     ) : (
                       <span className="submitted-text">Submitted</span>
                     )
                   ) : (
-                    item.status !== 'In Review' && (
-                      <div className="gen-td-btns">
-                        <button
-                          className="oooka-BBTns link-btn"
-                          onClick={() => triggerFileInput(index)}
-                        >
-                          {item.file ? (
-                            <>
-                              <PencilIcon />
-                              Edit Upload
-                            </>
-                          ) : (
-                            <>
-                              <CloudArrowUpIcon />
-                              Upload File
-                            </>
-                          )}
-                        </button>
-                        <input
-                          type="file"
-                          accept=".pdf,.jpg,.jpeg,.png"
-                          style={{ display: 'none' }}
-                          ref={(el) => (fileInputRefs.current[index] = el)}
-                          onChange={(e) => handleFileChange(index, e.target.files[0])}
-                        />
-                      </div>
-                    )
+                    <div className="gen-td-btns">
+                      <button className="oooka-BBTns link-btn" onClick={() => triggerFileInput(index)}>
+                        {item.file ? (
+                          <>
+                            <PencilIcon />
+                            Edit Upload
+                          </>
+                        ) : (
+                          <>
+                            <CloudArrowUpIcon />
+                            Upload File
+                          </>
+                        )}
+                      </button>
+                      <input
+                        type="file"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        style={{ display: 'none' }}
+                        ref={(el) => (fileInputRefs.current[index] = el)}
+                        onChange={(e) => handleFileChange(index, e.target.files[0])}
+                      />
+                    </div>
                   )}
                 </td>
               </tr>

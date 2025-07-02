@@ -143,6 +143,17 @@
   -moz-box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
   font-size: 14px;
 }
+.confirm-box h3{
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.confirm-box svg{
+  width:60px;
+  margin-bottom: 10px;
+  color: #c13030;
+}
 
 .confirm-actions {
   margin-top: 20px;
