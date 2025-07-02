@@ -1948,66 +1948,33 @@ function JobApplication() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              style={{
-                position: 'fixed',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                backgroundColor: 'white',
-                borderRadius: '12px',
-                padding: '30px',
-                boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
-                width: '90%',
-                maxWidth: '500px',
-                zIndex: 1001,
-                textAlign: 'center',
-              }}
+            
             >
-              <h3 style={{ marginBottom: '15px', color: '#333', fontSize: '1.5rem' }}>
+              <h3>
                 Resume Access Permission
               </h3>
               
-              <p style={{ marginBottom: '25px', color: '#666', lineHeight: '1.6' }}>
+              <p>
                 To help you fill the application faster, we can extract information from your resume.
                 Do you grant permission to process your resume file?
               </p>
               
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '15px' }}>
-                <button
-                  onClick={() => handlePermissionResponse(false)}
-                  style={{
-                    padding: '10px 25px',
-                    backgroundColor: '#f0f0f0',
-                    color: '#333',
-                    borderRadius: '6px',
-                    border: 'none',
-                    cursor: 'pointer',
-                    fontWeight: '600',
-                    transition: 'background-color 0.2s',
-                  }}
-                  onMouseOver={(e) => e.target.style.backgroundColor = '#e0e0e0'}
-                  onMouseOut={(e) => e.target.style.backgroundColor = '#f0f0f0'}
-                >
-                  No, Upload Only
-                </button>
-                
+              <div className='ouka-UYjjnms'>
+               
                 <button
                   onClick={() => handlePermissionResponse(true)}
-                  style={{
-                    padding: '10px 25px',
-                    backgroundColor: '#4f46e5',
-                    color: 'white',
-                    borderRadius: '6px',
-                    border: 'none',
-                    cursor: 'pointer',
-                    fontWeight: '600',
-                    transition: 'background-color 0.2s',
-                  }}
-                  onMouseOver={(e) => e.target.style.backgroundColor = '#4338ca'}
-                  onMouseOut={(e) => e.target.style.backgroundColor = '#4f46e5'}
+                 className="confirm-yes btn-primary-bg"
                 >
                   Yes, Process My Resume
                 </button>
+
+                 <button
+                  onClick={() => handlePermissionResponse(false)}
+                 className="confirm-cancel"
+                >
+                  No, Upload Only
+                </button>
+
               </div>
               
               <button
