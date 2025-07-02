@@ -267,7 +267,7 @@ const getPosition = (user) => {
                     <UserIcon /> Profile
                   </Link>
                   <Link to="/add-staff" onClick={closeProfileDropdown}>
-                    <PlusIcon /> Add a Staff
+                    <PlusIcon /> Add a User
                   </Link>
                   <button className="logout-btn btn-primary-bg" onClick={handleLogout}>
                     Logout
