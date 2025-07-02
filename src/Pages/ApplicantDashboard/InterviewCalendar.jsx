@@ -23,7 +23,7 @@ const InterviewCalendar = ({ interviewDate }) => {
   const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   return (
-    <div className="interview-calendar">
+    <div className="calendar-container">
       <div className="calendar-header">
         <h3>{format(interviewDate, 'MMMM yyyy')}</h3>
       </div>

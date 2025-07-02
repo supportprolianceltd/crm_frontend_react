@@ -5,9 +5,9 @@
 }
 
 .schedule-header {
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 600;
-  margin-bottom: 10px;
+  margin-bottom: 20px;
 }
 
 .year {
@@ -79,12 +79,12 @@
 }
 
 .aaa-Heada{
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
 }
 
 .appointment .details {
-  font-size: 10px;
+  font-size: 9px;
   color: #372580;
   margin-top: 2px;
 }

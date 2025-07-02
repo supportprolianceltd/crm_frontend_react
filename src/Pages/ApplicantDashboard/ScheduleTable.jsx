@@ -221,15 +221,23 @@ const DailySchedule = ({ schedules = [] }) => {
 
   return (
     <div className="schedule-container">
-      <h2 className="schedule-header">
-        {schedules.length > 0
-          ? `${new Date(schedules[0].interview_date_time).toLocaleDateString('en-US', {
-              month: 'long',
-              day: 'numeric',
-              weekday: 'long',
-            })} <span className="year">${new Date(schedules[0].interview_date_time).getFullYear()}</span>`
-          : 'No Scheduled Interviews'}
-      </h2>
+     <h2 className="schedule-header">
+  {schedules.length > 0 ? (
+    <>
+      {new Date(schedules[0].interview_date_time).toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        weekday: 'long',
+      })}{' '}
+      <span className="year">
+        {new Date(schedules[0].interview_date_time).getFullYear()}
+      </span>
+    </>
+  ) : (
+    'No Scheduled Interviews'
+  )}
+</h2>
+
       {schedules.length > 0 && (
         <div className="schedule-body" style={{ height: `${hours * slotHeight}px` }}>
           {Array.from({ length: hours }, (_, i) => {

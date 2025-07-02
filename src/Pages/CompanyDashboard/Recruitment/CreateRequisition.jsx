@@ -328,7 +328,6 @@ const CreateRequisition = ({ onClose }) => {
               style={{
                 position: 'fixed',
                 top: 10,
-                right: 10,
                 backgroundColor: '#38a169',
                 color: 'white',
                 padding: '10px 20px',

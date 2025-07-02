@@ -1037,13 +1037,11 @@
 
 
 
-
 import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import usePageTitle from '../../hooks/usePageTitle';
 import { ShareIcon } from '@heroicons/react/20/solid';
-import { Link, useNavigate } from 'react-router-dom';
-
+import { Link } from 'react-router-dom';
 import LOGO from '../../assets/Img/logo-lite.png';
 import NoAdvert from '../../assets/Img/noAdvert.png';
 import {
@@ -1056,7 +1054,6 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import config from '../../config';
 import PDFICON from '../../assets/Img/pdf-icon.png';
-import AdvertBanner from '../../assets/Img/Advert-Banner.jpg';
 import { TagIcon } from '@heroicons/react/24/solid';
 const API_BASE_URL = `${config.API_BASE_URL}`;
 
@@ -1083,7 +1080,6 @@ function JobApplication() {
 
   usePageTitle(job.title && job.company_name ? `${job.title} - ${job.company_name}` : 'Job Application');
 
-  const [activeTab, setActiveTab] = useState('upload');
   const [uploadedFile, setUploadedFile] = useState(null);
   const [documents, setDocuments] = useState([]);
   const [formData, setFormData] = useState({
@@ -1200,12 +1196,16 @@ function JobApplication() {
       return;
     }
 
+    const resumeType = job.documents_required.includes('Resume') ? 'Resume' : job.documents_required[0] || '';
+    setSelectedResumeType(resumeType);
+    setAvailableDocTypes((prev) => prev.filter((type) => type !== resumeType));
+
     setErrorMessage('');
     setUploadedFile({
       file: file,
       name: file.name,
       size: (file.size / (1024 * 1024)).toFixed(1),
-      type: selectedResumeType,
+      type: resumeType,
     });
 
     try {
@@ -1244,6 +1244,9 @@ function JobApplication() {
   };
 
   const removeFile = () => {
+    if (uploadedFile?.type) {
+      setAvailableDocTypes((prev) => [...prev, uploadedFile.type].sort());
+    }
     setUploadedFile(null);
     setSelectedResumeType('');
   };
@@ -1323,11 +1326,12 @@ function JobApplication() {
 
     const requiredFields = ['fullName', 'email', 'confirmEmail', 'phone', 'qualification', 'experience'];
     const isFormValid = requiredFields.every((field) => formData[field].trim() !== '');
-    const isResumeUploaded = activeTab === 'noresume' || !!uploadedFile;
+    const isResumeUploaded = !!uploadedFile;
 
     const requiredDocs = job.documents_required || [];
     const uploadedDocTypes = [
       ...new Set([
+        ...(selectedResumeType && uploadedFile ? [selectedResumeType] : []),
         ...documents.map((doc) => doc.type),
       ]),
     ];
@@ -1341,7 +1345,7 @@ function JobApplication() {
     }
 
     if (!isResumeUploaded) {
-      setErrorMessage('Please upload your resume or select "Don\'t have Resume" option.');
+      setErrorMessage('Please upload your resume.');
       return;
     }
 
@@ -1359,14 +1363,12 @@ function JobApplication() {
       return;
     }
 
-    // Validate date_of_birth format
     if (formData.date_of_birth) {
       const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
       if (!dateRegex.test(formData.date_of_birth)) {
         setErrorMessage('Date of Birth must be in YYYY-MM-DD format (e.g., 2025-07-01).');
         return;
       }
-      // Optionally, validate if the date is valid
       const date = new Date(formData.date_of_birth);
       if (isNaN(date.getTime())) {
         setErrorMessage('Invalid Date of Birth. Please select a valid date.');
@@ -1384,7 +1386,6 @@ function JobApplication() {
       formDataToSend.append('full_name', formData.fullName);
       formDataToSend.append('email', formData.email);
       formDataToSend.append('phone', formData.phone);
-      // Only append date_of_birth if it exists and is valid
       if (formData.date_of_birth) {
         formDataToSend.append('date_of_birth', formData.date_of_birth);
       }
@@ -1392,12 +1393,11 @@ function JobApplication() {
       formDataToSend.append('experience', formData.experience);
       formDataToSend.append('knowledge_skill', formData.knowledgeSkill);
       formDataToSend.append('cover_letter', formData.coverLetter);
-      formDataToSend.append('resume_status', activeTab === 'upload');
 
       let docIndex = 0;
       const providedDocTypes = [];
 
-      if (uploadedFile && activeTab === 'upload' && selectedResumeType) {
+      if (uploadedFile && selectedResumeType) {
         if (job.documents_required.includes(selectedResumeType)) {
           formDataToSend.append(`documents[${docIndex}][document_type]`, selectedResumeType);
           formDataToSend.append(`documents[${docIndex}][file]`, uploadedFile.file, uploadedFile.name);
@@ -1537,7 +1537,7 @@ function JobApplication() {
       <div className='gggyh-dalik'>
         <div className='large-container gggyh-dalik-main'>
           <Link to="/" className="Nav-Brand GUK-Loffoa">
-            <img src={job.advert_banner} alt="logo" />
+            <img src={LOGO} alt="logo" />
             <span>Jobs</span>
           </Link>
           <h4><TagIcon /> {job.job_application_code}</h4>
@@ -1582,6 +1582,9 @@ function JobApplication() {
         <div className="large-container">
           <div className="gtht-secs-Main">
             <div className="gtht-secs-Part1">
+              <div className='jjab-Banner'>
+                <img src={job.advert_banner} alt="Job banner" />
+              </div>
               <div className="gtht-secs-IIjah-Box">
                 <h3>Job Description</h3>
                 <div className="gtht-secs-IIjah-Box-Ddfa">
@@ -1650,222 +1653,218 @@ function JobApplication() {
                     <p>The company has stopped taking applications.</p>
                   </div>
                 ) : (
-                  <>
-                    <div className="gtht-secs-Part2-Box-Mainna">
-                      {activeTab === 'upload' && (
-                        <div className="cv-upload-sec">
-                          <h4>Upload Your File</h4>
-                          <div className="cv-uploa-box">
-                            <div
-                              className="cv-uploa-box-Top"
-                              onClick={handleClickUpload}
-                              onDrop={handleFileDrop}
-                              onDragOver={(e) => e.preventDefault()}
-                            >
-                              <span>
-                                <ArrowUpTrayIcon />
-                              </span>
-                              <h4>
-                                Drag & Drop or <u>Choose File</u> to upload
-                              </h4>
-                              <p>Upload a file to auto-fill your application details (PDF or Word, .doc, .docx). File size limit: 50 MB.</p>
-                              <input
-                                type="file"
-                                accept=".pdf,.doc,.docx"
-                                ref={fileInputRef}
-                                style={{ display: 'none' }}
-                                onChange={handleFileChange}
-                              />
-                            </div>
-                            {uploadedFile && (
-                              <div className="cv-uploa-box-Foot Gen-Boxshadow">
-                                <div className="cv-uploa-box-Foot-1">
-                                  <div className="cv-uploa-box-Foot-10">
-                                    <img src={PDFICON} alt="Document Icon" />
-                                  </div>
-                                  <div className="cv-uploa-box-Foot-11">
-                                    <div>
-                                      <h4>{uploadedFile.name}</h4>
-                                      <p>
-                                        <span>{uploadedFile.size}MB</span>
-                                        <i></i>
-                                        <span>
-                                          <CheckCircleIcon /> File size
-                                        </span>
-                                      </p>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="cv-uploa-box-Foot-2">
-                                  <span onClick={removeFile}>
-                                    <TrashIcon />
-                                  </span>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                      <div className="FooorM-Sec">
-                        {[
-                          {
-                            label: 'Full Name',
-                            placeholder: 'Enter your full name',
-                            name: 'fullName',
-                            required: true,
-                          },
-                          {
-                            label: 'Email Address',
-                            placeholder: 'Enter your email address',
-                            name: 'email',
-                            required: true,
-                          },
-                          {
-                            label: 'Confirm Email Address',
-                            placeholder: 'Enter your confirm email address',
-                            name: 'confirmEmail',
-                            required: true,
-                          },
-                          {
-                            label: 'Phone Number',
-                            placeholder: 'Enter your phone number',
-                            name: 'phone',
-                            required: true,
-                          },
-                          {
-                            label: 'Date of Birth (Optional)',
-                            placeholder: 'Enter your date of birth',
-                            name: 'date_of_birth',
-                            type: 'date',
-                            required: false,
-                          },
-                          {
-                            label: 'Qualification',
-                            placeholder: 'Enter your highest qualification',
-                            name: 'qualification',
-                            required: true,
-                          },
-                          {
-                            label: 'Experience',
-                            placeholder: 'Enter your years of experience',
-                            name: 'experience',
-                            required: true,
-                          },
-                          {
-                            label: 'Knowledge/Skill (Optional)',
-                            placeholder: 'List relevant skills or knowledge',
-                            name: 'knowledgeSkill',
-                            required: false,
-                          },
-                        ].map((field, idx) => (
-                          <div className="GHuh-Form-Input" key={idx}>
-                            <label>{field.label}</label>
-                            {field.type === 'date' ? (
-                              <input
-                                type="date"
-                                name={field.name}
-                                value={formData[field.name]}
-                                onChange={handleInputChange}
-                                required={field.required}
-                                max={new Date().toISOString().split('T')[0]}
-                              />
-                            ) : (
-                              <input
-                                type="text"
-                                name={field.name}
-                                placeholder={field.placeholder}
-                                value={formData[field.name]}
-                                onChange={handleInputChange}
-                                required={field.required}
-                              />
-                            )}
-                          </div>
-                        ))}
-                        {job.documents_required && job.documents_required.length > 0 ? (
-                          <div className="GHuh-Form-Input">
-                            <label>Document Uploads (Required)</label>
-                            <select onChange={handleDocTypeChange} value={selectedDocType}>
-                              <option value="">--Select document to upload--</option>
-                              {availableDocTypes.map((type, idx) => (
-                                <option key={idx} value={type}>{type}</option>
-                              ))}
-                            </select>
-                            <input
-                              type="file"
-                              accept=".pdf,.doc,.docx"
-                              ref={documentsInputRef}
-                              multiple
-                              style={{ display: 'none' }}
-                              onChange={handleDocumentUpload}
-                            />
-                          </div>
-                        ) : (
-                          <p>No additional documents required for this job.</p>
-                        )}
-                        {documents.length > 0 &&
-                          documents.map((doc, index) => (
-                            <div className="Gtahy-SSa" key={index}>
-                              <div className="Gtahy-SSa-1">
-                                <div className="Gtahy-SSa-11">
-                                  <div>
-                                    <h4>
-                                      {doc.name} ({doc.type})
-                                    </h4>
-                                    <p>
-                                      <span>{doc.size}MB</span>
-                                      <i></i>
-                                      <span>
-                                        <CheckCircleIcon /> File size
-                                      </span>
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="Gtahy-SSa-2">
-                                <span onClick={() => removeDocument(index)}>
-                                  <XMarkIcon />
-                                </span>
-                              </div>
-                            </div>
-                          ))}
-                        <div className="GHuh-Form-Input">
-                          <label>Cover Letter (Optional)</label>
-                          <textarea
-                            name="coverLetter"
-                            placeholder="Write your cover letter here"
-                            value={formData.coverLetter}
-                            onChange={handleInputChange}
+                  <div className="gtht-secs-Part2-Box-Mainna">
+                    <div className="cv-upload-sec">
+                      <h4>Upload Your Resume</h4>
+                      <div className="cv-uploa-box">
+                        <div
+                          className="cv-uploa-box-Top"
+                          onClick={handleClickUpload}
+                          onDrop={handleFileDrop}
+                          onDragOver={(e) => e.preventDefault()}
+                        >
+                          <span>
+                            <ArrowUpTrayIcon />
+                          </span>
+                          <h4>
+                            Drag & Drop or <u>Choose File</u> to upload
+                          </h4>
+                          <p>Upload a file to auto-fill your application details (PDF or Word, .doc, .docx). File size limit: 50 MB.</p>
+                          <input
+                            type="file"
+                            accept=".pdf,.doc,.docx"
+                            ref={fileInputRef}
+                            style={{ display: 'none' }}
+                            onChange={handleFileChange}
                           />
                         </div>
-                        <div className="GHuh-Form-Input">
-                          <button
-                            className="submiii-btnn btn-primary-bg"
-                            onClick={handleSubmit}
-                            disabled={isSubmitting || isDeadlineExpired}
-                          >
-                            {isSubmitting && (
-                              <motion.div
-                                initial={{ rotate: 0 }}
-                                animate={{ rotate: 360 }}
-                                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                                style={{
-                                  width: 15,
-                                  height: 15,
-                                  borderRadius: '50%',
-                                  border: '3px solid #fff',
-                                  borderTopColor: 'transparent',
-                                  marginRight: '5px',
-                                  display: 'inline-block',
-                                }}
-                              />
-                            )}
-                            {isSubmitting ? 'Submitting...' : 'Submit application'}
-                          </button>
-                          {errorMessage && <p className="error">{errorMessage}</p>}
-                        </div>
+                        {uploadedFile && (
+                          <div className="cv-uploa-box-Foot Gen-Boxshadow">
+                            <div className="cv-uploa-box-Foot-1">
+                              <div className="cv-uploa-box-Foot-10">
+                                <img src={PDFICON} alt="Document Icon" />
+                              </div>
+                              <div className="cv-uploa-box-Foot-11">
+                                <div>
+                                  <h4>{uploadedFile.name}</h4>
+                                  <p>
+                                    <span>{uploadedFile.size}MB</span>
+                                    <i></i>
+                                    <span>
+                                      <CheckCircleIcon /> File size
+                                    </span>
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="cv-uploa-box-Foot-2">
+                              <span onClick={removeFile}>
+                                <TrashIcon />
+                              </span>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
-                  </>
+                    <div className="FooorM-Sec">
+                      {[
+                        {
+                          label: 'Full Name',
+                          placeholder: 'Enter your full name',
+                          name: 'fullName',
+                          required: true,
+                        },
+                        {
+                          label: 'Email Address',
+                          placeholder: 'Enter your email address',
+                          name: 'email',
+                          required: true,
+                        },
+                        {
+                          label: 'Confirm Email Address',
+                          placeholder: 'Enter your confirm email address',
+                          name: 'confirmEmail',
+                          required: true,
+                        },
+                        {
+                          label: 'Phone Number',
+                          placeholder: 'Enter your phone number',
+                          name: 'phone',
+                          required: true,
+                        },
+                        {
+                          label: 'Date of Birth (Optional)',
+                          placeholder: 'Enter your date of birth',
+                          name: 'date_of_birth',
+                          type: 'date',
+                          required: false,
+                        },
+                        {
+                          label: 'Qualification',
+                          placeholder: 'Enter your highest qualification',
+                          name: 'qualification',
+                          required: true,
+                        },
+                        {
+                          label: 'Experience',
+                          placeholder: 'Enter your years of experience',
+                          name: 'experience',
+                          required: true,
+                        },
+                        {
+                          label: 'Knowledge/Skill (Optional)',
+                          placeholder: 'List relevant skills or knowledge',
+                          name: 'knowledgeSkill',
+                          required: false,
+                        },
+                      ].map((field, idx) => (
+                        <div className="GHuh-Form-Input" key={idx}>
+                          <label>{field.label}</label>
+                          {field.type === 'date' ? (
+                            <input
+                              type="date"
+                              name={field.name}
+                              value={formData[field.name]}
+                              onChange={handleInputChange}
+                              required={field.required}
+                              max={new Date().toISOString().split('T')[0]}
+                            />
+                          ) : (
+                            <input
+                              type="text"
+                              name={field.name}
+                              placeholder={field.placeholder}
+                              value={formData[field.name]}
+                              onChange={handleInputChange}
+                              required={field.required}
+                            />
+                          )}
+                        </div>
+                      ))}
+                      {job.documents_required && job.documents_required.length > 0 ? (
+                        <div className="GHuh-Form-Input">
+                          <label>Additional Document Uploads (Required)</label>
+                          <select onChange={handleDocTypeChange} value={selectedDocType}>
+                            <option value="">--Select document to upload--</option>
+                            {availableDocTypes.map((type, idx) => (
+                              <option key={idx} value={type}>{type}</option>
+                            ))}
+                          </select>
+                          <input
+                            type="file"
+                            accept=".pdf,.doc,.docx"
+                            ref={documentsInputRef}
+                            multiple
+                            style={{ display: 'none' }}
+                            onChange={handleDocumentUpload}
+                          />
+                        </div>
+                      ) : (
+                        <p>No additional documents required for this job.</p>
+                      )}
+                      {documents.length > 0 &&
+                        documents.map((doc, index) => (
+                          <div className="Gtahy-SSa" key={index}>
+                            <div className="Gtahy-SSa-1">
+                              <div className="Gtahy-SSa-11">
+                                <div>
+                                  <h4>
+                                    {doc.name} ({doc.type})
+                                  </h4>
+                                  <p>
+                                    <span>{doc.size}MB</span>
+                                    <i></i>
+                                    <span>
+                                      <CheckCircleIcon /> File size
+                                    </span>
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="Gtahy-SSa-2">
+                              <span onClick={() => removeDocument(index)}>
+                                <XMarkIcon />
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      <div className="GHuh-Form-Input">
+                        <label>Cover Letter (Optional)</label>
+                        <textarea
+                          name="coverLetter"
+                          placeholder="Write your cover letter here"
+                          value={formData.coverLetter}
+                          onChange={handleInputChange}
+                        />
+                      </div>
+                      <div className="GHuh-Form-Input">
+                        <button
+                          className="submiii-btnn btn-primary-bg"
+                          onClick={handleSubmit}
+                          disabled={isSubmitting || isDeadlineExpired}
+                        >
+                          {isSubmitting && (
+                            <motion.div
+                              initial={{ rotate: 0 }}
+                              animate={{ rotate: 360 }}
+                              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                              style={{
+                                width: 15,
+                                height: 15,
+                                borderRadius: '50%',
+                                border: '3px solid #fff',
+                                borderTopColor: 'transparent',
+                                marginRight: '5px',
+                                display: 'inline-block',
+                              }}
+                            />
+                          )}
+                          {isSubmitting ? 'Submitting...' : 'Submit application'}
+                        </button>
+                        {errorMessage && <p className="error">{errorMessage}</p>}
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
@@ -1883,6 +1882,7 @@ function JobApplication() {
             style={{
               position: 'fixed',
               top: 10,
+              right: 10,
               backgroundColor: '#4caf50',
               color: 'white',
               padding: '10px 20px',

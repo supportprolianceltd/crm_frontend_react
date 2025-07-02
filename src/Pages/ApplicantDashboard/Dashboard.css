@@ -15,7 +15,10 @@
 }
 
 .AAPpl-NAvsb{
-    position: relative;
+    position: fixed;
+    z-index: 2000;
+    right: 10%;
+    top: 15px;
 }
 
 .application-dashboard-nav .Fritop-Nav .AAPpl-NAvsb{
@@ -27,8 +30,6 @@
     display: grid;
     grid-template-columns: auto 1fr auto;
     gap: 10px;
-    user-select: none;
-    cursor: pointer;
 }
 
 
@@ -484,15 +485,17 @@ color: #7226FF !important;
 }
 
 .calendar-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 20px !important;
+  padding: 0px !important;
 }
 
 .calendar-header h3 {
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: #372580 !important;
 }
 
 .calendar-header button {
@@ -521,6 +524,14 @@ color: #7226FF !important;
   margin-bottom: 10px;
   text-transform: uppercase;
 }
+.calendar-weekday{
+    position: relative;
+    margin-bottom: 10px !important;
+    text-transform: uppercase !important;
+      font-weight: 500 !important;
+  color: #6b7280 !important;
+  font-size: 10px !important;
+}
 
 .calendar-days {
   display: grid;
@@ -529,31 +540,36 @@ color: #7226FF !important;
 }
 
 .calendar-day {
-  height: 50px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  position: relative;
+  height: 45px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 8px !important;
+  font-weight: 400 !important;
+  cursor: default!important;
+  transition: all 0.2s ease !important;
+  position: relative !important;
   border: 1px solid transparent;
-  font-size: 11px;
+  font-size: 11px !important;
+  color: #372580 !important;
 }
 
 .calendar-day:hover {
-  background-color: #f7f5ff;
+  background-color: #f7f5ff !important;
 }
 
 .calendar-day.other-month {
   color: #9ca3af;
 }
 
+.calendar-day.highlight,
 .calendar-day.selected {
-  border: 1px solid #7226FF;
-  background-color: #f5f0ff;
+  border: 1px solid #7226FF !important;
+  background-color: #ebe6ff !important;
+  color: #7226FF !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
 }
 
 .calendar-day.interview-day {
@@ -585,7 +601,7 @@ color: #7226FF !important;
 }
 
 .OUauj-Biaoo h3{
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
 }
 
@@ -607,7 +623,7 @@ color: #7226FF !important;
     justify-content: space-between;
     gap: 10px;
     flex-wrap: wrap;
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 600;
     margin-bottom: 5px;
 }
@@ -622,15 +638,18 @@ color: #7226FF !important;
 }
 
 .OUauj-Biaoo-ManD p{
-    font-size: 12px;
+    font-size: 10px;
 }
-
+.olik-ALlter{
+    z-index: 3000 !important;
+    font-size: 12px !important;
+}
 
 .OUauj-Biaoo-ManD h6{
     position: relative;
     width: 100%;
     height: auto;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 400;
     white-space: nowrap;
     overflow: hidden;
@@ -649,7 +668,7 @@ color: #7226FF !important;
     margin-top: 10px;
     padding: 8px 15px;
     border-radius: 30px;
-    font-size: 12px;
+    font-size: 10px;
     user-select: none;
     cursor: pointer;
 }
@@ -716,7 +735,13 @@ color: #7226FF !important;
 .job-details p strong{
     font-weight: 600;
 }
+.job-status .status-hired,
+.job-status .status-rejected,
+.job-status .status-shortlisted{
+    font-weight: 600 !important;
+    text-transform: capitalize !important;
 
+}
 .congrats-message {
   margin-top: 30px;
   padding: 20px;
