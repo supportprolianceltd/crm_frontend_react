@@ -90,7 +90,7 @@ const PerformanceGraph = ({ data }) => {
             x={point.x} 
             y={height - padding + 20} 
             textAnchor="middle" 
-            fill="#6b7280" 
+            fill="#5d5677" 
             fontSize={12}
           >
             {point.stage}
@@ -154,7 +154,7 @@ const PerformanceGraph = ({ data }) => {
           y1={height - padding} 
           x2={width - padding} 
           y2={height - padding} 
-          stroke="#9ca3af" 
+          stroke="#e2e8f0" 
           strokeWidth={1.5}
         />
         <line 
@@ -162,7 +162,7 @@ const PerformanceGraph = ({ data }) => {
           y1={padding} 
           x2={padding} 
           y2={height - padding} 
-          stroke="#9ca3af" 
+          stroke="#e2e8f0" 
           strokeWidth={1.5}
         />
       </svg>
