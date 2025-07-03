@@ -137,9 +137,9 @@ const PerformanceGraph = ({ data }) => {
             x={point.x}
             y={point.y - 15}
             textAnchor="middle"
-            fill="#1e40af"
+            fill="#372580"
             fontWeight="600"
-            fontSize={12}
+            fontSize={10}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8 + (i * 0.2) }}

@@ -1438,9 +1438,8 @@
         }
         
         .graph-header h3 {
-          font-size: 1.125rem;
+          font-size: 14px;
           font-weight: 600;
-          color: #1f2937;
         }
         
         .graph-legend {
@@ -1455,14 +1454,14 @@
         }
         
         .legend-color {
-          width: 16px;
-          height: 16px;
+          width: 14px;
+          height: 14px;
           border-radius: 4px;
         }
         
         .legend-item span {
-          font-size: 0.875rem;
-          color: #6b7280;
+          font-size: 13px;
+          color: #5d5677;
         }
         
         .performance-graph {
