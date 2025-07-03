@@ -80,7 +80,7 @@ const PerformanceGraph = ({ data }) => {
         <div className="graph-legend">
           <div className="legend-item">
             <div className="legend-color" style={{ backgroundColor: '#7226FF' }}></div>
-            <span>Performance Score - 100%</span>
+            <span>Performance Score - 75%</span>
           </div>
         </div>
       </div>
