@@ -49,6 +49,8 @@
 // };
 
 // export default JobDecision;
+
+
 import React from 'react';
 import { CheckCircleIcon } from '@heroicons/react/24/solid';
 import './Dashboard.css';
@@ -58,9 +60,9 @@ const JobDecision = ({ jobApplication, jobRequisition }) => {
     window.location.href = '/staff-dashboard';
   };
 
-  console.log(jobApplication)
-  console.log(jobApplication)
-  console.log(jobApplication)
+  // console.log(jobApplication)
+  // console.log(jobApplication)
+  // console.log(jobApplication)
 
   const isHired = jobApplication.status === 'hired';
 
