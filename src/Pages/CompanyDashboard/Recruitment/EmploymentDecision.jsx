@@ -187,7 +187,7 @@ const EmploymentDecision = () => {
     { stage: "Application", score: 100 },
     { stage: "Interview", score: 100 },
     { stage: "Compliance", score: 100 },
-    { stage: "Decision", score: 50 }
+    { stage: "Decision", score: 0 }
   ];
 
   useEffect(() => {
