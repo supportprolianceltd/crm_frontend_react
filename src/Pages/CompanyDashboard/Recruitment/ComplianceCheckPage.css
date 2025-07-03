@@ -1440,6 +1440,13 @@
         .graph-header h3 {
           font-size: 14px;
           font-weight: 600;
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .graph-header h3 svg{
+            width: 16px;
         }
         
         .graph-legend {

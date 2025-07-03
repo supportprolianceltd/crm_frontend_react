@@ -6,9 +6,11 @@ import {
   ExclamationTriangleIcon,
   DocumentTextIcon,
   CheckIcon,
+  ArrowTrendingUpIcon,
   PencilIcon,
   CheckBadgeIcon
 } from '@heroicons/react/24/outline';
+
 import SampleCV from '../../../assets/resume.pdf';
 
 const initialApplicants = [
@@ -47,7 +49,7 @@ const PerformanceGraph = ({ data }) => {
   return (
     <div className="performance-graph-container">
       <div className="graph-header">
-        <h3>Process Metrics</h3>
+        <h3>Process Metrics <ArrowTrendingUpIcon /></h3>
         <div className="graph-legend">
           <div className="legend-item">
             <div className="legend-color" style={{ backgroundColor: '#7226FF' }}></div>
@@ -170,7 +172,7 @@ const PerformanceGraph = ({ data }) => {
   );
 };
 
-const EmploymentDecision = () => {
+const EmploymentDecision = ({ onClose }) => {
   const [searchValue,  setSearchValue]  = useState('');
   const [selectedInitials, setSelected] = useState('JS');
   const [applicants,    setApplicants]  = useState(initialApplicants);
@@ -258,11 +260,11 @@ const EmploymentDecision = () => {
 
   return (
     <div className="EmploymentDecision">
-      <button className="EmploymentDecision-btn">
+      <button className="EmploymentDecision-btn"  onClick={onClose} >
         <XMarkIcon className="h-6 w-6" />
       </button>
 
-      <div className="EmploymentDecision-Body" />
+      <div className="EmploymentDecision-Body"  onClick={onClose} />
 
       <motion.div
         initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }}
