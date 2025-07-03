@@ -1034,9 +1034,6 @@
 
 
 
-
-
-
 import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import usePageTitle from '../../hooks/usePageTitle';
@@ -1066,6 +1063,30 @@ function JobApplication() {
   const [selectedResumeType, setSelectedResumeType] = useState('');
   const [isLinkCopied, setIsLinkCopied] = useState(false);
   const [isDeadlineExpired, setIsDeadlineExpired] = useState(false);
+  // Permission prompt state
+  const [permissionPrompt, setPermissionPrompt] = useState({
+    isOpen: false,
+    file: null,
+  });
+
+  // Ref for permission prompt
+  const permissionPromptRef = useRef(null);
+
+  // Handle click outside permission prompt
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (permissionPromptRef.current && 
+          !permissionPromptRef.current.contains(event.target) && 
+          permissionPrompt.isOpen) {
+        handlePermissionResponse(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [permissionPrompt.isOpen]);
 
   const handleCopyLink = () => {
     const jobLink = window.location.href;
@@ -1180,7 +1201,7 @@ function JobApplication() {
     processFile(file);
   };
 
-  const processFile = async (file) => {
+  const processFile = (file) => {
     if (!file) return;
     const allowedTypes = [
       'application/pdf',
@@ -1196,21 +1217,36 @@ function JobApplication() {
       return;
     }
 
-    const resumeType = job.documents_required.includes('Resume') ? 'Resume' : job.documents_required[0] || '';
-    setSelectedResumeType(resumeType);
-    setAvailableDocTypes((prev) => prev.filter((type) => type !== resumeType));
-
-    setErrorMessage('');
-    setUploadedFile({
-      file: file,
-      name: file.name,
-      size: (file.size / (1024 * 1024)).toFixed(1),
-      type: resumeType,
+    // Show permission prompt instead of processing immediately
+    setPermissionPrompt({
+      isOpen: true,
+      file: file
     });
+  };
 
+  // Handle permission response
+  const handlePermissionResponse = async (granted) => {
+    if (!granted) {
+      // If denied, just set the file without parsing
+      const resumeType = job.documents_required.includes('Resume') ? 'Resume' : job.documents_required[0] || '';
+      setSelectedResumeType(resumeType);
+      setAvailableDocTypes((prev) => prev.filter((type) => type !== resumeType));
+      
+      setUploadedFile({
+        file: permissionPrompt.file,
+        name: permissionPrompt.file.name,
+        size: (permissionPrompt.file.size / (1024 * 1024)).toFixed(1),
+        type: resumeType,
+      });
+      
+      setPermissionPrompt({ isOpen: false, file: null });
+      return;
+    }
+
+    // If granted, proceed with parsing
     try {
       const formDataToSend = new FormData();
-      formDataToSend.append('resume', file);
+      formDataToSend.append('resume', permissionPrompt.file);
       formDataToSend.append('unique_link', unique_link);
 
       const response = await fetch(`${API_BASE_URL}/api/talent-engine-job-applications/applications/parse-resume/autofil/`, {
@@ -1221,25 +1257,37 @@ function JobApplication() {
       if (!response.ok) {
         const errorData = await response.json();
         setErrorMessage(errorData.detail || 'Failed to parse resume. Please fill the form manually.');
-        return;
+      } else {
+        const { data } = await response.json();
+        setFormData((prev) => ({
+          ...prev,
+          fullName: data.full_name || prev.fullName,
+          email: data.email || prev.email,
+          confirmEmail: data.email || prev.confirmEmail,
+          phone: data.phone || prev.phone,
+          qualification: data.qualification || prev.qualification,
+          date_of_birth: data.date_of_birth || prev.date_of_birth,
+          experience: data.experience || prev.experience,
+          knowledgeSkill: data.knowledge_skill || prev.knowledgeSkill,
+        }));
+        setErrorMessage('');
       }
-
-      const { data } = await response.json();
-      setFormData((prev) => ({
-        ...prev,
-        fullName: data.full_name || prev.fullName,
-        email: data.email || prev.email,
-        confirmEmail: data.email || prev.confirmEmail,
-        phone: data.phone || prev.phone,
-        qualification: data.qualification || prev.qualification,
-        date_of_birth: data.date_of_birth || prev.date_of_birth,
-        experience: data.experience || prev.experience,
-        knowledgeSkill: data.knowledge_skill || prev.knowledgeSkill,
-      }));
-      setErrorMessage('');
     } catch (err) {
       console.error('Error parsing resume:', err);
       setErrorMessage('Failed to parse resume. Please fill the form manually.');
+    } finally {
+      const resumeType = job.documents_required.includes('Resume') ? 'Resume' : job.documents_required[0] || '';
+      setSelectedResumeType(resumeType);
+      setAvailableDocTypes((prev) => prev.filter((type) => type !== resumeType));
+      
+      setUploadedFile({
+        file: permissionPrompt.file,
+        name: permissionPrompt.file.name,
+        size: (permissionPrompt.file.size / (1024 * 1024)).toFixed(1),
+        type: resumeType,
+      });
+      
+      setPermissionPrompt({ isOpen: false, file: null });
     }
   };
 
@@ -1871,6 +1919,83 @@ function JobApplication() {
           </div>
         </div>
       </section>
+      
+      {/* Permission Prompt */}
+      <AnimatePresence>
+        {permissionPrompt.isOpen && (
+          <>
+            <motion.div
+              className="permission-overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.5 }}
+              exit={{ opacity: 0 }}
+              onClick={() => handlePermissionResponse(false)}
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'black',
+                zIndex: 1000,
+              }}
+            />
+            
+            <motion.div
+              ref={permissionPromptRef}
+              className="permission-prompt"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+            
+            >
+              <h3>
+                Resume Access Permission
+              </h3>
+              
+              <p>
+                To help you fill the application faster, we can extract information from your resume.
+                Do you grant permission to process your resume file?
+              </p>
+              
+              <div className='ouka-UYjjnms'>
+               
+                <button
+                  onClick={() => handlePermissionResponse(true)}
+                 className="confirm-yes btn-primary-bg"
+                >
+                  Yes, Process My Resume
+                </button>
+
+                 <button
+                  onClick={() => handlePermissionResponse(false)}
+                 className="confirm-cancel"
+                >
+                  No, Upload Only
+                </button>
+
+              </div>
+              
+              <button
+                onClick={() => handlePermissionResponse(false)}
+                style={{
+                  position: 'absolute',
+                  top: '15px',
+                  right: '15px',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: '#999',
+                }}
+              >
+                <XMarkIcon className="h-6 w-6" />
+              </button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+      
       <AnimatePresence>
         {showSuccess && (
           <motion.div

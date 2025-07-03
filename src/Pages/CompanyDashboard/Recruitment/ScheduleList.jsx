@@ -545,13 +545,6 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
                   className="oujka-Inpuauy OIUja-Tettxa"
                   placeholder="Enter any additional message"
                   disabled={!isEditable}
-                  style={{
-                    width: '100%',
-                    padding: '0.5rem',
-                    borderRadius: '4px',
-                    border: '1px solid #ccc',
-                    minHeight: '100px',
-                  }}
                 />
               </div>
 

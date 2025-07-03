@@ -124,11 +124,11 @@ const SideNavBar = ({ setShrinkNav }) => {
             to={`${basePath}/task`}
           />
           <MenuItem
-            name="hiring"
-            label="Hiring"
+            name="users"
+            label="Users"
             OutlineIcon={UserGroupOutline}
             SolidIcon={UserGroupSolid}
-            to={`${basePath}/hiring`}
+            to={`${basePath}/users`}
           />
           <MenuItem
             name="calendar"
@@ -164,7 +164,7 @@ const SideNavBar = ({ setShrinkNav }) => {
           />
           <MenuItem
             name="report"
-            label="Report"
+            label="Audit & Report"
             OutlineIcon={ChartBarOutline}
             SolidIcon={ChartBarSolid}
             to={`${basePath}/report`}
