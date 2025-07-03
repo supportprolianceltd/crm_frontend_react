@@ -375,7 +375,7 @@ const EmploymentDecision = ({ onClose }) => {
                         </div>
                       </td>
                       <td>
-                        <span className={`status-badge ${selectedApplicant.status.toLowerCase()}`}>
+                        <span className={`All-status-badge ${selectedApplicant.status.toLowerCase()}`}>
                           {selectedApplicant.status}
                         </span>
                       </td>
