@@ -521,8 +521,18 @@ const EmploymentDecision = ({ onClose }) => {
                       overflow: 'hidden'
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <ExclamationTriangleIcon style={{ marginRight: '8px', width: '18px' }} />
+                    <div className='olail-PPOla'>
+                         <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 500,
+                            damping: 10,
+                          }}
+                        >
+                          <ExclamationTriangleIcon />
+                        </motion.div>
                       <span>{modalError}</span>
                     </div>
                   </motion.div>

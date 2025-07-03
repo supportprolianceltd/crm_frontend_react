@@ -1493,3 +1493,13 @@
             font-size: 10px !important;
             margin-top: 10px;
         }
+
+        .olail-PPOla{
+            position: relative;
+            display: flex;
+            align-items: flex-start;
+            gap: 5px;
+        }
+        .olail-PPOla svg{
+            width: 14px;
+        }
