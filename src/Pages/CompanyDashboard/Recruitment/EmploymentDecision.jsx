@@ -47,7 +47,7 @@ const PerformanceGraph = ({ data }) => {
   return (
     <div className="performance-graph-container">
       <div className="graph-header">
-        <h3>Candidate Performance Metrics</h3>
+        <h3>Process Metrics</h3>
         <div className="graph-legend">
           <div className="legend-item">
             <div className="legend-color" style={{ backgroundColor: '#7226FF' }}></div>
@@ -321,7 +321,7 @@ const EmploymentDecision = () => {
               </div>
             </div>
           </div>
-
+    <div className='OOlaols-POpp custom-scroll-bar'>
           <div className="Dash-OO-Boas dOikpO-PPol oluja-PPPl olika-ola">
             <div className="table-container">
               <table className="Gen-Sys-table">
@@ -409,6 +409,7 @@ const EmploymentDecision = () => {
               </motion.div>
             )}
           </div>
+        </div>
         </div>
       </motion.div>
 
