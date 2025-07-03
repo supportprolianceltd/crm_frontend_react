@@ -9,8 +9,8 @@ WEB_PAGE__URL : 'https://crm-frontend-react.vercel.app',
 
 GOOGLE_CLIENT_ID: 'your-google-client-id', // Replace with your Google OAuth Client ID
 };
-
 export default config;
+
 
 // ENDPOINTS
 // GET All Tenants: http://127.0.0.1:9090/api/tenant/tenants/

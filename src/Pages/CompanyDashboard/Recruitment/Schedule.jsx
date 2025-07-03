@@ -56,6 +56,8 @@ const Schedule = () => {
             id: index + 1,
             title: item.job_requisition.title,
             posted: postedText,
+            job_location: item.job_requisition.job_location,
+            company_address: item.job_requisition.company_address,
             job_application_code: item.job_requisition.job_application_code,
             unique_link: item.job_requisition.unique_link,
             applicants: item.shortlisted_applications.map((app, appIndex) => {
@@ -90,6 +92,9 @@ const Schedule = () => {
         });
 
         setJobs(transformedJobs);
+        // console.log("jobs")
+        // console.log(jobs)
+        // console.log("jobs")
         if (transformedJobs.length > 0) {
           setActiveJobId(transformedJobs[0].id);
         }
@@ -638,6 +643,19 @@ const Schedule = () => {
                     />
                   </div>
                 )}
+{/* 
+                {meetingMode === 'Physical' && (
+                  <div className="GGtg-DDDVa">
+                    <label>Interview Address:</label>
+                    <input
+                      type="text"
+                      value={interviewAddress}
+                      onChange={(e) => setInterviewAddress(e.target.value)}
+                      placeholder="Enter interview address"
+                      className="oujka-Inpuauy"
+                    />
+                  </div>
+                )} */}
 
                 {meetingMode === 'Physical' && (
                   <div className="GGtg-DDDVa">
@@ -649,6 +667,49 @@ const Schedule = () => {
                       placeholder="Enter interview address"
                       className="oujka-Inpuauy"
                     />
+                    {/* Address Suggestions */}
+                    {(activeJob.company_address || activeJob.job_location) ? (
+                      <div className="address-suggestions" style={{ marginTop: '0.5rem' }}>
+                        <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '0.5rem' }}>
+                          Suggested Addresses:
+                        </p>
+                        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                          {activeJob.company_address && (
+                            <li
+                              style={{
+                                cursor: 'pointer',
+                                padding: '0.5rem',
+                                backgroundColor: interviewAddress === activeJob.company_address ? '#ebe6ff' : '#f7f5ff',
+                                borderRadius: '4px',
+                                marginBottom: '0.25rem',
+                              }}
+                              onClick={() => setInterviewAddress(activeJob.company_address)}
+                            >
+                              <span style={{ color: '#7226FF' }}>Company Address:</span> {activeJob.company_address}
+                            </li>
+                          )}
+                          {activeJob.job_location && (
+                            <li
+                              style={{
+                                cursor: 'pointer',
+                                padding: '0.5rem',
+                                backgroundColor: interviewAddress === activeJob.job_location ? '#ebe6ff' : '#f7f5ff',
+                                borderRadius: '4px',
+                              }}
+                              onClick={() => setInterviewAddress(activeJob.job_location)}
+                            >
+                              <span style={{ color: '#7226FF' }}>Job Location:</span> {activeJob.job_location}
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    ) : (
+                      <div className="no-suggestions" style={{ marginTop: '0.5rem' }}>
+                        <p style={{ fontSize: '0.9rem', color: '#666', margin: 0 }}>
+                          No suggested addresses available. Please enter a custom address.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
