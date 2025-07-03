@@ -24,7 +24,153 @@ const initialApplicants = [
   { initials: 'IT', name: 'Isabella Taylor',position: 'Project Manager',  appliedDate: '2023‑06‑17', status: 'Pending', decision: 'Pending', note: '', confirmedBy: '', experience: '7 years', education: 'MBA' }
 ];
 
-const EmploymentDecision = ({ onClose }) => {
+const PerformanceGraph = ({ data }) => {
+  const maxScore = 100;
+  const width = 500;
+  const height = 250;
+  const padding = 40;
+  
+  // Calculate point coordinates
+  const points = data.map((item, i) => {
+    const x = padding + (i * (width - 2 * padding) / (data.length - 1));
+    const y = height - padding - (item.score / maxScore) * (height - 2 * padding);
+    return { x, y, score: item.score, stage: item.stage };
+  });
+
+  // Generate path for the line
+  const linePath = points.reduce((acc, point, i) => {
+    return i === 0 
+      ? `M ${point.x},${point.y}` 
+      : `${acc} L ${point.x},${point.y}`;
+  }, '');
+
+  return (
+    <div className="performance-graph-container">
+      <div className="graph-header">
+        <h3>Candidate Performance Metrics</h3>
+        <div className="graph-legend">
+          <div className="legend-item">
+            <div className="legend-color" style={{ backgroundColor: '#7226FF' }}></div>
+            <span>Performance Score - 100%</span>
+          </div>
+        </div>
+      </div>
+      
+      <svg width={width} height={height} className="performance-graph">
+        {/* Grid lines */}
+        {[0, 25, 50, 75, 100].map((score, i) => {
+          const y = height - padding - (score / maxScore) * (height - 2 * padding);
+          return (
+            <g key={i}>
+              <line 
+                x1={padding} 
+                y1={y} 
+                x2={width - padding} 
+                y2={y} 
+                stroke="#e5e7eb" 
+                strokeWidth={1}
+              />
+              <text 
+                x={padding - 10} 
+                y={y + 4} 
+                textAnchor="end" 
+                fill="#6b7280" 
+                fontSize={12}
+              >
+                {score}%
+              </text>
+            </g>
+          );
+        })}
+
+        {/* X-axis labels */}
+        {points.map((point, i) => (
+          <text 
+            key={i}
+            x={point.x} 
+            y={height - padding + 20} 
+            textAnchor="middle" 
+            fill="#6b7280" 
+            fontSize={12}
+          >
+            {point.stage}
+          </text>
+        ))}
+
+        {/* Animated line */}
+        <motion.path
+          d={linePath}
+          fill="none"
+          stroke="#7226FF"
+          strokeWidth={3}
+          strokeLinecap="round"
+          initial={{ pathLength: 0, opacity: 0 }}
+          animate={{ pathLength: 1, opacity: 1 }}
+          transition={{ duration: 1.5, ease: "easeInOut" }}
+        />
+
+        {/* Data points */}
+        <AnimatePresence>
+          {points.map((point, i) => (
+            <motion.circle
+              key={i}
+              cx={point.x}
+              cy={point.y}
+              r={0}
+              fill="#7226FF"
+              initial={{ r: 0 }}
+              animate={{ r: 6 }}
+              transition={{ 
+                delay: 0.5 + (i * 0.2), 
+                duration: 0.5,
+                type: "spring",
+                stiffness: 100
+              }}
+            />
+          ))}
+        </AnimatePresence>
+
+        {/* Score labels */}
+        {points.map((point, i) => (
+          <motion.text
+            key={i}
+            x={point.x}
+            y={point.y - 15}
+            textAnchor="middle"
+            fill="#1e40af"
+            fontWeight="600"
+            fontSize={12}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 + (i * 0.2) }}
+          >
+            {point.score}%
+          </motion.text>
+        ))}
+
+        {/* Axes */}
+        <line 
+          x1={padding} 
+          y1={height - padding} 
+          x2={width - padding} 
+          y2={height - padding} 
+          stroke="#9ca3af" 
+          strokeWidth={1.5}
+        />
+        <line 
+          x1={padding} 
+          y1={padding} 
+          x2={padding} 
+          y2={height - padding} 
+          stroke="#9ca3af" 
+          strokeWidth={1.5}
+        />
+      </svg>
+    </div>
+  );
+};
+
+const EmploymentDecision = () => {
   const [searchValue,  setSearchValue]  = useState('');
   const [selectedInitials, setSelected] = useState('JS');
   const [applicants,    setApplicants]  = useState(initialApplicants);
@@ -35,6 +181,13 @@ const EmploymentDecision = ({ onClose }) => {
   const [modalInit,   setModalInit]       = useState(null);      // applicant.initials
   const [noteDraft,   setNoteDraft]       = useState('');
   const [confirmerName, setConfirmerName] = useState('');        // new input for confirmer's name
+
+  // Performance data for the graph - all at 100%
+  const performanceData = [
+    { stage: "Application", score: 100 },
+    { stage: "Interview", score: 100 },
+    { stage: "Compliance", score: 100 }
+  ];
 
   useEffect(() => {
     if (isModalOpen) {
@@ -104,11 +257,11 @@ const EmploymentDecision = ({ onClose }) => {
 
   return (
     <div className="EmploymentDecision">
-      <button className="EmploymentDecision-btn" onClick={onClose}>
+      <button className="EmploymentDecision-btn">
         <XMarkIcon className="h-6 w-6" />
       </button>
 
-      <div className="EmploymentDecision-Body" onClick={onClose} />
+      <div className="EmploymentDecision-Body" />
 
       <motion.div
         initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }}
@@ -243,7 +396,9 @@ const EmploymentDecision = ({ onClose }) => {
               </div>
             )}
 
-            <div className='performance-Grapph'></div>
+            <div className='performance-Grapph'>
+              <PerformanceGraph data={performanceData} />
+            </div>
 
             {notification && (
               <motion.div initial={{ opacity: 0, y: -10 }}
@@ -301,7 +456,7 @@ const EmploymentDecision = ({ onClose }) => {
                 {modalMode === 'add' ? 'Add' : 'Edit'} Decision Note for <span className='oouk-SPOPol'>{selectedApplicant?.name}</span>
               </h3>
 
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>
+              <label>
                 Name of person confirming the decision
               </label>
               <input
@@ -309,10 +464,13 @@ const EmploymentDecision = ({ onClose }) => {
                 value={confirmerName}
                 onChange={e => setConfirmerName(e.target.value)}
                 placeholder="Enter your name"
-                style={{ width: '100%', padding: '0.5rem', marginBottom: '1rem', boxSizing: 'border-box' }}
+                className="oujka-Inpuauy"
               />
 
               <div className="GGtg-DDDVa">
+                 <label>
+               Add Note
+              </label>
                 <textarea
                   rows={5}
                   value={noteDraft}
@@ -341,6 +499,7 @@ const EmploymentDecision = ({ onClose }) => {
           </motion.div>
         )}
       </AnimatePresence>
+
     </div>
   );
 };

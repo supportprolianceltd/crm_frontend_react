@@ -1403,3 +1403,76 @@
     color: #372580;
     font-weight: 500;
 }
+
+
+.OOlaols-POpp{
+    position: relative;
+    width: 100%;
+    height: auto;
+    max-height: 600px;
+}
+
+
+/* performance-Grapph */
+
+.performance-Grapph{
+    position: relative;
+    width: 100%;
+    height: auto;
+    padding: 20px;
+}
+
+
+
+ .performance-graph-container {
+    position: relative;
+    width: 100%;
+    height: auto;
+        }
+        
+        .graph-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 1.5rem;
+        }
+        
+        .graph-header h3 {
+          font-size: 1.125rem;
+          font-weight: 600;
+          color: #1f2937;
+        }
+        
+        .graph-legend {
+          display: flex;
+          gap: 1rem;
+        }
+        
+        .legend-item {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+        
+        .legend-color {
+          width: 16px;
+          height: 16px;
+          border-radius: 4px;
+        }
+        
+        .legend-item span {
+          font-size: 0.875rem;
+          color: #6b7280;
+        }
+        
+        .performance-graph {
+          display: block;
+          width: 100%;
+          height: auto;
+        }
+        
+  
+
+
+
+        
