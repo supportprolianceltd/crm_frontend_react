@@ -1193,7 +1193,7 @@
 }
 
 .olik-PPO span.pending{
-    color: #f59e0b !important;
+    color: #d78c0b !important;
     background-color: #f9ecd5 !important;
 }
 .olik-PPO span.rejected{
@@ -1206,7 +1206,15 @@
     color: #065f46 !important;
 }
 
-
+.All-status-badge.hired{
+    color: #065f46 !important;
+}
+.All-status-badge.rejected{
+    color: #721c24 !important;
+}
+.All-status-badge.pending{
+    color: #d78c0b !important;
+}
 .decision-select {
   padding:4px 12px;
   border-radius: 30px;
@@ -1403,3 +1411,95 @@
     color: #372580;
     font-weight: 500;
 }
+
+
+.OOlaols-POpp{
+    position: relative;
+    width: 100%;
+    height: auto;
+    max-height: 600px;
+}
+
+
+/* performance-Grapph */
+
+.performance-Grapph{
+    position: relative;
+    width: 100%;
+    height: auto;
+    padding: 20px;
+}
+
+
+
+ .performance-graph-container {
+    position: relative;
+    width: 100%;
+    height: auto;
+        }
+        
+        .graph-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 1.5rem;
+        }
+        
+        .graph-header h3 {
+          font-size: 14px;
+          font-weight: 600;
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .graph-header h3 svg{
+            width: 16px;
+        }
+        
+        .graph-legend {
+          display: flex;
+          gap: 1rem;
+        }
+        
+        .legend-item {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+        
+        .legend-color {
+          width: 14px;
+          height: 14px;
+          border-radius: 4px;
+        }
+        
+        .legend-item span {
+          font-size: 13px;
+          color: #5d5677;
+        }
+        
+        .performance-graph {
+          display: block;
+          width: 100%;
+          height: auto;
+        }
+        
+  
+
+
+
+        .oials-ola{
+            font-size: 10px !important;
+            margin-top: 10px;
+        }
+
+        .olail-PPOla{
+            position: relative;
+            display: flex;
+            align-items: flex-start;
+            gap: 5px;
+        }
+        .olail-PPOla svg{
+            width: 14px;
+        }

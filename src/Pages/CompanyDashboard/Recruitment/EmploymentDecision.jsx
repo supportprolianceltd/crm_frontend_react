@@ -6,9 +6,11 @@ import {
   ExclamationTriangleIcon,
   DocumentTextIcon,
   CheckIcon,
+  ArrowTrendingUpIcon,
   PencilIcon,
   CheckBadgeIcon
 } from '@heroicons/react/24/outline';
+
 import SampleCV from '../../../assets/resume.pdf';
 
 const initialApplicants = [
@@ -24,23 +26,198 @@ const initialApplicants = [
   { initials: 'IT', name: 'Isabella Taylor',position: 'Project Manager',  appliedDate: '2023‑06‑17', status: 'Pending', decision: 'Pending', note: '', confirmedBy: '', experience: '7 years', education: 'MBA' }
 ];
 
+const PerformanceGraph = ({ data }) => {
+  const maxScore = 100;
+  const height = 250;
+  const padding = 40;
+  const [width, setWidth] = useState(800);
+  
+  useEffect(() => {
+    const updateWidth = () => {
+      const container = document.querySelector('.performance-graph-container');
+      if (container) {
+        setWidth(container.clientWidth);
+      }
+    };
+
+    updateWidth();
+    window.addEventListener('resize', updateWidth);
+    return () => window.removeEventListener('resize', updateWidth);
+  }, []);
+
+  // Calculate average score for legend
+  const averageScore = useMemo(() => {
+    if (!data.length) return 0;
+    const sum = data.reduce((acc, curr) => acc + curr.score, 0);
+    return Math.round(sum / data.length);
+  }, [data]);
+
+  // Calculate point coordinates
+  const points = useMemo(() => {
+    if (!width) return [];
+    return data.map((item, i) => {
+      const x = padding + (i * (width - 2 * padding) / (data.length - 1));
+      const y = height - padding - (item.score / maxScore) * (height - 2 * padding);
+      return { x, y, score: item.score, stage: item.stage };
+    });
+  }, [width, data]);
+
+  // Generate path for the line
+  const linePath = useMemo(() => {
+    return points.reduce((acc, point, i) => {
+      return i === 0 
+        ? `M ${point.x},${point.y}` 
+        : `${acc} L ${point.x},${point.y}`;
+    }, '');
+  }, [points]);
+
+  if (!width) return null;
+
+  return (
+    <div className="performance-graph-container" style={{ width: '100%' }}>
+      <div className="graph-header">
+        <h3>Process Metrics <ArrowTrendingUpIcon /></h3>
+        <div className="graph-legend">
+          <div className="legend-item">
+            <div className="legend-color" style={{ backgroundColor: '#7226FF' }}></div>
+            <span>Performance Score - {averageScore}%</span>
+          </div>
+        </div>
+      </div>
+      
+      <svg width={width} height={height} className="performance-graph">
+        {/* Grid lines */}
+        {[0, 25, 50, 75, 100].map((score, i) => {
+          const y = height - padding - (score / maxScore) * (height - 2 * padding);
+          return (
+            <g key={i}>
+              <line 
+                x1={padding} 
+                y1={y} 
+                x2={width - padding} 
+                y2={y} 
+                stroke="#e5e7eb" 
+                strokeWidth={1}
+              />
+              <text 
+                x={padding - 10} 
+                y={y + 4} 
+                textAnchor="end" 
+                fill="#5d5677" 
+                fontSize={12}
+              >
+                {score}%
+              </text>
+            </g>
+          );
+        })}
+
+        {/* X-axis labels */}
+        {points.map((point, i) => (
+          <text 
+            key={i}
+            x={point.x} 
+            y={height - padding + 20} 
+            textAnchor="middle" 
+            fill="#5d5677" 
+            fontSize={12}
+          >
+            {point.stage}
+          </text>
+        ))}
+
+        {/* Animated line */}
+        <motion.path
+          d={linePath}
+          fill="none"
+          stroke="#7226FF"
+          strokeWidth={3}
+          strokeLinecap="round"
+          initial={{ pathLength: 0, opacity: 0 }}
+          animate={{ pathLength: 1, opacity: 1 }}
+          transition={{ duration: 1.5, ease: "easeInOut" }}
+        />
+
+        {/* Data points */}
+        <AnimatePresence>
+          {points.map((point, i) => (
+            <motion.circle
+              key={i}
+              cx={point.x}
+              cy={point.y}
+              r={0}
+              fill="#7226FF"
+              initial={{ r: 0 }}
+              animate={{ r: 6 }}
+              transition={{ 
+                delay: 0.5 + (i * 0.2), 
+                duration: 0.5,
+                type: "spring",
+                stiffness: 100
+              }}
+            />
+          ))}
+        </AnimatePresence>
+
+        {/* Score labels */}
+        {points.map((point, i) => (
+          <motion.text
+            key={i}
+            x={point.x}
+            y={point.y - 15}
+            textAnchor="middle"
+            fill="#372580"
+            fontWeight="600"
+            fontSize={10}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 + (i * 0.2) }}
+          >
+            {point.score}%
+          </motion.text>
+        ))}
+
+        {/* Axes */}
+        <line 
+          x1={padding} 
+          y1={height - padding} 
+          x2={width - padding} 
+          y2={height - padding} 
+          stroke="#e2e8f0" 
+          strokeWidth={1.5}
+        />
+        <line 
+          x1={padding} 
+          y1={padding} 
+          x2={padding} 
+          y2={height - padding} 
+          stroke="#e2e8f0" 
+          strokeWidth={1.5}
+        />
+      </svg>
+    </div>
+  );
+};
+
 const EmploymentDecision = ({ onClose }) => {
   const [searchValue,  setSearchValue]  = useState('');
   const [selectedInitials, setSelected] = useState('JS');
   const [applicants,    setApplicants]  = useState(initialApplicants);
   const [notification, setNotification] = useState(null);
+  const [modalError, setModalError] = useState(null);
 
   const [isModalOpen, setIsModalOpen]     = useState(false);
-  const [modalMode,   setModalMode]       = useState('add');     // 'add' | 'edit'
-  const [modalInit,   setModalInit]       = useState(null);      // applicant.initials
+  const [modalMode,   setModalMode]       = useState('add');
+  const [modalInit,   setModalInit]       = useState(null);
   const [noteDraft,   setNoteDraft]       = useState('');
-  const [confirmerName, setConfirmerName] = useState('');        // new input for confirmer's name
+  const [confirmerName, setConfirmerName] = useState('');
 
   useEffect(() => {
     if (isModalOpen) {
       const currentApplicant = applicants.find(a => a.initials === modalInit);
       setNoteDraft(currentApplicant?.note || '');
       setConfirmerName(currentApplicant?.confirmedBy || '');
+      setModalError(null);
     }
   }, [isModalOpen, modalInit, applicants]);
 
@@ -56,6 +233,17 @@ const EmploymentDecision = ({ onClose }) => {
     () => applicants.find(app => app.initials === selectedInitials),
     [applicants, selectedInitials]
   );
+
+  // Dynamic performance data based on decision status
+  const performanceData = useMemo(() => [
+    { stage: "Application", score: 100 },
+    { stage: "Interview", score: 100 },
+    { stage: "Compliance", score: 100 },
+    { 
+      stage: "Decision", 
+      score: selectedApplicant?.decision !== 'Pending' ? 100 : 50 
+    }
+  ], [selectedApplicant]);
 
   const changeDecision = (init, decision) => {
     setApplicants(prev =>
@@ -79,7 +267,7 @@ const EmploymentDecision = ({ onClose }) => {
 
   const saveNote = () => {
     if (!confirmerName.trim()) {
-      alert('Please enter the name of the person confirming the decision.');
+      setModalError('Please enter the name of the person confirming the decision.');
       return;
     }
 
@@ -104,11 +292,11 @@ const EmploymentDecision = ({ onClose }) => {
 
   return (
     <div className="EmploymentDecision">
-      <button className="EmploymentDecision-btn" onClick={onClose}>
+      <button className="EmploymentDecision-btn"  onClick={onClose} >
         <XMarkIcon className="h-6 w-6" />
       </button>
 
-      <div className="EmploymentDecision-Body" onClick={onClose} />
+      <div className="EmploymentDecision-Body"  onClick={onClose} />
 
       <motion.div
         initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }}
@@ -167,7 +355,7 @@ const EmploymentDecision = ({ onClose }) => {
               </div>
             </div>
           </div>
-
+    <div className='OOlaols-POpp custom-scroll-bar'>
           <div className="Dash-OO-Boas dOikpO-PPol oluja-PPPl olika-ola">
             <div className="table-container">
               <table className="Gen-Sys-table">
@@ -192,7 +380,7 @@ const EmploymentDecision = ({ onClose }) => {
                         </div>
                       </td>
                       <td>
-                        <span className={`status-badge ${selectedApplicant.status.toLowerCase()}`}>
+                        <span className={`All-status-badge ${selectedApplicant.status.toLowerCase()}`}>
                           {selectedApplicant.status}
                         </span>
                       </td>
@@ -220,7 +408,6 @@ const EmploymentDecision = ({ onClose }) => {
               </table>
             </div>
 
-            {/* Show note and edit button only for selected applicant */}
             {selectedApplicant?.note && (
               <div className="applicant-note">
                 <div className="applicant-note-Box">
@@ -243,7 +430,9 @@ const EmploymentDecision = ({ onClose }) => {
               </div>
             )}
 
-            <div className='performance-Grapph'></div>
+            <div className='performance-Grapph'>
+              <PerformanceGraph data={performanceData} />
+            </div>
 
             {notification && (
               <motion.div initial={{ opacity: 0, y: -10 }}
@@ -253,6 +442,7 @@ const EmploymentDecision = ({ onClose }) => {
               </motion.div>
             )}
           </div>
+        </div>
         </div>
       </motion.div>
 
@@ -301,18 +491,59 @@ const EmploymentDecision = ({ onClose }) => {
                 {modalMode === 'add' ? 'Add' : 'Edit'} Decision Note for <span className='oouk-SPOPol'>{selectedApplicant?.name}</span>
               </h3>
 
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>
+              <label>
                 Name of person confirming the decision
               </label>
               <input
                 type="text"
                 value={confirmerName}
-                onChange={e => setConfirmerName(e.target.value)}
+                onChange={e => {
+                  setConfirmerName(e.target.value);
+                  setModalError(null);
+                }}
                 placeholder="Enter your name"
-                style={{ width: '100%', padding: '0.5rem', marginBottom: '1rem', boxSizing: 'border-box' }}
+                className="oujka-Inpuauy"
               />
+              
+              <AnimatePresence>
+                {modalError && (
+                  <motion.div
+                    key="modal-error"
+                    initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                    animate={{ opacity: 1, height: 'auto', marginBottom: '1rem' }}
+                    exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                    className="modal-error-message oials-ola"
+                    style={{
+                      color: '#ff4d4f',
+                      background: '#fff2f0',
+                      padding: '0.5rem',
+                      borderRadius: '4px',
+                      border: '1px solid #ffccc7',
+                      overflow: 'hidden'
+                    }}
+                  >
+                    <div className='olail-PPOla'>
+                         <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 500,
+                            damping: 10,
+                          }}
+                        >
+                          <ExclamationTriangleIcon />
+                        </motion.div>
+                      <span>{modalError}</span>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               <div className="GGtg-DDDVa">
+                 <label>
+               Add Note
+              </label>
                 <textarea
                   rows={5}
                   value={noteDraft}
@@ -341,6 +572,7 @@ const EmploymentDecision = ({ onClose }) => {
           </motion.div>
         )}
       </AnimatePresence>
+
     </div>
   );
 };
