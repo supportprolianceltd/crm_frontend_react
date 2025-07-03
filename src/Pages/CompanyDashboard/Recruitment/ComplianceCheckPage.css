@@ -1193,7 +1193,7 @@
 }
 
 .olik-PPO span.pending{
-    color: #f59e0b !important;
+    color: #d78c0b !important;
     background-color: #f9ecd5 !important;
 }
 .olik-PPO span.rejected{
@@ -1206,7 +1206,15 @@
     color: #065f46 !important;
 }
 
-
+.All-status-badge.hired{
+    color: #065f46 !important;
+}
+.All-status-badge.rejected{
+    color: #721c24 !important;
+}
+.All-status-badge.pending{
+    color: #d78c0b !important;
+}
 .decision-select {
   padding:4px 12px;
   border-radius: 30px;
