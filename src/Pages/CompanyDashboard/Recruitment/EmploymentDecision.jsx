@@ -27,13 +27,12 @@ const initialApplicants = [
 ];
 
 const PerformanceGraph = ({ data }) => {
- const maxScore = 100;
+  const maxScore = 100;
   const height = 250;
   const padding = 40;
   const [width, setWidth] = useState(800);
   
- useEffect(() => {
-    // Function to update width based on container size
+  useEffect(() => {
     const updateWidth = () => {
       const container = document.querySelector('.performance-graph-container');
       if (container) {
@@ -41,15 +40,17 @@ const PerformanceGraph = ({ data }) => {
       }
     };
 
-    // Initial update
     updateWidth();
-
-    // Add resize listener
     window.addEventListener('resize', updateWidth);
-    
-    // Cleanup
     return () => window.removeEventListener('resize', updateWidth);
   }, []);
+
+  // Calculate average score for legend
+  const averageScore = useMemo(() => {
+    if (!data.length) return 0;
+    const sum = data.reduce((acc, curr) => acc + curr.score, 0);
+    return Math.round(sum / data.length);
+  }, [data]);
 
   // Calculate point coordinates
   const points = useMemo(() => {
@@ -72,15 +73,14 @@ const PerformanceGraph = ({ data }) => {
 
   if (!width) return null;
 
-
   return (
-   <div className="performance-graph-container" style={{ width: '100%' }}>
+    <div className="performance-graph-container" style={{ width: '100%' }}>
       <div className="graph-header">
         <h3>Process Metrics <ArrowTrendingUpIcon /></h3>
         <div className="graph-legend">
           <div className="legend-item">
             <div className="legend-color" style={{ backgroundColor: '#7226FF' }}></div>
-            <span>Performance Score - 75%</span>
+            <span>Performance Score - {averageScore}%</span>
           </div>
         </div>
       </div>
@@ -204,28 +204,20 @@ const EmploymentDecision = ({ onClose }) => {
   const [selectedInitials, setSelected] = useState('JS');
   const [applicants,    setApplicants]  = useState(initialApplicants);
   const [notification, setNotification] = useState(null);
-  const [modalError, setModalError] = useState(null); // New state for modal error
+  const [modalError, setModalError] = useState(null);
 
   const [isModalOpen, setIsModalOpen]     = useState(false);
-  const [modalMode,   setModalMode]       = useState('add');     // 'add' | 'edit'
-  const [modalInit,   setModalInit]       = useState(null);      // applicant.initials
+  const [modalMode,   setModalMode]       = useState('add');
+  const [modalInit,   setModalInit]       = useState(null);
   const [noteDraft,   setNoteDraft]       = useState('');
-  const [confirmerName, setConfirmerName] = useState('');        // new input for confirmer's name
-
-  // Performance data for the graph - all at 100%
-  const performanceData = [
-    { stage: "Application", score: 100 },
-    { stage: "Interview", score: 100 },
-    { stage: "Compliance", score: 100 },
-    { stage: "Decision", score: 50 }
-  ];
+  const [confirmerName, setConfirmerName] = useState('');
 
   useEffect(() => {
     if (isModalOpen) {
       const currentApplicant = applicants.find(a => a.initials === modalInit);
       setNoteDraft(currentApplicant?.note || '');
       setConfirmerName(currentApplicant?.confirmedBy || '');
-      setModalError(null); // Reset error when modal opens
+      setModalError(null);
     }
   }, [isModalOpen, modalInit, applicants]);
 
@@ -241,6 +233,17 @@ const EmploymentDecision = ({ onClose }) => {
     () => applicants.find(app => app.initials === selectedInitials),
     [applicants, selectedInitials]
   );
+
+  // Dynamic performance data based on decision status
+  const performanceData = useMemo(() => [
+    { stage: "Application", score: 100 },
+    { stage: "Interview", score: 100 },
+    { stage: "Compliance", score: 100 },
+    { 
+      stage: "Decision", 
+      score: selectedApplicant?.decision !== 'Pending' ? 100 : 50 
+    }
+  ], [selectedApplicant]);
 
   const changeDecision = (init, decision) => {
     setApplicants(prev =>
@@ -405,7 +408,6 @@ const EmploymentDecision = ({ onClose }) => {
               </table>
             </div>
 
-            {/* Show note and edit button only for selected applicant */}
             {selectedApplicant?.note && (
               <div className="applicant-note">
                 <div className="applicant-note-Box">
@@ -497,13 +499,12 @@ const EmploymentDecision = ({ onClose }) => {
                 value={confirmerName}
                 onChange={e => {
                   setConfirmerName(e.target.value);
-                  setModalError(null); // Clear error when typing
+                  setModalError(null);
                 }}
                 placeholder="Enter your name"
                 className="oujka-Inpuauy"
               />
               
-              {/* Modal error message with Framer Motion */}
               <AnimatePresence>
                 {modalError && (
                   <motion.div
