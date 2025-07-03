@@ -204,6 +204,7 @@ const EmploymentDecision = ({ onClose }) => {
   const [selectedInitials, setSelected] = useState('JS');
   const [applicants,    setApplicants]  = useState(initialApplicants);
   const [notification, setNotification] = useState(null);
+  const [modalError, setModalError] = useState(null); // New state for modal error
 
   const [isModalOpen, setIsModalOpen]     = useState(false);
   const [modalMode,   setModalMode]       = useState('add');     // 'add' | 'edit'
@@ -224,6 +225,7 @@ const EmploymentDecision = ({ onClose }) => {
       const currentApplicant = applicants.find(a => a.initials === modalInit);
       setNoteDraft(currentApplicant?.note || '');
       setConfirmerName(currentApplicant?.confirmedBy || '');
+      setModalError(null); // Reset error when modal opens
     }
   }, [isModalOpen, modalInit, applicants]);
 
@@ -262,7 +264,7 @@ const EmploymentDecision = ({ onClose }) => {
 
   const saveNote = () => {
     if (!confirmerName.trim()) {
-      alert('Please enter the name of the person confirming the decision.');
+      setModalError('Please enter the name of the person confirming the decision.');
       return;
     }
 
@@ -493,10 +495,39 @@ const EmploymentDecision = ({ onClose }) => {
               <input
                 type="text"
                 value={confirmerName}
-                onChange={e => setConfirmerName(e.target.value)}
+                onChange={e => {
+                  setConfirmerName(e.target.value);
+                  setModalError(null); // Clear error when typing
+                }}
                 placeholder="Enter your name"
                 className="oujka-Inpuauy"
               />
+              
+              {/* Modal error message with Framer Motion */}
+              <AnimatePresence>
+                {modalError && (
+                  <motion.div
+                    key="modal-error"
+                    initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                    animate={{ opacity: 1, height: 'auto', marginBottom: '1rem' }}
+                    exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                    className="modal-error-message oials-ola"
+                    style={{
+                      color: '#ff4d4f',
+                      background: '#fff2f0',
+                      padding: '0.5rem',
+                      borderRadius: '4px',
+                      border: '1px solid #ffccc7',
+                      overflow: 'hidden'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <ExclamationTriangleIcon style={{ marginRight: '8px', width: '18px' }} />
+                      <span>{modalError}</span>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               <div className="GGtg-DDDVa">
                  <label>
