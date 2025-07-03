@@ -26,7 +26,7 @@ const initialApplicants = [
 
 const PerformanceGraph = ({ data }) => {
   const maxScore = 100;
-  const width = 500;
+  const width = 800;
   const height = 250;
   const padding = 40;
   
@@ -74,7 +74,7 @@ const PerformanceGraph = ({ data }) => {
                 x={padding - 10} 
                 y={y + 4} 
                 textAnchor="end" 
-                fill="#6b7280" 
+                fill="#5d5677" 
                 fontSize={12}
               >
                 {score}%
