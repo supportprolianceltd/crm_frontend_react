@@ -27,27 +27,54 @@ const initialApplicants = [
 ];
 
 const PerformanceGraph = ({ data }) => {
-  const maxScore = 100;
-  const width = 800;
+ const maxScore = 100;
   const height = 250;
   const padding = 40;
+  const [width, setWidth] = useState(800);
   
+ useEffect(() => {
+    // Function to update width based on container size
+    const updateWidth = () => {
+      const container = document.querySelector('.performance-graph-container');
+      if (container) {
+        setWidth(container.clientWidth);
+      }
+    };
+
+    // Initial update
+    updateWidth();
+
+    // Add resize listener
+    window.addEventListener('resize', updateWidth);
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', updateWidth);
+  }, []);
+
   // Calculate point coordinates
-  const points = data.map((item, i) => {
-    const x = padding + (i * (width - 2 * padding) / (data.length - 1));
-    const y = height - padding - (item.score / maxScore) * (height - 2 * padding);
-    return { x, y, score: item.score, stage: item.stage };
-  });
+  const points = useMemo(() => {
+    if (!width) return [];
+    return data.map((item, i) => {
+      const x = padding + (i * (width - 2 * padding) / (data.length - 1));
+      const y = height - padding - (item.score / maxScore) * (height - 2 * padding);
+      return { x, y, score: item.score, stage: item.stage };
+    });
+  }, [width, data]);
 
   // Generate path for the line
-  const linePath = points.reduce((acc, point, i) => {
-    return i === 0 
-      ? `M ${point.x},${point.y}` 
-      : `${acc} L ${point.x},${point.y}`;
-  }, '');
+  const linePath = useMemo(() => {
+    return points.reduce((acc, point, i) => {
+      return i === 0 
+        ? `M ${point.x},${point.y}` 
+        : `${acc} L ${point.x},${point.y}`;
+    }, '');
+  }, [points]);
+
+  if (!width) return null;
+
 
   return (
-    <div className="performance-graph-container">
+   <div className="performance-graph-container" style={{ width: '100%' }}>
       <div className="graph-header">
         <h3>Process Metrics <ArrowTrendingUpIcon /></h3>
         <div className="graph-legend">
