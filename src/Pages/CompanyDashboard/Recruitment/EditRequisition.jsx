@@ -154,10 +154,6 @@ const AlertModal = ({ title, message, onClose }) => (
 const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = true }) => {
   const navigate = useNavigate();
 
-  // console.log("job")
-  // console.log(job)
-  // console.log("job")
-
   // Set default dates
   const today = new Date();
   const defaultStartDate = new Date(today);
@@ -168,8 +164,6 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
   const [deadlineDate, setDeadlineDate] = useState(null);
   const [startDate, setStartDate] = useState(null);
   const [activeSection, setActiveSection] = useState(0);
-  const [showPreview, setShowPreview] = useState(false);
-  const [showJobAdvert, setShowJobAdvert] = useState(false);
   const [errors, setErrors] = useState({});
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [alertModal, setAlertModal] = useState(null);
@@ -251,12 +245,6 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
           setCheckedItems(data.compliance_checklist || ['Right to Work Check']);
           setAdvertBanner(`${data.advert_banner}`);
           setHasUnsavedChanges(false);
-
-          // console.log("data.advert_banner")
-          // console.log(data.advert_banner)
-          // console.log("data.advert_banner")
-
-
         } catch (error) {
           setAlertModal({
             title: 'Error',
@@ -402,7 +390,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
     setResponsibilities(responsibilities.filter((_, i) => i !== index));
   };
 
-  const tabs = ['Job details', 'Document uploads', 'Compliance check'];
+  const tabs = ['Job details', 'Document uploads', 'Compliance settings'];
 
   const validateJobDetails = () => {
     const newErrors = {};
@@ -611,9 +599,6 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
     if (activeSection < tabs.length - 1) {
       setActiveSection(activeSection + 1);
       setErrors({});
-    } else {
-      setShowPreview(true);
-      setShowJobAdvert(true);
     }
   };
 
@@ -651,11 +636,6 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
     }
     setActiveSection(index);
     setErrors({});
-  };
-
-  const handleClosePreview = () => {
-    setShowPreview(false);
-    setShowJobAdvert(false);
   };
 
   const handleAccept = async () => {
@@ -733,8 +713,6 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
       setCheckedItems(['Right to Work Check']);
       setResponsibilities([]);
       setActiveSection(0);
-      setShowPreview(false);
-      setShowJobAdvert(false);
       setErrors({});
       setShowDeleteModal(false);
       setHasUnsavedChanges(false);
@@ -835,7 +813,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
         initial={{ opacity: 0, x: 50 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5 }}
-        className='VewRequisition-Main uthath-sed'
+        className='VewRequisition-Main'
       >
         <div className='VewRequisition-Part'>
           <div className='VewRequisition-Part-Top'>
@@ -1030,335 +1008,312 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                         <input
                           name="companyName"
                           type='text'
-                          placeholder='e.g. ValueFlowTech Ltd'
-                          value={formData.companyName}
-                          onChange={handleInputChange}
-                          required
-                          disabled={!isFormMutable}
-                        />
-                        {errors.companyName && <p className='error'>{errors.companyName}</p>}
-                      </div>
-
-                      <div className='Gland-All-Grid'>
-                        <div className='GHuh-Form-Input'>
-                          <label>Job Type</label>
-                          <select
-                            name="jobType"
-                            value={formData.jobType}
-                            onChange={handleInputChange}
-                            disabled={!isFormMutable}
-                          >
-                            <option>Full-time</option>
-                            <option>Part-time</option>
-                            <option>Contract</option>
-                            <option>Freelance</option>
-                            <option>Internship</option>
-                          </select>
-                        </div>
-                        <div className='GHuh-Form-Input'>
-                          <label>Location</label>
-                          <select
-                            name="locationType"
-                            value={formData.locationType}
-                            onChange={handleInputChange}
-                            disabled={!isFormMutable}
-                          >
-                            <option>On-site</option>
-                            <option>Remote</option>
-                            <option>Hybrid</option>
-                          </select>
-                        </div>
-                      </div>
-
-                      {formData.locationType === 'On-site' && (
-                        <div className='GHuh-Form-Input'>
-                          <label>Company Address</label>
-                          <input
-                            name="companyAddress"
-                            type='text'
-                            placeholder='e.g. 24 Marina Street, Lagos QWERTY QWERTY'
-                            value={formData.companyAddress}
+                            placeholder='e.g. ValueFlowTech Ltd'
+                            value={formData.companyName}
                             onChange={handleInputChange}
                             required
                             disabled={!isFormMutable}
                           />
-                          {errors.companyAddress && <p className='error'>{errors.companyAddress}</p>}
+                          {errors.companyName && <p className='error'>{errors.companyName}</p>}
                         </div>
-                      )}
 
-                      <div className='GHuh-Form-Input'>
-                        <label>Salary Range (optional)</label>
-                        <input
-                          name="salaryRange"
-                          type='text'
-                          placeholder='e.g. $0.00 - $0.00'
-                          value={formData.salaryRange}
-                          onChange={handleInputChange}
-                          disabled={!isFormMutable}
-                        />
-                      </div>
+                        <div className='Gland-All-Grid'>
+                          <div className='GHuh-Form-Input'>
+                            <label>Job Type</label>
+                            <select
+                              name="jobType"
+                              value={formData.jobType}
+                              onChange={handleInputChange}
+                              disabled={!isFormMutable}
+                            >
+                              <option>Full-time</option>
+                              <option>Part-time</option>
+                              <option>Contract</option>
+                              <option>Freelance</option>
+                              <option>Internship</option>
+                            </select>
+                          </div>
+                          <div className='GHuh-Form-Input'>
+                            <label>Location</label>
+                            <select
+                              name="locationType"
+                              value={formData.locationType}
+                              onChange={handleInputChange}
+                              disabled={!isFormMutable}
+                            >
+                              <option>On-site</option>
+                              <option>Remote</option>
+                              <option>Hybrid</option>
+                            </select>
+                          </div>
+                        </div>
 
-                      <div className='GHuh-Form-Input'>
-                        <label>Number of Candidates (Needed for Interview) (optional)</label>
-                        <input
-                          name="numberOfCandidates"
-                          type='text'
-                          placeholder='e.g. 10'
-                          value={formData.numberOfCandidates}
-                          onChange={handleInputChange}
-                          disabled={!isFormMutable}
-                        />
-                        {errors.numberOfCandidates && <p className='error'>{errors.numberOfCandidates}</p>}
-                      </div>
-
-                      <div className='GHuh-Form-Input'>
-                        <label>Qualification Requirement (optional)</label>
-                        <input
-                          name="qualificationRequirement"
-                          type='text'
-                          placeholder='e.g. Bachelor’s degree in Computer Science'
-                          value={formData.qualificationRequirement}
-                          onChange={handleInputChange}
-                          disabled={!isFormMutable}
-                        />
-                        {errors.qualificationRequirement && <p className='error'>{errors.qualificationRequirement}</p>}
-                      </div>
-
-                      <div className='GHuh-Form-Input'>
-                        <label>Experience Requirement (optional)</label>
-                        <input
-                          name="experienceRequirement"
-                          type='text'
-                          placeholder='e.g. 3+ years in web development'
-                          value={formData.experienceRequirement}
-                          onChange={handleInputChange}
-                          disabled={!isFormMutable}
-                        />
-                        {errors.experienceRequirement && <p className='error'>{errors.experienceRequirement}</p>}
-                      </div>
-
-                      <div className='GHuh-Form-Input'>
-                        <label>Knowledge/Skill Requirement (optional)</label>
-                        <input
-                          name="knowledgeSkillRequirement"
-                          type='text'
-                          placeholder='e.g. React, JavaScript, CSS'
-                          value={formData.knowledgeSkillRequirement}
-                          onChange={handleInputChange}
-                          disabled={!isFormMutable}
-                        />
-                        {errors.knowledgeSkillRequirement && <p className='error'>{errors.knowledgeSkillRequirement}</p>}
-                      </div>
-
-                      <div className='GHuh-Form-Input'>
-                        <label>Reason for Requisition (optional)</label>
-                        <textarea
-                          name="reason"
-                          placeholder='e.g. Expansion of the development team'
-                          value={formData.reason}
-                          onChange={handleInputChange}
-                          disabled={!isFormMutable}
-                        ></textarea>
-                        {errors.reason && <p className='error'>{errors.reason}</p>}
-                      </div>
-
-                      <h3>Job Description</h3>
-                      <div className='GHuh-Form-Input'>
-                        <textarea
-                          name="jobDescription"
-                          placeholder='Enter job responsibilities, requirements, etc.'
-                          value={formData.jobDescription}
-                          onChange={handleInputChange}
-                          required
-                          disabled={!isFormMutable}
-                        ></textarea>
-                        {errors.jobDescription && <p className='error'>{errors.jobDescription}</p>}
-                      </div>
-
-                      <h3>
-                        Key Responsibilities{' '}
-                        <span
-                          onClick={handleAddResponsibility}
-                          className={isFormMutable ? 'cursor-pointer' : 'cursor-not-allowed'}
-                        >
-                          <PlusIcon /> Add
-                        </span>
-                      </h3>
-                      <div className='GHuh-Form-Input'>
-                        <label>Responsibilities</label>
-                        {responsibilities.map((resp, index) => (
-                          <div
-                            key={index}
-                            className='responsibility-Inn-Box'
-                            style={{ display: 'flex', alignItems: 'center', marginTop: '8px' }}
-                          >
+                        {formData.locationType === 'On-site' && (
+                          <div className='GHuh-Form-Input'>
+                            <label>Company Address</label>
                             <input
+                              name="companyAddress"
                               type='text'
-                              placeholder='Add a responsibility'
-                              value={resp}
-                              onChange={(e) => handleResponsibilityChange(index, e.target.value)}
+                              placeholder='e.g. 24 Marina Street, Lagos QWERTY QWERTY'
+                              value={formData.companyAddress}
+                              onChange={handleInputChange}
+                              required
                               disabled={!isFormMutable}
                             />
-                            {index > 0 && (
-                              <span
-                                onClick={() => handleRemoveResponsibility(index)}
-                                style={{
-                                  cursor: isFormMutable ? 'pointer' : 'not-allowed',
-                                  marginLeft: '8px',
-                                }}
-                              >
-                                <XMarkIcon className='w-4 h-4' />
-                              </span>
-                            )}
+                            {errors.companyAddress && <p className='error'>{errors.companyAddress}</p>}
                           </div>
-                        ))}
-                        {errors.responsibilities && <p className='error'>{errors.responsibilities}</p>}
-                      </div>
-
-                      <h3>Application Details</h3>
-                      <div className='Gland-All-Grid'>
-                        <div className='GHuh-Form-Input'>
-                          <label>Deadline for Applications</label>
-                          <DatePicker
-                            selected={deadlineDate}
-                            onChange={(date) => {
-                              if (!isFormMutable) return;
-                              setDeadlineDate(date);
-                              setErrors((prev) => ({ ...prev, deadlineDate: '' }));
-                            }}
-                            placeholderText="yyyy-MM-dd"
-                            dateFormat="yyyy-MM-dd"
-                            className="custom-datepicker-input"
-                            required
-                            disabled={!isFormMutable}
-                          />
-                          {errors.deadlineDate && <p className='error'>{errors.deadlineDate}</p>}
-                        </div>
+                        )}
 
                         <div className='GHuh-Form-Input'>
-                          <label>Start Date (optional)</label>
-                          <DatePicker
-                            selected={startDate}
-                            onChange={(date) => {
-                              if (!isFormMutable) return;
-                              setStartDate(date);
-                              setErrors((prev) => ({ ...prev, startDate: '' }));
-                            }}
-                            placeholderText="yyyy-MM-dd"
-                            dateFormat="yyyy-MM-dd"
-                            className="custom-datepicker-input"
-                            disabled={!isFormMutable}
-                          />
-                        </div>
-                      </div>
-                    </>
-                  )}
-
-                  {activeSection === 1 && (
-                    <>
-                      <h3>Document Uploads</h3>
-                      <div className='GHuh-Form-Input'>
-                        <label>Title</label>
-                        <div className='ooi-flex'>
+                          <label>Salary Range (optional)</label>
                           <input
+                            name="salaryRange"
                             type='text'
-                            placeholder='Enter Document Title'
-                            value={documentTitle}
-                            onChange={(e) => setDocumentTitle(e.target.value)}
-                            required
+                            placeholder='e.g. $0.00 - $0.00'
+                            value={formData.salaryRange}
+                            onChange={handleInputChange}
                             disabled={!isFormMutable}
                           />
-                          <span
-                            onClick={handleAddDocument}
-                            style={{
-                              cursor: isFormMutable ? 'pointer' : 'not-allowed',
-                              opacity: isFormMutable ? 1 : 0.5,
-                            }}
-                          >
-                            <PlusIcon className='w-5 h-5' />
-                            Add Document
-                          </span>
                         </div>
-                        {errors.documents && <p className='error'>{errors.documents}</p>}
-                        <ul className='apooul-Ul'>
-                          {documents.map((doc, index) => (
-                            <li key={index} className='flex justify-between items-center'>
-                              <p>
-                                <MinusIcon className='w-4 h-4 inline-block mr-2' /> {doc}
-                              </p>
-                              <button
-                                onClick={() => handleRemoveDocument(doc)}
-                                className='text-red-600 hover:text-red-800'
-                                disabled={!isFormMutable}
-                              >
-                                <XMarkIcon className='w-4 h-4' />
-                              </button>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </>
-                  )}
 
-                  {activeSection === 2 && (
-                    <>
-                      <h3>Compliance Item</h3>
-                      <div className='GHuh-Form-Input'>
-                        <ul className='checcck-lissT'>
-                          {checklistItems.map((item, index) => (
-                            <li
+                        <div className='GHuh-Form-Input'>
+                          <label>Number of Candidates (Needed for Interview) (optional)</label>
+                          <input
+                            name="numberOfCandidates"
+                            type='text'
+                            placeholder='e.g. 10'
+                            value={formData.numberOfCandidates}
+                            onChange={handleInputChange}
+                            disabled={!isFormMutable}
+                          />
+                          {errors.numberOfCandidates && <p className='error'>{errors.numberOfCandidates}</p>}
+                        </div>
+
+                        <div className='GHuh-Form-Input'>
+                          <label>Qualification Requirement (optional)</label>
+                          <input
+                            name="qualificationRequirement"
+                            type='text'
+                            placeholder='e.g. Bachelor’s degree in Computer Science'
+                            value={formData.qualificationRequirement}
+                            onChange={handleInputChange}
+                            disabled={!isFormMutable}
+                          />
+                          {errors.qualificationRequirement && <p className='error'>{errors.qualificationRequirement}</p>}
+                        </div>
+
+                        <div className='GHuh-Form-Input'>
+                          <label>Experience Requirement (optional)</label>
+                          <input
+                            name="experienceRequirement"
+                            type='text'
+                            placeholder='e.g. 3+ years in web development'
+                            value={formData.experienceRequirement}
+                            onChange={handleInputChange}
+                            disabled={!isFormMutable}
+                          />
+                          {errors.experienceRequirement && <p className='error'>{errors.experienceRequirement}</p>}
+                        </div>
+
+                        <div className='GHuh-Form-Input'>
+                          <label>Knowledge/Skill Requirement (optional)</label>
+                          <input
+                            name="knowledgeSkillRequirement"
+                            type='text'
+                            placeholder='e.g. React, JavaScript, CSS'
+                            value={formData.knowledgeSkillRequirement}
+                            onChange={handleInputChange}
+                            disabled={!isFormMutable}
+                          />
+                          {errors.knowledgeSkillRequirement && <p className='error'>{errors.knowledgeSkillRequirement}</p>}
+                        </div>
+
+                        <div className='GHuh-Form-Input'>
+                          <label>Reason for Requisition (optional)</label>
+                          <textarea
+                            name="reason"
+                            placeholder='e.g. Expansion of the development team'
+                            value={formData.reason}
+                            onChange={handleInputChange}
+                            disabled={!isFormMutable}
+                          ></textarea>
+                          {errors.reason && <p className='error'>{errors.reason}</p>}
+                        </div>
+
+                        <h3>Job Description</h3>
+                        <div className='GHuh-Form-Input'>
+                          <textarea
+                            name="jobDescription"
+                            placeholder='Enter job responsibilities, requirements, etc.'
+                            value={formData.jobDescription}
+                            onChange={handleInputChange}
+                            required
+                            disabled={!isFormMutable}
+                          ></textarea>
+                          {errors.jobDescription && <p className='error'>{errors.jobDescription}</p>}
+                        </div>
+
+                        <h3>
+                          Key Responsibilities{' '}
+                          <span
+                            onClick={handleAddResponsibility}
+                            className={isFormMutable ? 'cursor-pointer' : 'cursor-not-allowed'}
+                          >
+                            <PlusIcon /> Add
+                          </span>
+                        </h3>
+                        <div className='GHuh-Form-Input'>
+                          <label>Responsibilities</label>
+                          {responsibilities.map((resp, index) => (
+                            <div
                               key={index}
-                              className={checkedItems.includes(item) ? 'active-Li-Check' : ''}
-                              onClick={() => toggleChecklistItem(item)}
+                              className='responsibility-Inn-Box'
+                              style={{ display: 'flex', alignItems: 'center', marginTop: '8px' }}
+                            >
+                              <input
+                                type='text'
+                                placeholder='Add a responsibility'
+                                value={resp}
+                                onChange={(e) => handleResponsibilityChange(index, e.target.value)}
+                                disabled={!isFormMutable}
+                              />
+                              {index > 0 && (
+                                <span
+                                  onClick={() => handleRemoveResponsibility(index)}
+                                  style={{
+                                    cursor: isFormMutable ? 'pointer' : 'not-allowed',
+                                    marginLeft: '8px',
+                                  }}
+                                >
+                                  <XMarkIcon className='w-4 h-4' />
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                          {errors.responsibilities && <p className='error'>{errors.responsibilities}</p>}
+                        </div>
+
+                        <h3>Application Details</h3>
+                        <div className='Gland-All-Grid'>
+                          <div className='GHuh-Form-Input'>
+                            <label>Deadline for Applications</label>
+                            <DatePicker
+                              selected={deadlineDate}
+                              onChange={(date) => {
+                                if (!isFormMutable) return;
+                                setDeadlineDate(date);
+                                setErrors((prev) => ({ ...prev, deadlineDate: '' }));
+                              }}
+                              placeholderText="yyyy-MM-dd"
+                              dateFormat="yyyy-MM-dd"
+                              className="custom-datepicker-input"
+                              required
+                              disabled={!isFormMutable}
+                            />
+                            {errors.deadlineDate && <p className='error'>{errors.deadlineDate}</p>}
+                          </div>
+
+                          <div className='GHuh-Form-Input'>
+                            <label>Start Date (optional)</label>
+                            <DatePicker
+                              selected={startDate}
+                              onChange={(date) => {
+                                if (!isFormMutable) return;
+                                setStartDate(date);
+                                setErrors((prev) => ({ ...prev, startDate: '' }));
+                              }}
+                              placeholderText="yyyy-MM-dd"
+                              dateFormat="yyyy-MM-dd"
+                              className="custom-datepicker-input"
+                              disabled={!isFormMutable}
+                            />
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    {activeSection === 1 && (
+                      <>
+                        <h3>Document Uploads</h3>
+                        <div className='GHuh-Form-Input'>
+                          <label>Title</label>
+                          <div className='ooi-flex'>
+                            <input
+                              type='text'
+                              placeholder='Enter Document Title'
+                              value={documentTitle}
+                              onChange={(e) => setDocumentTitle(e.target.value)}
+                              required
+                              disabled={!isFormMutable}
+                            />
+                            <span
+                              onClick={handleAddDocument}
                               style={{
                                 cursor: isFormMutable ? 'pointer' : 'not-allowed',
                                 opacity: isFormMutable ? 1 : 0.5,
                               }}
                             >
-                              <p>{item}</p>
-                              <span></span>
-                            </li>
-                          ))}
-                        </ul>
-                        {errors.compliance && <p className='error'>{errors.compliance}</p>}
-                      </div>
-                    </>
-                  )}
-                </motion.div>
-              </AnimatePresence>
+                              <PlusIcon className='w-5 h-5' />
+                              Add Document
+                            </span>
+                          </div>
+                          {errors.documents && <p className='error'>{errors.documents}</p>}
+                          <ul className='apooul-Ul'>
+                            {documents.map((doc, index) => (
+                              <li key={index} className='flex justify-between items-center'>
+                                <p>
+                                  <MinusIcon className='w-4 h-4 inline-block mr-2' /> {doc}
+                                </p>
+                                <button
+                                  onClick={() => handleRemoveDocument(doc)}
+                                  className='text-red-600 hover:text-red-800'
+                                  disabled={!isFormMutable}
+                                >
+                                  <XMarkIcon className='w-4 h-4' />
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </>
+                    )}
+
+                    {activeSection === 2 && (
+                      <>
+                        <h3>Compliance Item</h3>
+                        <div className='GHuh-Form-Input'>
+                          <ul className='checcck-lissT'>
+                            {checklistItems.map((item, index) => (
+                              <li
+                                key={index}
+                                className={checkedItems.includes(item) ? 'active-Li-Check' : ''}
+                                onClick={() => toggleChecklistItem(item)}
+                                style={{
+                                  cursor: isFormMutable ? 'pointer' : 'not-allowed',
+                                  opacity: isFormMutable ? 1 : 0.5,
+                                }}
+                              >
+                                <p>{item}</p>
+                                <span></span>
+                              </li>
+                            ))}
+                          </ul>
+                          {errors.compliance && <p className='error'>{errors.compliance}</p>}
+                        </div>
+                      </>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className={`VewRequisition-Part ${showJobAdvert ? 'active-preview' : ''}`}>
-          <div className='VewRequisition-Part-Top'>
-            <h3>Job Advert</h3>
-            {showPreview && (
-              <button className='close-preview-btn' onClick={handleClosePreview}>
-                <XMarkIcon className='w-4 h-4' />
-              </button>
-            )}
-          </div>
-
-          {!showPreview ? (
-            <div className='no-advert-message'>
-              <motion.div
-                initial={{ x: -10, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 0.3, ease: 'easeOut' }}
-              >
-                <img src={NoAdvertBanner} alt="No Advert" />
-                <h4>No advert yet!</h4>
-                <p>There are currently no advertisement details available for display.</p>
-              </motion.div>
+          <div className='VewRequisition-Part active-preview'>
+            <div className='VewRequisition-Part-Top'>
+              <h3>Job Advert</h3>
             </div>
-          ) : (
-            <motion.div
-              initial={{ opacity: 0, x: -5 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3 }}
-              className='job-preview-container'
-            >
+
+            <div className='job-preview-container'>
               <div className='preview-buttons'>
                 <button
                   className='publish-btn btn-primary-bg'
@@ -1388,7 +1343,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                   )}
                 </button>
                 <button
-                  className={`publish-btn ${publishStatus ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'}`}
+                 className='delete-btn'
                   onClick={handleTogglePublish}
                   disabled={isTogglingPublish || !isFormMutable}
                 >
@@ -1444,16 +1399,16 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                   <div className='preview-section'>
                     <h3>Basic Job Information</h3>
                     <p>
-                      <span>Job Title:</span> {formData.jobTitle}
+                      <span>Job Title:</span> {formData.jobTitle || 'Not specified'}
                     </p>
                     <p>
-                      <span>Company Name:</span> {formData.companyName}
+                      <span>Company Name:</span> {formData.companyName || 'Not specified'}
                     </p>
                     <p>
-                      <span>Job Type:</span> {formData.jobType}
+                      <span>Job Type:</span> {formData.jobType || 'Not specified'}
                     </p>
                     <p>
-                      <span>Location:</span> {formData.locationType}
+                      <span>Location:</span> {formData.locationType || 'Not specified'}
                     </p>
                     {formData.companyAddress && (
                       <p>
@@ -1497,20 +1452,22 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                     )}
                   </div>
 
-                  <div className='preview-section aadda-poa'>
-                    <h3>Job Description</h3>
-                    <p>
-                      <div
-                        dangerouslySetInnerHTML={{
-                          __html: formData.jobDescription.replace(/\n/g, '<br/>'),
-                        }}
-                      />
-                    </p>
-                  </div>
+                  {formData.jobDescription && (
+                    <div className='preview-section aadda-poa'>
+                      <h3>Job Description</h3>
+                      <p>
+                        <div
+                          dangerouslySetInnerHTML={{
+                            __html: formData.jobDescription.replace(/\n/g, '<br/>'),
+                          }}
+                        />
+                      </p>
+                    </div>
+                  )}
 
-                  <div className='preview-section'>
-                    <h3>Responsibilities</h3>
-                    {responsibilities.length > 0 && (
+                  {responsibilities.length > 0 && (
+                    <div className='preview-section'>
+                      <h3>Responsibilities</h3>
                       <ul>
                         {responsibilities
                           .filter((resp) => resp.trim())
@@ -1518,8 +1475,8 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                             <li key={i}>{resp}</li>
                           ))}
                       </ul>
-                    )}
-                  </div>
+                    </div>
+                  )}
 
                   <div className='preview-section'>
                     <h3>Application Details</h3>
@@ -1556,27 +1513,26 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                   </div>
                 </div>
               </div>
-            </motion.div>
-          )}
-        </div>
-      </motion.div>
+            </div>
+          </div>
+        </motion.div>
 
-      {showDeleteModal && (
-        <Modal
-          title="Delete Job Advert"
-          message="Are you sure you want to delete this job advert? This will clear all entered data."
-          onConfirm={confirmDeleteAdvert}
-          onCancel={cancelDeleteAdvert}
-          confirmText="Delete"
-          cancelText="Cancel"
-        />
-      )}
+        {showDeleteModal && (
+          <Modal
+            title="Delete Job Advert"
+            message="Are you sure you want to delete this job advert? This will clear all entered data."
+            onConfirm={confirmDeleteAdvert}
+            onCancel={cancelDeleteAdvert}
+            confirmText="Delete"
+            cancelText="Cancel"
+          />
+        )}
 
-      {alertModal && (
-        <AlertModal title={alertModal.title} message={alertModal.message} onClose={closeAlert} />
-      )}
-    </div>
-  );
-};
+        {alertModal && (
+          <AlertModal title={alertModal.title} message={alertModal.message} onClose={closeAlert} />
+        )}
+      </div>
+    );
+  };
 
-export default EditRequisition;
+  export default EditRequisition;

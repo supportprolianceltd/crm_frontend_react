@@ -43,7 +43,7 @@ const ComplianceCheckPage = () => {
         </div>
 
         <div className='OUkas-POka'>
-          <h2><Link to='/jobs/' title='View Job'>Frontend Developer </Link></h2>
+          <h2>Frontend Developer </h2>
           <p><InformationCircleIcon /> Last compliance check is <b>June 26, Thursday 2025</b> by <b> Mr. Prince Godson</b></p>
         </div>
       </div>

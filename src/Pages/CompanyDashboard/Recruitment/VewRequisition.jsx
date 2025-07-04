@@ -330,7 +330,7 @@ useEffect(() => {
     setResponsibilities(responsibilities.filter((_, i) => i !== index));
   };
 
-  const tabs = ['Job details', 'Document uploads', 'Compliance check'];
+  const tabs = ['Job details', 'Document uploads', 'Compliance settings'];
 
   const validateJobDetails = () => {
     const newErrors = {};

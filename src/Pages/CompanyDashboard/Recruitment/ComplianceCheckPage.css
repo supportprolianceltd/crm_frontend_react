@@ -10,8 +10,9 @@
     height: auto;
     margin-top: 15px;
     padding: 10px 20px;
-    background:#ebe6ff;
+    background:#fff;
     border-radius: 10px;
+    border: 1px solid #eeeafa;
 }
 
 .ComplianceCheckPage-TOop-Grid{
@@ -84,9 +85,9 @@
     align-items: center;
     gap: 5px;
     padding: 8px 15px;
-    background-color: rgba(255,255,255,0.3);
+    background-color: #f7f5ff;
     border-radius: 30px;
-    border: 1px solid rgba(255,255,255,0.7);
+    border:1px solid #ece8fa;
 }
 .Uijauj-UUplao li span svg{
     width: 17px;
@@ -138,7 +139,7 @@
     width: 100%;
     height: auto;
     margin-top: 20px;
-    border-top: 1px solid #ddd5f7;;
+    border-top: 1px solid #eae5fc;
     padding-top: 10px;
 }
 
@@ -147,12 +148,8 @@
     font-weight: 600;
     margin-bottom: 3px;
 }
-.OUkas-POka h2 a{
-    color: #7226FF;
-}
-.OUkas-POka h2 a:hover{
-    text-decoration: underline;
-}
+
+
 .OUkas-POka p{
     font-size: 11px;
     display: flex;

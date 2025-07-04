@@ -2106,7 +2106,7 @@ background: #ebe6ff;
 
 .uthath-sed{
     width: 65% !important;
-    grid-template-columns: 1fr 0.7fr !important;
+    grid-template-columns: 1fr 0.7fr 1fr !important;
 }
 
 

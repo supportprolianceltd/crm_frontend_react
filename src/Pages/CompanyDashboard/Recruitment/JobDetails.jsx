@@ -126,9 +126,11 @@ const JobDetails = ({ job, onClose, onShowEditRequisition }) => {
 
           <div className="job-preview-container">
             <div className="preview-buttons">
+              <div onClick={onClose}>
               <button className="publish-btn btn-primary-bg" onClick={handleEditClick}>
                 <PencilIcon /> Edit Job Advert
               </button>
+              </div>
             </div>
             <div className="main-Prevs-Sec custom-scroll-bar">
               {displayJob.advert_banner ? (
