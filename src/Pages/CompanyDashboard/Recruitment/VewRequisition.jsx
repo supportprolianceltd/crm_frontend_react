@@ -206,10 +206,29 @@ const VewRequisition = ({ job, onClose }) => {
   const [checkedItems, setCheckedItems] = useState([]);
   const [documentTitle, setDocumentTitle] = useState('');
   const [documents, setDocuments] = useState([]);
-  const [userHasAdded, setUserHasAdded] = useState(false);
   const [requisitionData, setRequisitionData] = useState(job || {});
+  const [showAddComplianceInput, setShowAddComplianceInput] = useState(false);
+  const [newComplianceDoc, setNewComplianceDoc] = useState('');
+  
+  // Define original and custom compliance items separately
+  const originalChecklistItems = [
+    'Passport / ID',
+    'Proof of Address',
+    'Right to Work',
+    'DBS Certificate',
+    'Professional Qualifications',
+    'References',
+  ];
+  const [customComplianceItems, setCustomComplianceItems] = useState([]);
+  
+  // Combine lists with custom items first
+  const allComplianceItems = [...customComplianceItems, ...originalChecklistItems];
 
-   const compulsoryDocuments = ['Curriculum Vitae (CV)'];
+  // Error states for document titles
+  const [documentTitleError, setDocumentTitleError] = useState('');
+  const [complianceDocError, setComplianceDocError] = useState('');
+
+  const compulsoryDocuments = ['Curriculum Vitae (CV)'];
 
   // Form data initialized with requisition data
   const [formData, setFormData] = useState({
@@ -230,69 +249,77 @@ const VewRequisition = ({ job, onClose }) => {
   });
 
   // Fetch requisition and advert details
-useEffect(() => {
-  if (job?.id) {
-    const fetchData = async () => {
-      try {
-        const data = await fetchRequisition(job.id);
-        setRequisitionData(data);
-        setStatus(data.status);
-        setIsFormMutable(data.status === 'open');
+  useEffect(() => {
+    if (job?.id) {
+      const fetchData = async () => {
+        try {
+          const data = await fetchRequisition(job.id);
+          setRequisitionData(data);
+          setStatus(data.status);
+          setIsFormMutable(data.status === 'open');
 
-        setFormData({
-          jobTitle: data.title || '',
-          companyName: data.company_name || '',
-          jobType: reverseJobTypeMap[data.job_type] || 'Full-time',
-          locationType: reverseLocationTypeMap[data.location_type] || 'On-site',
-          companyAddress: data.company_address || '',
-          job_location: data.job_location || '',
-          salaryRange: data.salary_range || '',
-          jobDescription: data.job_description || '',
-          numberOfCandidates: data.number_of_candidates ? String(data.number_of_candidates) : '',
-          qualificationRequirement: data.qualification_requirement || '',
-          experienceRequirement: data.experience_requirement || '',
-          knowledgeSkillRequirement: data.knowledge_requirement || '',
-          reasonForRequisition: data.reason || '',
-          advertBannerFile: null,
-        });
+          setFormData({
+            jobTitle: data.title || '',
+            companyName: data.company_name || '',
+            jobType: reverseJobTypeMap[data.job_type] || 'Full-time',
+            locationType: reverseLocationTypeMap[data.location_type] || 'On-site',
+            companyAddress: data.company_address || '',
+            job_location: data.job_location || '',
+            salaryRange: data.salary_range || '',
+            jobDescription: data.job_description || '',
+            numberOfCandidates: data.number_of_candidates ? String(data.number_of_candidates) : '',
+            qualificationRequirement: data.qualification_requirement || '',
+            experienceRequirement: data.experience_requirement || '',
+            knowledgeSkillRequirement: data.knowledge_requirement || '',
+            reasonForRequisition: data.reason || '',
+            advertBannerFile: null,
+          });
 
-        setDeadlineDate(data.deadline_date ? new Date(data.deadline_date) : null);
-        setStartDate(data.start_date ? new Date(data.start_date) : null);
-        setResponsibilities(data.responsibilities?.length ? data.responsibilities : ['']);
-        
-        // COMPULSORY DOCUMENTS INTEGRATION
-        const compulsoryDocuments = ['Curriculum Vitae (CV)'];
-        const fetchedDocs = data.documents_required || [];
-        // Merge documents: compulsory first, then unique fetched docs
-        const allDocs = [
-          ...compulsoryDocuments,
-          ...fetchedDocs.filter(doc => !compulsoryDocuments.includes(doc))
-        ];
-        setDocuments(allDocs);
-        
-        setCheckedItems(data.compliance_checklist || []);
-        if (data.company_name || data.job_description || data.publish_status) {
-          setShowPreview(true);
-          setShowJobAdvert(true);
-        }
-        if (data.advert_banner) {
-          setAdvertBanner(
-            data.advert_banner.startsWith('http') 
-              ? data.advert_banner 
-              : `${process.env.REACT_APP_API_BASE_URL}${data.advert_banner}`
+          setDeadlineDate(data.deadline_date ? new Date(data.deadline_date) : null);
+          setStartDate(data.start_date ? new Date(data.start_date) : null);
+          setResponsibilities(data.responsibilities?.length ? data.responsibilities : ['']);
+          
+          // COMPULSORY DOCUMENTS INTEGRATION
+          const fetchedDocs = data.documents_required || [];
+          // Merge documents: compulsory first, then unique fetched docs
+          const allDocs = [
+            ...compulsoryDocuments,
+            ...fetchedDocs.filter(doc => !compulsoryDocuments.includes(doc))
+          ];
+          setDocuments(allDocs);
+          
+          setCheckedItems(data.compliance_checklist || []);
+          
+          // Separate custom compliance items
+          const complianceData = data.compliance_checklist || [];
+          const initialCustomItems = complianceData.filter(
+            item => !originalChecklistItems.includes(item)
           );
+          setCustomComplianceItems(initialCustomItems);
+          
+          if (data.company_name || data.job_description || data.publish_status) {
+            setShowPreview(true);
+            setShowJobAdvert(true);
+          }
+          if (data.advert_banner) {
+            setAdvertBanner(
+              data.advert_banner.startsWith('http') 
+                ? data.advert_banner 
+                : `${process.env.REACT_APP_API_BASE_URL}${data.advert_banner}`
+            );
+          }
+        } catch (error) {
+          setAlertModal({
+            title: 'Error',
+            message: error,
+          });
+          console.error('Error fetching requisition:', error);
         }
-      } catch (error) {
-        setAlertModal({
-          title: 'Error',
-          message: error,
-        });
-        console.error('Error fetching requisition:', error);
-      }
-    };
-    fetchData();
-  }
-}, [job?.id]);
+      };
+      fetchData();
+    }
+  }, [job?.id]);
+
   const handleInputChange = (e) => {
     const { name, type, value, files } = e.target;
     if (type === 'file') {
@@ -407,7 +434,14 @@ useEffect(() => {
       JSON.stringify(responsibilities.filter((r) => r.trim()))
     );
     formDataToSend.append('documents_required', JSON.stringify(documents));
-    formDataToSend.append('compliance_checklist', JSON.stringify(checkedItems));
+    
+    // Combine compliance items for submission
+    const allComplianceItems = [...customComplianceItems, ...originalChecklistItems];
+    const complianceToSubmit = checkedItems.filter(item => 
+      allComplianceItems.includes(item)
+    );
+    formDataToSend.append('compliance_checklist', JSON.stringify(complianceToSubmit));
+    
     if (formData.advertBannerFile) {
       formDataToSend.append('advert_banner', formData.advertBannerFile);
     }
@@ -570,15 +604,6 @@ useEffect(() => {
     setShowDeleteModal(false);
   };
 
-  const checklistItems = [
-    'Passport / ID',
-    'Proof of Address',
-    'Right to Work',
-    'DBS Certificate',
-    'Professional Qualifications',
-    'References',
-  ];
-
   const toggleChecklistItem = (item) => {
     if (!isFormMutable) return;
     setCheckedItems((prev) =>
@@ -587,13 +612,23 @@ useEffect(() => {
     setErrors((prev) => ({ ...prev, compliance: '' }));
   };
 
- const handleAddDocument = () => {
+  const handleAddDocument = () => {
     if (!isFormMutable) return;
+    
+    // Validate input
+    if (!documentTitle.trim()) {
+      setDocumentTitleError('Document title is required');
+      return;
+    }
+    
     const trimmed = documentTitle.trim();
     if (trimmed && !documents.includes(trimmed)) {
       setDocuments(prev => [...prev, trimmed]);
       setDocumentTitle('');
+      setDocumentTitleError('');
       setErrors(prev => ({ ...prev, documents: '' }));
+    } else {
+      setDocumentTitleError('Document title must be unique');
     }
   };
 
@@ -615,13 +650,63 @@ useEffect(() => {
     );
   };
 
+  const handleAddComplianceDocument = () => {
+    if (!isFormMutable) return;
+    
+    // Validate input
+    if (!newComplianceDoc.trim()) {
+      setComplianceDocError('Document title is required');
+      return;
+    }
+    
+    const trimmedDoc = newComplianceDoc.trim();
+    if (trimmedDoc && 
+        !originalChecklistItems.includes(trimmedDoc) && 
+        !customComplianceItems.includes(trimmedDoc)) {
+      // Add new item to the beginning of custom items
+      setCustomComplianceItems(prev => [trimmedDoc, ...prev]);
+      setNewComplianceDoc('');
+      setComplianceDocError('');
+      setErrors(prev => ({ ...prev, compliance: '' }));
+    } else {
+      setComplianceDocError('Document title must be unique');
+    }
+  };
+
+  const handleRemoveComplianceDocument = (item) => {
+    if (!isFormMutable) return;
+    setCustomComplianceItems(prev => prev.filter(i => i !== item));
+    setCheckedItems(prev => prev.filter(i => i !== item));
+  };
+
   const tabVariants = {
     hidden: { opacity: 0, x: -20 },
     visible: { opacity: 1, x: 0, transition: { duration: 0.3, ease: 'easeOut' } },
     exit: { opacity: 0, x: 20, transition: { duration: 0.2 } },
   };
 
-  
+  const inputSectionVariants = {
+    hidden: { height: 0, opacity: 0, marginBottom: 0 },
+    visible: { 
+      height: 'auto', 
+      opacity: 1,
+      marginBottom: '1rem',
+      transition: { 
+        duration: 0.3, 
+        ease: 'easeInOut' 
+      } 
+    },
+    exit: { 
+      height: 0, 
+      opacity: 0,
+      marginBottom: 0,
+      transition: { 
+        duration: 0.3, 
+        ease: 'easeInOut' 
+      } 
+    }
+  };
+
   return (
     <div className='VewRequisition'>
       <AnimatePresence>
@@ -941,32 +1026,31 @@ useEffect(() => {
                         </div>
                       </div>
 
-                        <div className='GHuh-Form-Input'>
-                          <label>Company Address</label>
-                          <input
-                            name="companyAddress"
-                            type='text'
-                            placeholder='Enter Company Address'
-                            value={formData.companyAddress}
-                            onChange={handleInputChange}
-                            required
-                            disabled={!isFormMutable}
-                          />
-                          {errors.companyAddress && <p className='error'>{errors.companyAddress}</p>}
-                        </div>
+                      <div className='GHuh-Form-Input'>
+                        <label>Company Address</label>
+                        <input
+                          name="companyAddress"
+                          type='text'
+                          placeholder='Enter Company Address'
+                          value={formData.companyAddress}
+                          onChange={handleInputChange}
+                          required
+                          disabled={!isFormMutable}
+                        />
+                        {errors.companyAddress && <p className='error'>{errors.companyAddress}</p>}
+                      </div>
 
-
-                           <div className='GHuh-Form-Input'>
-                          <label>Location</label>
-                          <input
-                            name="job_location"
-                            type='text'
-                            placeholder='Enter Work Location'
-                            onChange={handleInputChange}
-                            required
-                            disabled={!isFormMutable}
-                          />
-                        </div>
+                      <div className='GHuh-Form-Input'>
+                        <label>Location</label>
+                        <input
+                          name="job_location"
+                          type='text'
+                          placeholder='Enter Work Location'
+                          onChange={handleInputChange}
+                          required
+                          disabled={!isFormMutable}
+                        />
+                      </div>
 
                       <div className='GHuh-Form-Input'>
                         <label>Salary Range (optional)</label>
@@ -1129,7 +1213,7 @@ useEffect(() => {
                     </>
                   )}
 
-               {activeSection === 1 && (
+                  {activeSection === 1 && (
                     <>
                       <h3>Document Uploads</h3>
                       <div className='GHuh-Form-Input'>
@@ -1139,7 +1223,13 @@ useEffect(() => {
                             type='text'
                             placeholder='Enter Document Title'
                             value={documentTitle}
-                            onChange={(e) => setDocumentTitle(e.target.value)}
+                            onChange={(e) => {
+                              setDocumentTitle(e.target.value);
+                              // Clear error when user starts typing
+                              if (documentTitleError && e.target.value.trim()) {
+                                setDocumentTitleError('');
+                              }
+                            }}
                             required
                             disabled={!isFormMutable}
                           />
@@ -1155,6 +1245,8 @@ useEffect(() => {
                             Add Document
                           </span>
                         </div>
+                        {/* Show error message if exists */}
+                        {documentTitleError && <p className='error'>{documentTitleError}</p>}
                         {errors.documents && <p className='error'>{errors.documents}</p>}
                         <ul className='apooul-Ul'>
                           {documents.map((doc, index) => (
@@ -1183,24 +1275,98 @@ useEffect(() => {
 
                   {activeSection === 2 && (
                     <>
-                      <h3>Compliance Item</h3>
+                      <h3>
+                        Compliance document 
+                        <span
+                          className='cursor-pointer'
+                          title='Add more compliance document'
+                          onClick={() => setShowAddComplianceInput(!showAddComplianceInput)}
+                        >
+                          <PlusIcon className='w-5 h-5' />
+                          {showAddComplianceInput ? ' Close' : ' Add'}
+                        </span>
+                      </h3>
+                      
+                      <AnimatePresence>
+                        {showAddComplianceInput && (
+                          <motion.div
+                            variants={inputSectionVariants}
+                            initial="hidden"
+                            animate="visible"
+                            exit="exit"
+                            className="overflow-hidden"
+                          >
+                            <div className='GHuh-Form-Input'>
+                              <label>Add more compliance document</label>
+                              <div className='ooi-flex'>
+                                <input
+                                  type='text'
+                                  placeholder='Enter Document Title'
+                                  value={newComplianceDoc}
+                                  onChange={(e) => {
+                                    setNewComplianceDoc(e.target.value);
+                                    // Clear error when user starts typing
+                                    if (complianceDocError && e.target.value.trim()) {
+                                      setComplianceDocError('');
+                                    }
+                                  }}
+                                  required
+                                  disabled={!isFormMutable}
+                                />
+                                <span
+                                  className='cursor-pointer btn-primary-bg'
+                                  onClick={handleAddComplianceDocument}
+                                >
+                                  <PlusIcon className='w-5 h-5' />
+                                  Add
+                                </span>
+                              </div>
+                              {/* Show error message if exists */}
+                              {complianceDocError && <p className='error'>{complianceDocError}</p>}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
                       <div className='GHuh-Form-Input'>
-                        <ul className='checcck-lissT'>
-                          {checklistItems.map((item, index) => (
-                            <li
-                              key={index}
-                              className={checkedItems.includes(item) ? 'active-Li-Check' : ''}
-                              onClick={() => toggleChecklistItem(item)}
-                              style={{
-                                cursor: isFormMutable ? 'pointer' : 'not-allowed',
-                                opacity: isFormMutable ? 1 : 0.5,
-                              }}
-                            >
-                              <p>{item}</p>
-                              <span></span>
-                            </li>
-                          ))}
-                        </ul>
+                      <ul className='checcck-lissT'>
+                              {allComplianceItems.map((item, index) => {
+                                const isCustom = customComplianceItems.includes(item);
+                                const isChecked = checkedItems.includes(item);
+                                
+                                return (
+                                  <li
+                                    key={index}
+                                    className={
+                                      isCustom 
+                                        ? `added-COmpll-list ${isChecked ? 'custom-active' : ''}`
+                                        : (isChecked ? 'active-Li-Check' : '')
+                                    }
+                                    onClick={() => toggleChecklistItem(item)}
+                                    style={{
+                                      cursor: isFormMutable ? 'pointer' : 'not-allowed',
+                                      opacity: isFormMutable ? 1 : 0.5,
+                                    }}
+                                  >
+                                    <p>{item}</p>
+                                    
+                                    {isCustom ? (
+                                      <button
+                                        className="remove-compliance-btn"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleRemoveComplianceDocument(item);
+                                        }}
+                                      >
+                                        <XMarkIcon className='w-4 h-4' />
+                                      </button>
+                                    ) : (
+                                      <span className="check-indicator"></span>
+                                    )}
+                                  </li>
+                                );
+                              })}
+                            </ul>
                         {errors.compliance && <p className='error'>{errors.compliance}</p>}
                       </div>
                     </>

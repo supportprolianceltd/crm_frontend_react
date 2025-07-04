@@ -1582,14 +1582,16 @@ background: #ebe6ff;
     gap: 10px;
 }
 
+
+
 .GHuh-Form-Input select,
 .GHuh-Form-Input input,
 .GHuh-Form-Input textarea{
     position: relative;
     width: 100% !important;
-    height: 45px;
+    height: 40px;
     border: 1px solid #e3defc;
-    border-radius: 10px;
+    border-radius: 8px;
     padding: 0px 15px;
     font-size: 13px;
     resize: none;
@@ -1692,8 +1694,8 @@ background: #ebe6ff;
 .ooi-flex span{
     position: relative;
     width: auto;
-    padding: 0px 15px;
-    height: 45px;
+    padding: 0px 10px;
+    height: 40px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -1705,7 +1707,7 @@ background: #ebe6ff;
     text-transform: uppercase;
     user-select: none;
     cursor: pointer;
-    gap: 5px;
+    gap: 3px;
     transition: all 0.3s ease-in-out;
     border:1px solid #7226FF;
     white-space: nowrap;
@@ -1819,10 +1821,39 @@ background: #ebe6ff;
     border:1px solid transparent;
 }
 
+.added-COmpll-list,
 .checcck-lissT li.active-Li-Check{
-   border-color:#7226FF;
-    background-color:#ebe6ff;
+   border-color:#7226FF !important;
+    background-color:#ebe6ff !important;
 }
+.added-COmpll-list{
+    cursor: default !important;
+}
+
+.remove-compliance-btn{
+    position: relative;
+    display: inline-flex;
+    width: 20px;
+    height: 20px;
+    background-color: transparent;
+    border-radius: 50%;
+    cursor: pointer;
+    user-select: none;
+    justify-content: center;
+    text-align: center;
+    transition: all 0.3s ease-in-out;
+    background-color: #f8f7fe;
+    border:1px solid transparent;
+}
+
+.remove-compliance-btn svg{
+    width: 70%;
+}
+
+.remove-compliance-btn:hover{
+    border-color: #d8d3fb;
+}
+
 
 .checcck-lissT li p{
     position: relative;
