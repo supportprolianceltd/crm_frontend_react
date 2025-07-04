@@ -20,7 +20,6 @@ import {
 import { fetchRequisition, updateRequisition, deleteRequisition, updateRequisitionStatus, togglePublishRequisition } from './ApiService';
 import config from '../../../config';
 
-
 // Date formatting function
 const formatDisplayDate = (dateString) => {
   if (!dateString) return 'Not specified';
@@ -179,6 +178,33 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
   const [userHasAdded, setUserHasAdded] = useState(false);
   const [requisitionData, setRequisitionData] = useState(job || { requested_by: null });
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  
+  // Custom compliance document states
+  const [showAddComplianceInput, setShowAddComplianceInput] = useState(false);
+  const [newComplianceDoc, setNewComplianceDoc] = useState('');
+  const [complianceDocError, setComplianceDocError] = useState('');
+  const [customComplianceItems, setCustomComplianceItems] = useState([]);
+
+  // Animation variants for compliance input
+  const inputSectionVariants = {
+    hidden: { height: 0, opacity: 0 },
+    visible: { 
+      height: "auto", 
+      opacity: 1, 
+      transition: { 
+        duration: 0.3,
+        ease: "easeOut"
+      } 
+    },
+    exit: { 
+      height: 0, 
+      opacity: 0, 
+      transition: { 
+        duration: 0.3,
+        ease: "easeIn"
+      } 
+    }
+  };
 
   // Form data with defaults
   const [formData, setFormData] = useState({
@@ -196,6 +222,20 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
     knowledgeSkillRequirement: '',
     reason: '',
   });
+
+  // Default compliance items
+  const checklistItems = [
+    'Passport / Driver’s Licence',
+    'Shared Code or Date of Birth',
+    'DBS (Background Check)',
+    'Training Certificate',
+    'Proof of Address',
+    'Right to Work Check',
+    'References (Links to previous jobs/projects)',
+  ];
+  
+  // Custom items appear FIRST in the list
+  const allComplianceItems = [...customComplianceItems, ...checklistItems];
 
   // Fetch requisition data if job.id exists
   useEffect(() => {
@@ -245,6 +285,13 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
           setCheckedItems(data.compliance_checklist || ['Right to Work Check']);
           setAdvertBanner(`${data.advert_banner}`);
           setHasUnsavedChanges(false);
+          
+          // Initialize custom compliance items
+          const savedCompliance = data.compliance_checklist || [];
+          const savedCustomItems = savedCompliance.filter(
+            item => !checklistItems.includes(item)
+          );
+          setCustomComplianceItems(savedCustomItems);
         } catch (error) {
           setAlertModal({
             title: 'Error',
@@ -332,6 +379,17 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
     const isBannerChanged = () => {
       return !!advertBannerFile;
     };
+    
+    const isCustomComplianceChanged = () => {
+      const savedCompliance = requisitionData.compliance_checklist || [];
+      const savedCustomItems = savedCompliance.filter(
+        item => !checklistItems.includes(item)
+      );
+      return (
+        customComplianceItems.length !== savedCustomItems.length ||
+        customComplianceItems.some((item, i) => item !== savedCustomItems[i])
+      );
+    };
 
     const hasChanges =
       isFormDataChanged() ||
@@ -339,7 +397,8 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
       isDocumentsChanged() ||
       isComplianceChanged() ||
       isDateChanged() ||
-      isBannerChanged();
+      isBannerChanged() ||
+      isCustomComplianceChanged();
 
     setHasUnsavedChanges(hasChanges);
   }, [
@@ -351,6 +410,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
     startDate,
     advertBannerFile,
     requisitionData,
+    customComplianceItems
   ]);
 
   const handleInputChange = (e) => {
@@ -723,16 +783,6 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
     setShowDeleteModal(false);
   };
 
-  const checklistItems = [
-    'Passport / Driver’s Licence',
-    'Shared Code or Date of Birth',
-    'DBS (Background Check)',
-    'Training Certificate',
-    'Proof of Address',
-    'Right to Work Check',
-    'References (Links to previous jobs/projects)',
-  ];
-
   const toggleChecklistItem = (item) => {
     if (!isFormMutable) return;
     setCheckedItems((prev) =>
@@ -759,6 +809,34 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
   const handleRemoveDocument = (titleToRemove) => {
     if (!isFormMutable) return;
     setDocuments((prev) => prev.filter((doc) => doc !== titleToRemove));
+  };
+  
+  // Custom compliance document handlers
+  const handleAddComplianceDocument = () => {
+    const trimmed = newComplianceDoc.trim();
+    
+    if (!trimmed) {
+      setComplianceDocError('Document title cannot be empty');
+      return;
+    }
+    
+    if (allComplianceItems.includes(trimmed)) {
+      setComplianceDocError('This document already exists');
+      return;
+    }
+    
+    setCustomComplianceItems(prev => [...prev, trimmed]);
+    setNewComplianceDoc('');
+    setComplianceDocError('');
+  };
+
+  const handleRemoveComplianceDocument = (doc) => {
+    setCustomComplianceItems(prev => prev.filter(item => item !== doc));
+    
+    // Also remove from checked items if it was checked
+    if (checkedItems.includes(doc)) {
+      setCheckedItems(prev => prev.filter(item => item !== doc));
+    }
   };
 
   const hasAdvertData = () => {
@@ -1280,23 +1358,96 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
 
                     {activeSection === 2 && (
                       <>
-                        <h3>Compliance Item</h3>
+                        <h3>
+                          Compliance document 
+                          <span
+                            className='cursor-pointer'
+                            title='Add more compliance document'
+                            onClick={() => setShowAddComplianceInput(!showAddComplianceInput)}
+                            style={{ marginLeft: '10px' }}
+                          >
+                            <PlusIcon className='w-5 h-5' />
+                            {showAddComplianceInput ? ' Close' : ' Add'}
+                          </span>
+                        </h3>
+                        
+                        <AnimatePresence>
+                          {showAddComplianceInput && (
+                            <motion.div
+                              variants={inputSectionVariants}
+                              initial="hidden"
+                              animate="visible"
+                              exit="exit"
+                              className="overflow-hidden"
+                            >
+                              <div className='GHuh-Form-Input'>
+                                <label>Add compliance document</label>
+                                <div className='ooi-flex'>
+                                  <input
+                                    type='text'
+                                    placeholder='Enter Document Title'
+                                    value={newComplianceDoc}
+                                    onChange={(e) => {
+                                      setNewComplianceDoc(e.target.value);
+                                      if (complianceDocError && e.target.value.trim()) {
+                                        setComplianceDocError('');
+                                      }
+                                    }}
+                                    required
+                                    disabled={!isFormMutable}
+                                  />
+                                  <span
+                                    className='cursor-pointer btn-primary-bg'
+                                    onClick={handleAddComplianceDocument}
+                                  >
+                                    <PlusIcon className='w-5 h-5' />
+                                    Add
+                                  </span>
+                                </div>
+                                {complianceDocError && <p className='error'>{complianceDocError}</p>}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+
                         <div className='GHuh-Form-Input'>
                           <ul className='checcck-lissT'>
-                            {checklistItems.map((item, index) => (
-                              <li
-                                key={index}
-                                className={checkedItems.includes(item) ? 'active-Li-Check' : ''}
-                                onClick={() => toggleChecklistItem(item)}
-                                style={{
-                                  cursor: isFormMutable ? 'pointer' : 'not-allowed',
-                                  opacity: isFormMutable ? 1 : 0.5,
-                                }}
-                              >
-                                <p>{item}</p>
-                                <span></span>
-                              </li>
-                            ))}
+                            {allComplianceItems.map((item, index) => {
+                              const isCustom = customComplianceItems.includes(item);
+                              const isChecked = checkedItems.includes(item);
+                              
+                              return (
+                                <li
+                                  key={index}
+                                  className={
+                                    isCustom 
+                                      ? `added-COmpll-list ${isChecked ? 'custom-active' : ''}`
+                                      : (isChecked ? 'active-Li-Check' : '')
+                                  }
+                                  onClick={() => toggleChecklistItem(item)}
+                                  style={{
+                                    cursor: isFormMutable ? 'pointer' : 'not-allowed',
+                                    opacity: isFormMutable ? 1 : 0.5,
+                                  }}
+                                >
+                                  <p>{item}</p>
+                                  
+                                  {isCustom ? (
+                                    <button
+                                      className="remove-compliance-btn"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleRemoveComplianceDocument(item);
+                                      }}
+                                    >
+                                      <XMarkIcon className='w-4 h-4' />
+                                    </button>
+                                  ) : (
+                                    <span className="check-indicator"></span>
+                                  )}
+                                </li>
+                              );
+                            })}
                           </ul>
                           {errors.compliance && <p className='error'>{errors.compliance}</p>}
                         </div>
