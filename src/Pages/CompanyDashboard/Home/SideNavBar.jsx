@@ -13,6 +13,10 @@ import {
   ChartBarIcon as ChartBarOutline,
   Cog6ToothIcon as SettingsOutline,
   LifebuoyIcon as HelpOutline,
+  BuildingOffice2Icon as CompanyOutline,
+  BellIcon as BellOutline,          // ➜ NEW
+  ChevronDownIcon,
+  ChevronUpIcon,
 } from '@heroicons/react/24/outline';
 
 import {
@@ -26,6 +30,8 @@ import {
   ChartBarIcon as ChartBarSolid,
   Cog6ToothIcon as SettingsSolid,
   LifebuoyIcon as HelpSolid,
+  BuildingOffice2Icon as CompanySolid,
+  BellIcon as BellSolid,            // ➜ NEW
 } from '@heroicons/react/24/solid';
 
 import { Bars3BottomLeftIcon } from '@heroicons/react/24/solid';
@@ -44,6 +50,7 @@ const SideNavBar = ({ setShrinkNav }) => {
   const initialActive = relativePath === '' ? 'dashboard' : relativePath.split('/')[0];
   const [active, setActive] = useState(initialActive);
   const [menuToggled, setMenuToggled] = useState(false);
+  const [showOtherMenu, setShowOtherMenu] = useState(false);
 
   useEffect(() => {
     let relPath = location.pathname.startsWith(basePath)
@@ -53,13 +60,12 @@ const SideNavBar = ({ setShrinkNav }) => {
     setActive(relPath === '' ? 'dashboard' : relPath.split('/')[0]);
   }, [location]);
 
-  const renderIcon = (name, OutlineIcon, SolidIcon) => {
-    return active === name ? (
+  const renderIcon = (name, OutlineIcon, SolidIcon) =>
+    active === name ? (
       <SolidIcon className={iconClass} />
     ) : (
       <OutlineIcon className={iconClass} />
     );
-  };
 
   const MenuItem = ({ name, label, OutlineIcon, SolidIcon, to, onClick }) => (
     <li className={active === name ? 'active' : ''}>
@@ -91,6 +97,7 @@ const SideNavBar = ({ setShrinkNav }) => {
       transition={{ duration: 0.2 }}
     >
       <div className="SideNavBar-Main custom-scroll-bar">
+        {/* ===== Main Menu ===== */}
         <p className="LeftnavBr-Title">
           <span className="Leffft-SOpan">Menu</span>
           <span
@@ -108,6 +115,7 @@ const SideNavBar = ({ setShrinkNav }) => {
             )}
           </span>
         </p>
+
         <ul className="LeftnavBr-Icons">
           <MenuItem
             name="dashboard"
@@ -139,8 +147,16 @@ const SideNavBar = ({ setShrinkNav }) => {
           />
         </ul>
 
+        {/* ===== Management ===== */}
         {!menuToggled && <p className="LeftnavBr-Title">Management</p>}
         <ul className="LeftnavBr-Icons">
+          <MenuItem
+            name="companies"
+            label="Companies"
+            OutlineIcon={CompanyOutline}
+            SolidIcon={CompanySolid}
+            to={`${basePath}/companies`}
+          />
           <MenuItem
             name="employee"
             label="Employee"
@@ -171,27 +187,58 @@ const SideNavBar = ({ setShrinkNav }) => {
           />
         </ul>
 
-        {!menuToggled && <p className="LeftnavBr-Title">Other Menu</p>}
-        <ul className="LeftnavBr-Icons">
-          <MenuItem
-            name="settings"
-            label="Settings"
-            OutlineIcon={SettingsOutline}
-            SolidIcon={SettingsSolid}
-            to={`${basePath}/settings`}
-            onClick={() => {
-              setMenuToggled(false);
-              setShrinkNav(false);
-            }}
-          />
-          <MenuItem
-            name="help"
-            label="Help & Support"
-            OutlineIcon={HelpOutline}
-            SolidIcon={HelpSolid}
-            to={`${basePath}/help`}
-          />
-        </ul>
+        {/* ===== Other Menu ===== */}
+        {showOtherMenu && (
+          <>
+            {!menuToggled && <p className="LeftnavBr-Title">Other Menu</p>}
+            <ul className="LeftnavBr-Icons">
+              {/* ➜ NEW Notification entry */}
+              <MenuItem
+                name="notification"
+                label="Notifications"
+                OutlineIcon={BellOutline}
+                SolidIcon={BellSolid}
+                to={`${basePath}/notification`}
+              />
+              <MenuItem
+                name="settings"
+                label="Settings"
+                OutlineIcon={SettingsOutline}
+                SolidIcon={SettingsSolid}
+                to={`${basePath}/settings`}
+                onClick={() => {
+                  setMenuToggled(false);
+                  setShrinkNav(false);
+                }}
+              />
+              <MenuItem
+                name="help"
+                label="Help & Support"
+                OutlineIcon={HelpOutline}
+                SolidIcon={HelpSolid}
+                to={`${basePath}/help`}
+              />
+            </ul>
+          </>
+        )}
+
+        {/* ===== Expand / Collapse Other Menu Toggle ===== */}
+        <button
+          className="MMk-Vieww-Mahns"
+          onClick={() => setShowOtherMenu(!showOtherMenu)}
+        >
+          {showOtherMenu ? (
+            <div>
+              <span>View Less Menu</span>
+              <ChevronUpIcon className="w-4 h-4" />
+            </div>
+          ) : (
+            <div>
+              <span>View More Menu</span>
+              <ChevronDownIcon className="w-4 h-4" />
+            </div>
+          )}
+        </button>
       </div>
     </motion.div>
   );

@@ -198,7 +198,7 @@
 
 .NaV-2-Prof-2 h4{
     font-size: 12px;
-    line-height: 110%;
+    line-height: 14px;
     max-width: 100px;
     overflow: hidden;
     white-space: nowrap;
@@ -337,15 +337,52 @@
 
 
 
+/* MMk-Vieww-Mahns */
+
+.MMk-Vieww-Mahns{
+    position: relative;
+    width: 100%;
+    height: auto;
+    padding: 10px 30px;
+    background-color: transparent;
+    user-select: none;
+    cursor: pointer;
+}
+
+.MMk-Vieww-Mahns div{
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    white-space: nowrap;
+    color: #6e6594;
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 10px;
+}
+
+.MMk-Vieww-Mahns svg{
+    width: 13px;
+}
+
+
+ .ShrinkNav .SideNavBar  .MMk-Vieww-Mahns span {
+   display: none;
+}
 
 
 
+ .ShrinkNav .SideNavBar  .MMk-Vieww-Mahns{
+    padding: 10px  0px !important;
+    width: 100% !important;
+ }
 
-
-
-
-
-
+  .ShrinkNav .SideNavBar  .MMk-Vieww-Mahns div{
+    justify-content: center !important;
+    text-align: center !important;
+    align-items: center !important;
+  }
 
 
 
@@ -625,6 +662,7 @@ button.logout-btn:hover{
     display: grid;
     grid-template-columns: 1fr auto;
     gap: 5px;
+    color: #6e6594;
 }
 
 .LeftnavBr-Title .shrinkToggle{
@@ -639,6 +677,7 @@ button.logout-btn:hover{
     transition: all 0.3s ease-in-out;
     user-select: none;
     cursor: pointer;
+    color: #372580 !important;
 }
 .Leffft-SOpan{
     transition: all 0.3s ease-in-out;
@@ -668,7 +707,7 @@ button.logout-btn:hover{
     padding: 0px 10px;
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    /* gap: 5px; */
 }
 .ShrinkNav .LeftnavBr-Icons{
     padding-left: 9px !important;
