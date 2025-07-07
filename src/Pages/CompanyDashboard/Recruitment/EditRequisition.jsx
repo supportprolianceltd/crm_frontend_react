@@ -31,6 +31,7 @@ const formatDisplayDate = (dateString) => {
   });
 };
 
+
 // Get initials from user data
 const getInitials = (user) => {
   if (!user || typeof user !== 'object') return 'N/A';
