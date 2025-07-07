@@ -1057,12 +1057,29 @@ const Home = () => {
           <div className='olikk-IOkiks'>
             <h3>Attendance - Mon, Jul 7, 2025</h3>
           </div>
-          <ul className='period-controls'>
+        
+
+          <div className='olikk-IOkiks olkk-Hnn'>
+            <h3>{branchView}</h3>
+            <select
+              value={branchView}
+              onChange={e => setBranchView(e.target.value)}
+              className='BranchSelectDropdown'
+            >
+              <option value='All Branches'>All Branches</option>
+              <option value='Main Branch'>Main Branch</option>
+            </select>
+
+              <ul className='period-controls'>
             <li>
               <CalendarDaysIcon /> Calendar
             </li>
    
           </ul>
+
+          </div>
+
+
         </div>
 
             <div className="table-container">
