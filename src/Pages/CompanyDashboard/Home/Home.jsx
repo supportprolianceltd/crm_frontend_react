@@ -1059,6 +1059,47 @@ const Home = () => {
    
           </ul>
         </div>
+
+            <div className="table-container">
+                 <table className="Gen-Sys-table">
+                  <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Role</th>
+                    <th>Department</th>
+                    <th>Clock In Time</th>
+                    <th>Clock Out Time</th>
+                    <th>Remark</th>
+                    <th>Action</th>
+                  </tr>
+                  </thead>
+                   <tbody>
+                    <tr>
+                      <td>POL-00021</td>
+                      <td></td>
+                      <td>Staff</td>
+                      <td>IT Department</td>
+                      <td>
+                        <div>
+                          <p>7:30 AM</p>
+                          <span>Came Early</span>
+                        </div>
+                      </td>
+                      <td>
+                        <div>
+                          <p>5:45 PM</p>
+                          <span>Left Early</span>
+                        </div>
+                      </td>
+                      <td>
+                        <span>Was Late to work</span>
+                      </td>
+                      <td></td>
+                    </tr>
+                   </tbody>
+                 </table>
+            </div>
       </div>
 
     </div>
