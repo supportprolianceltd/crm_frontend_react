@@ -16,6 +16,9 @@ import {
   FaceSmileIcon,
   EllipsisHorizontalIcon,
   CalendarDaysIcon,
+  TrashIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
 } from '@heroicons/react/24/outline';
 import { motion, useMotionValue, useSpring, useInView } from 'framer-motion';
 import { Link } from 'react-router-dom';
@@ -889,6 +892,10 @@ const Home = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showAttendanceCalendar, setShowAttendanceCalendar] = useState(false);
   const [attendanceDate, setAttendanceDate] = useState(new Date());
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [filteredAttendanceData, setFilteredAttendanceData] = useState(attendanceData);
 
   const tabTitles = {
     operations: 'Operation Statistics',
@@ -910,6 +917,58 @@ const Home = () => {
 
   const currentPeriod = getCurrentPeriodType();
   const chartData = getChartData(activeTab, branchView, currentPeriod);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredAttendanceData.length / rowsPerPage);
+  const startIndex = (currentPage - 1) * rowsPerPage;
+  const endIndex = startIndex + rowsPerPage;
+  const paginatedData = filteredAttendanceData.slice(startIndex, endIndex);
+
+  // Handle page navigation
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  // Handle rows per page change
+  const handleRowsPerPageChange = (newRowsPerPage) => {
+    setRowsPerPage(newRowsPerPage);
+    setCurrentPage(1); // Reset to first page when changing rows per page
+  };
+
+  // Handle bulk delete
+  const handleBulkDelete = () => {
+    setFilteredAttendanceData(filteredAttendanceData.filter(
+      employee => !selectedRows.includes(employee.id)
+    ));
+    setSelectedRows([]);
+    setCurrentPage(1); // Reset to first page after deletion
+  };
+
+  // Handle row selection
+  const handleRowSelection = (employeeId) => {
+    setSelectedRows(prev =>
+      prev.includes(employeeId)
+        ? prev.filter(id => id !== employeeId)
+        : [...prev, employeeId]
+    );
+  };
+
+  // Update filtered data when branchView changes
+  useEffect(() => {
+    // In a real application, you'd filter based on branchView
+    // For this example, we'll use the static attendanceData
+    setFilteredAttendanceData(attendanceData);
+    setCurrentPage(1);
+    setSelectedRows([]);
+  }, [branchView]);
 
   const handlePeriodSelect = (period) => {
     setActivePeriod(period);
@@ -1214,6 +1273,19 @@ const Home = () => {
           <table className="Gen-Sys-table OIk-TTTatgs">
             <thead>
               <tr>
+                <th>
+                  <input
+                    type="checkbox"
+                    checked={selectedRows.length === paginatedData.length && paginatedData.length > 0}
+                    onChange={() => {
+                      if (selectedRows.length === paginatedData.length) {
+                        setSelectedRows([]);
+                      } else {
+                        setSelectedRows(paginatedData.map(employee => employee.id));
+                      }
+                    }}
+                  />
+                </th>
                 <th>S/N</th>
                 <th>ID</th>
                 <th>Name</th>
@@ -1226,9 +1298,16 @@ const Home = () => {
               </tr>
             </thead>
             <tbody>
-              {attendanceData.map((employee, index) => (
+              {paginatedData.map((employee, index) => (
                 <tr key={employee.id}>
-                  <td>{index + 1}</td>
+                  <td>
+                    <input
+                      type="checkbox"
+                      checked={selectedRows.includes(employee.id)}
+                      onChange={() => handleRowSelection(employee.id)}
+                    />
+                  </td>
+                  <td>{startIndex + index + 1}</td>
                   <td>{employee.id}</td>
                   <td>
                     <Link to={`/profile/${employee.id}`} className="Proliks-Seec">
@@ -1272,17 +1351,84 @@ const Home = () => {
                   <td>
                     <ActionDropdown
                       employeeId={employee.id}
-                      isLastRow={index === attendanceData.length - 1}
+                      isLastRow={index === paginatedData.length - 1}
                     />
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          <div className="pagination-section">
+            <PaginationControls
+              currentPage={currentPage}
+              totalPages={totalPages}
+              rowsPerPage={rowsPerPage}
+              onRowsPerPageChange={handleRowsPerPageChange}
+              selectedCount={selectedRows.length}
+              onBulkDelete={handleBulkDelete}
+              onPrevPage={handlePrevPage}
+              onNextPage={handleNextPage}
+            />
+          </div>
         </div>
       </div>
     </div>
   );
 };
+
+// PaginationControls Component
+const PaginationControls = ({
+  currentPage,
+  totalPages,
+  rowsPerPage,
+  onRowsPerPageChange,
+  selectedCount,
+  onBulkDelete,
+  onPrevPage,
+  onNextPage,
+}) => (
+  <div className="pagination-controls">
+    <div className="Dash-OO-Boas-foot">
+      <div className="Dash-OO-Boas-foot-1">
+        <div className="items-per-page">
+          <p>Number of rows:</p>
+          <select
+            className="form-select"
+            value={rowsPerPage}
+            onChange={(e) => onRowsPerPageChange(Number(e.target.value))}
+          >
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+            <option value={50}>50</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div className="page-navigation">
+      <span className="page-info">
+        Page {currentPage} of {totalPages}
+      </span>
+
+      <div className="page-navigation-Btns">
+        <button
+          className="page-button"
+          onClick={onPrevPage}
+          disabled={currentPage === 1}
+        >
+          <ChevronLeftIcon className="h-5 w-5" />
+        </button>
+        <button
+          className="page-button"
+          onClick={onNextPage}
+          disabled={currentPage === totalPages}
+        >
+          <ChevronRightIcon className="h-5 w-5" />
+        </button>
+      </div>
+    </div>
+  </div>
+);
 
 export default Home;

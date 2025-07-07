@@ -538,7 +538,8 @@
             margin-top: 5px;
             display: inline-flex;
             color: #7226FF;
-            font-weight: 500;
+            font-weight: 400;
+            text-transform: capitalize;
         }
 
         .early-entry{
@@ -663,22 +664,7 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-          /* Existing styles remain unchanged, add these new styles for the dropdown */
+/* Existing styles remain unchanged, add these new styles for the dropdown */
 .relative { position: relative; }
 .dropdown-menu {
   position: absolute;
