@@ -542,24 +542,94 @@
         }
 
         .early-entry{
-            background-color: rgba(16, 185, 129, 0.1) !important;
-            color: #10b981 !important;
+           background-color: rgb(224, 247, 250) !important;
+            color: rgb(0, 121, 107) !important;
         }
           .late-entry{
-            background-color: rgba(245, 158, 11, 0.1) !important;
-            color: #f59e0b !important;
+                background-color: rgb(255, 243, 224) !important;
+                 color: rgb(245, 124, 0) !important;
         }
 
 
         .late-exit{
-            background-color: #ebe6ff !important;
-            color: #7226FF !important;
+           background-color: rgb(237, 247, 237) !important;
+            color: rgb(46, 125, 50) !important;
         }
-        .late-exit{
-            background-color: rgba(245, 158, 11, 0.1) !important;
-            color: #f59e0b !important;
+        .early-exit{
+           background-color: rgb(255, 243, 224) !important;
+           color: rgb(245, 124, 0) !important;
         }
 
         .remack-SmmmnRy{
             white-space: normal !important;
+            max-width: 200px;
         }
+
+         .remack-SmmmnRy span b{
+            font-weight: 600;
+         }
+
+         .OIk-TTTatgs thead th{
+            font-size: 9px !important;
+         }
+         
+
+         /* Proliks-Seec */
+
+         .Proliks-Seec{
+            position: relative;
+            max-width: 200px;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 10px;
+         }
+
+         .Proliks-1{
+            position: relative;
+            width: auto;
+            height: auto;
+         }
+
+         .Proliks-1 img{
+            position: relative;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            object-fit: cover;
+            object-position: center;
+         }
+
+         .Proliks-2{
+            position: relative;
+            width: 100%;
+            height: auto;
+            display: flex;
+            align-items: center;
+         }
+
+         .Proliks-2 h4{
+            display: -webkit-box;
+            -webkit-line-clamp:1; 
+            line-clamp:1; 
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            position: relative;
+            width: 100%;
+            font-size: 12px;
+            font-weight: 600;
+         }
+
+          .Proliks-2 span{
+             position: relative;
+            font-size: 8px;
+            padding: 3px 8px;
+            background-color: #ebe6ff;
+            border-radius: 30px;
+            font-weight: 500;
+            margin-top:2px;
+            display: inline-flex;
+            color: #7226FF;
+            font-weight: 500;
+          }

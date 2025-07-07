@@ -14,12 +14,17 @@ import {
   InboxStackIcon,
   AdjustmentsVerticalIcon,
   FaceSmileIcon,
+  EllipsisHorizontalIcon,
   CalendarDaysIcon,
 } from '@heroicons/react/24/outline';
 import { motion, useMotionValue, useSpring, useInView } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
 import { Line, Bar, Pie } from 'react-chartjs-2';
+
+import DefaulUser from '../../../assets/Img/memberIcon.png';
+import MembImg1 from '../../../assets/Img/memberIcon1.jpg';
+import MembImg2 from '../../../assets/Img/memberIcon2.jpg';
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, ArcElement);
@@ -1061,9 +1066,10 @@ const Home = () => {
         </div>
 
             <div className="table-container">
-                 <table className="Gen-Sys-table">
+                 <table className="Gen-Sys-table OIk-TTTatgs">
                   <thead>
                   <tr>
+                    <th>S/N</th>
                     <th>ID</th>
                     <th>Name</th>
                     <th>Role</th>
@@ -1076,8 +1082,23 @@ const Home = () => {
                   </thead>
                    <tbody>
                     <tr>
+                       <td>1</td>
                       <td>POL-00021</td>
-                      <td></td>
+                      <td>
+                        <div className='Proliks-Seec'>
+                          <div className='Proliks-1'>
+                            <span>
+                              <img src={DefaulUser} />
+                            </span>
+                          </div>
+                          <div className='Proliks-2'>
+                            <div>
+                              <h4>Ndubuisi Prince Godson</h4>
+                              <span>Active</span>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
                       <td>Staff</td>
                       <td>IT Department</td>
                       <td>
@@ -1093,9 +1114,110 @@ const Home = () => {
                         </div>
                       </td>
                       <td className='remack-SmmmnRy'>
-                        <span>Clocked in early and clockedout late</span>
+                        <span>Clocked in <b>early</b> and clocked out <b>late</b></span>
                       </td>
-                      <td></td>
+                      <td>
+                       <button
+                        aria-label="More options"
+                        title="More options"
+                        className="mmmo-BBTH-Drop"
+                      >
+                        <EllipsisHorizontalIcon />
+                      </button>
+
+                      </td>
+                    </tr>
+                     <tr>
+                       <td>2</td>
+                      <td>POL-00021</td>
+                      <td>
+                        <div className='Proliks-Seec'>
+                          <div className='Proliks-1'>
+                            <span>
+                              <img src={MembImg1} />
+                            </span>
+                          </div>
+                          <div className='Proliks-2'>
+                            <div>
+                              <h4>Mary Danis</h4>
+                              <span>Active</span>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>Staff</td>
+                      <td>Mrketing</td>
+                      <td>
+                        <div className='DDa-Statuss'>
+                          <p>7:30 AM</p>
+                          <span className='late-entry'>Late Entry</span>
+                        </div>
+                      </td>
+                      <td>
+                        <div className='DDa-Statuss'>
+                          <p>5:45 PM</p>
+                          <span className='early-exit'>Early Exit</span>
+                        </div>
+                      </td>
+                      <td className='remack-SmmmnRy'>
+                        <span>Clocked in <b>latey</b> and clocked out <b>early</b></span>
+                      </td>
+                      <td>
+                       <button
+                        aria-label="More options"
+                        title="More options"
+                        className="mmmo-BBTH-Drop"
+                      >
+                        <EllipsisHorizontalIcon />
+                      </button>
+
+                      </td>
+                    </tr>
+                       <tr>
+                       <td>2</td>
+                      <td>POL-00021</td>
+                      <td>
+                        <div className='Proliks-Seec'>
+                          <div className='Proliks-1'>
+                            <span>
+                              <img src={MembImg2} />
+                            </span>
+                          </div>
+                          <div className='Proliks-2'>
+                            <div>
+                              <h4>Promise Eze</h4>
+                              <span>Active</span>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>Staff</td>
+                      <td>HR</td>
+                      <td>
+                        <div className='DDa-Statuss'>
+                          <p>7:30 AM</p>
+                          <span className='late-entry'>Late Entry</span>
+                        </div>
+                      </td>
+                      <td>
+                        <div className='DDa-Statuss'>
+                          <p>5:45 PM</p>
+                          <span className='late-exit'>Late Exit</span>
+                        </div>
+                      </td>
+                      <td className='remack-SmmmnRy'>
+                        <span>Clocked in <b>late</b> and clocked out <b>early</b></span>
+                      </td>
+                      <td>
+                       <button
+                        aria-label="More options"
+                        title="More options"
+                        className="mmmo-BBTH-Drop"
+                      >
+                        <EllipsisHorizontalIcon />
+                      </button>
+
+                      </td>
                     </tr>
                    </tbody>
                  </table>
