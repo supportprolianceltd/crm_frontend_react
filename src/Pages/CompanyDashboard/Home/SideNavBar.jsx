@@ -13,10 +13,12 @@ import {
   ChartBarIcon as ChartBarOutline,
   Cog6ToothIcon as SettingsOutline,
   LifebuoyIcon as HelpOutline,
-  BuildingOffice2Icon as CompanyOutline,
-  BellIcon as BellOutline,          // ➜ NEW
+  CubeIcon as CompanyOutline,
+  BellIcon as BellOutline,
+  WalletIcon as WalletOutline,
   ChevronDownIcon,
   ChevronUpIcon,
+  ArrowLeftOnRectangleIcon as LoginHistoryOutline, // 🆕 Changed
 } from '@heroicons/react/24/outline';
 
 import {
@@ -30,8 +32,10 @@ import {
   ChartBarIcon as ChartBarSolid,
   Cog6ToothIcon as SettingsSolid,
   LifebuoyIcon as HelpSolid,
-  BuildingOffice2Icon as CompanySolid,
-  BellIcon as BellSolid,            // ➜ NEW
+  CubeIcon as CompanySolid,
+  BellIcon as BellSolid,
+  WalletIcon as WalletSolid,
+  ArrowLeftOnRectangleIcon as LoginHistorySolid, // 🆕 Changed
 } from '@heroicons/react/24/solid';
 
 import { Bars3BottomLeftIcon } from '@heroicons/react/24/solid';
@@ -42,6 +46,7 @@ const basePath = '/company';
 
 const SideNavBar = ({ setShrinkNav }) => {
   const location = useLocation();
+
   let relativePath = location.pathname.startsWith(basePath)
     ? location.pathname.slice(basePath.length)
     : location.pathname;
@@ -151,18 +156,18 @@ const SideNavBar = ({ setShrinkNav }) => {
         {!menuToggled && <p className="LeftnavBr-Title">Management</p>}
         <ul className="LeftnavBr-Icons">
           <MenuItem
-            name="companies"
-            label="Companies"
+            name="all-banches"
+            label="All Banches"
             OutlineIcon={CompanyOutline}
             SolidIcon={CompanySolid}
-            to={`${basePath}/companies`}
+            to={`${basePath}/all-banches`}
           />
           <MenuItem
-            name="employee"
-            label="Employee"
+            name="employees"
+            label="Employees"
             OutlineIcon={UsersOutline}
             SolidIcon={UsersSolid}
-            to={`${basePath}/employee`}
+            to={`${basePath}/employees`}
           />
           <MenuItem
             name="attendance"
@@ -179,6 +184,13 @@ const SideNavBar = ({ setShrinkNav }) => {
             to={`${basePath}/request`}
           />
           <MenuItem
+            name="finance"
+            label="Finance"
+            OutlineIcon={WalletOutline}
+            SolidIcon={WalletSolid}
+            to={`${basePath}/finance`}
+          />
+          <MenuItem
             name="report"
             label="Audit & Report"
             OutlineIcon={ChartBarOutline}
@@ -192,7 +204,6 @@ const SideNavBar = ({ setShrinkNav }) => {
           <>
             {!menuToggled && <p className="LeftnavBr-Title">Other Menu</p>}
             <ul className="LeftnavBr-Icons">
-              {/* ➜ NEW Notification entry */}
               <MenuItem
                 name="notification"
                 label="Notifications"
@@ -210,6 +221,14 @@ const SideNavBar = ({ setShrinkNav }) => {
                   setMenuToggled(false);
                   setShrinkNav(false);
                 }}
+              />
+              {/* ✅ New Login History Menu Item */}
+              <MenuItem
+                name="login-history"
+                label="Login History"
+                OutlineIcon={LoginHistoryOutline}
+                SolidIcon={LoginHistorySolid}
+                to={`${basePath}/login-history`}
               />
               <MenuItem
                 name="help"

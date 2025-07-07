@@ -8,6 +8,7 @@ import {
   MagnifyingGlassIcon,
   CheckIcon,
   UserIcon,
+  PencilIcon,
 } from '@heroicons/react/24/outline';
 import { PlusIcon } from '@heroicons/react/24/solid';
 import {
@@ -268,6 +269,9 @@ const getPosition = (user) => {
                   </Link>
                   <Link to="/add-staff" onClick={closeProfileDropdown}>
                     <PlusIcon /> Add a User
+                  </Link>
+                   <Link to="/create-a-unit" onClick={closeProfileDropdown}>
+                    <PencilIcon/> Create a Unit
                   </Link>
                   <button className="logout-btn btn-primary-bg" onClick={handleLogout}>
                     Logout

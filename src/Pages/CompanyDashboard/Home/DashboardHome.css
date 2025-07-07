@@ -1,0 +1,520 @@
+/* MM-Dash-HOoma */
+
+.MM-Dash-HOoma{
+    position: relative;
+    width: 100%;
+    height: auto;
+    padding-top: 5px;
+}
+
+.Toop-DDag-SEc{
+    position: relative;
+    width: 100%;
+    height: auto;
+    padding: 10px 0px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+    border-bottom: 1px solid #e7e2f7;
+}
+
+.Toop-DDag-1{
+    position: relative;
+}
+.Toop-DDag-1 h3{
+    position: relative;
+    font-size: 15px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap:8px;
+}
+
+.Toop-DDag-1 h3 span{
+    position: relative;
+    font-size: 10px;
+    font-weight: 400;
+    padding: 5px 7px;
+    background-color: #ebe6ff;
+    color: #7226FF;
+    border-radius: 8px;
+    border: 1px solid #7226FF;
+    font-weight: 500;
+    line-height: 100%;
+}
+
+.Toop-DDag-2{
+    position: relative;
+}
+
+.Toop-DDag-2 h4{
+    position: relative;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 115%;
+}
+
+.Toop-DDag-2 p{
+    position: relative;
+    font-size: 10px;
+}
+
+/* Synnc-Cards */
+
+.Synnc-Cards{
+   position: relative;
+    width: 100%;
+    height: auto;
+     display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-gap:10px;
+    grid-template-rows: auto;
+    margin-top: 10px;
+}
+
+.Synnc-Card{
+    position: relative;
+    width: 100%;
+    height: auto;
+    min-height: 40px;
+    border-radius: 8px;
+    padding: 10px 15px;
+    display: block;
+    transition: all 0.3s ease-in-out;
+}
+.Synnc-Card:hover{
+    background-color: #f7f5ff;
+    border-color: #7226FF;
+}
+
+
+.Synnc-Card h4{
+    position: relative;
+    width: 100%;
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 5px;
+    flex-wrap: wrap;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.Synnc-Card h4 span{
+    font-size: 9px;
+    font-weight: 400;
+     background-color: #ebe7fd;
+    border-radius: 30px;
+    padding: 4px 7px;
+    line-height: 100%;
+
+}
+
+.Synnc-Card h3{
+    position: relative;
+    width: 100%;
+    margin-top: 3px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.Synnc-Card h3 span.ppeSC-Count{
+    font-size: 8px;
+    font-weight: 400;
+    background-color: #fef2ff;
+    padding: 3px 4px;
+    border:1px solid #f173fc;
+    border-radius: 30px;
+    line-height: 100%;
+}
+
+.Synnc-Card h3 b{
+    font-weight: inherit;
+    color: #948eb3;
+
+}
+
+
+
+/* GHGb-MMIn-DDahs-Sec */
+
+.GHGb-MMIn-DDahs-Sec{
+     position: relative;
+    width: 100%;
+    height: auto;
+    min-height: 100px;
+    border-radius: 8px;
+    padding: 20px;
+    display: block;
+    margin-top: 10px;
+}
+
+.GHGb-MMIn-DDahs-Top{
+    position: relative;
+    width: 100%;
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.GHGb-MMIn-DDahs-Top h3{
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.GHGb-MMIn-DDahs-Top ul{
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.GHGb-MMIn-DDahs-Top ul select,
+.GHGb-MMIn-DDahs-Top ul li{
+    position: relative;
+    font-size: 10px;
+    padding: 5px 10px;
+     border: 1px solid #e7e2f7;
+     border-radius: 8px;
+     user-select: none;
+     cursor: pointer;
+     color: #666084;
+     transition: all 0.3s ease-in-out;
+     display: inline-flex;
+     align-items: center;
+     gap: 5px;
+}
+
+.GHGb-MMIn-DDahs-Top ul li:hover{
+     background-color: #ebe6ff;
+     color: #372580;
+}
+
+.GHGb-MMIn-DDahs-Top ul select{
+    padding-left: 5px !important;
+    padding-right: 5px !important;
+}
+
+
+.GHGb-MMIn-DDahs-Top ul li.active-MMinLi{
+    background-color: #7226FF !important;
+    border-color: #7226FF !important;
+    color: #fff !important;
+    font-weight: 500;
+    cursor: default;
+}
+
+.GHGb-MMIn-DDahs-Top ul li svg{
+    width: 12px;
+}
+
+.Subb-Oa{
+    margin-top: 10px !important;
+}
+
+/* oilaui-Cards */
+
+.ooilaui-Cards{
+    position: relative;
+    width: 100%;
+    height: auto;
+     display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-gap:10px;
+    grid-template-rows: auto;
+    margin-top: 15px;
+}
+
+.ooilaui-Card{
+    position: relative;
+    width: 100%;
+    display: block;
+    padding: 10px;
+    border: 1px solid #e7e2f7;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: all 0.3s ease-in-out;
+}
+.ooilaui-Card:hover{
+    background-color: #f7f5ff;
+    border-color: #7226FF;
+}
+
+
+
+.ooilaui-Card h4{
+    position: relative;
+    width: 100%;
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.ooilaui-Card h4 span{
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+}
+.ooilaui-Card h4 span svg{
+    width: 18px;
+}
+
+.ooilaui-Card h3{
+    font-size: 20px;
+    font-weight: 600;
+     display: -webkit-box;
+  -webkit-line-clamp:1; 
+  line-clamp:1; 
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: relative;
+  width: 100%;
+}
+
+.ooilaui-Card p{
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 3px;
+}
+
+.ooilaui-Card p svg{
+    width: 13px;
+    color: #F042FF;
+}
+
+
+/* olikk-IOkiks */
+
+.olikk-IOkiks{
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.olikk-IOkiks select{
+     position: relative;
+     font-size: 10px;
+     padding: 5px 5px;
+     border: 1px solid #e7e2f7;
+     border-radius: 8px;
+     color: #666084;
+     transition: all 0.3s ease-in-out;
+     cursor: pointer;
+}
+.olikk-IOkiks p{
+     position: relative;
+     font-size: 10px;
+     padding: 3px 8px;
+     border-radius: 8px;
+     background-color: #ebe6ff;
+     transition: all 0.3s ease-in-out;
+     font-weight: 500;
+     color: #7226FF;
+}
+
+.olkk-Hnn h3{
+    font-size: 13px !important;
+    font-weight: 500 !important;
+}
+.active-GGTba-LI{
+    background-color: #ebe6ff !important;
+    border-color: #7226FF !important;
+    color: #7226FF !important; 
+    cursor: default !important;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ .period-controls {
+          position: relative;
+        }
+        
+        .OOcalendar-container {
+          position: absolute;
+          right: 0;
+          z-index: 100;
+          margin-top: 10px;
+        }
+        
+        .OOcalendar-dropdown {
+          background: white;
+          border-radius: 8px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          padding: 15px;
+          width: 280px;
+          z-index: 100;
+        }
+        
+        .OOcalendar-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 10px;
+          font-size: 10px;
+          text-transform: uppercase;
+          font-weight: 700;
+        }
+        
+        .OOcalendar-header button {
+          background: none;
+          border: none;
+          cursor: pointer;
+          font-size: 14px;
+          padding: 5px 10px;
+        }
+        
+        .OOcalendar-weekdays {
+          display: grid;
+          grid-template-columns: repeat(7, 1fr);
+          text-align: center;
+          font-weight: 500;
+          margin-bottom: 5px;
+          font-size: 10px;
+          text-transform: uppercase;
+        }
+        
+        .OOcalendar-days {
+          display: grid;
+          grid-template-columns: repeat(7, 1fr);
+          gap: 4px;
+        }
+        
+        .OOcalendar-day {
+          padding: 8px;
+          text-align: center;
+          cursor: pointer;
+          border-radius: 4px;
+          transition: all 0.2s;
+          font-size: 11px;
+        }
+        
+        .OOcalendar-day:hover {
+          background: #ebe6ff;
+        }
+        
+        .OOcalendar-day.selected {
+          background: #ebe6ff;
+          color: #7226FF;
+          font-weight: 700;
+        }
+        
+        .OOcalendar-day.today {
+          border: 1px solid #7226FF
+        }
+        
+        .OOcalendar-day.empty {
+          background: transparent;
+          cursor: default;
+        }
+
+
+
+
+
+
+
+
+
+
+        /* GGTh-Grppak-Sec */
+
+        .GGTh-Grppak-Sec{
+            position: relative;
+            width: 100%;
+            height: auto;
+            margin-top: 10px;
+            min-height: 100px;
+            border-radius: 8px;
+            display: grid;
+            grid-template-columns: 1fr 0.5fr;
+            gap: 0px;
+        }
+
+        .GGTh-Grppak{
+            position: relative;
+            width: 100%;
+            height: auto;
+            padding: 20px;
+        }
+
+
+
+        .GGTh-Grppak-header{
+            position: relative;
+            width: 100%;
+            height: auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .GGTh-Grppak-header h3{
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+         .GGTh-Grppak-header p{
+            font-size: 12px;
+            position: relative;
+            color: #666084;
+         }
+
+        .GGTh-Grppak-2{
+            border-left: 1px solid #eeecf7;
+        }
+
+
+
+        /* Attendd-Sec */
+
+        .Attendd-Sec{
+            position: relative;
+            width: 100%;
+            height: auto;
+            margin-top: 10px;
+            min-height: 100px;
+            border-radius: 8px;
+            padding: 20px;
+        }
