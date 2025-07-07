@@ -373,6 +373,7 @@ const ComplianceCheckTable = () => {
                               index === complianceData.length - 1 ? 'last-row-dropdown' : 'not-last-row-dropdown'
                             }`}
                           >
+                            
                             <button
                               onClick={() => handleAccept(index)}
                             >

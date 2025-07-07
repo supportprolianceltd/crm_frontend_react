@@ -607,15 +607,17 @@
 
          .Proliks-1 i{
             position: absolute;
-            width: 10px;
-            height: 10px;
-            background-color: #a0a1a1;
+            width: 9px;
+            height: 9px;
+            background-color: #bfbfbf;
             z-index: 10px;
             border-radius: 50%;
             bottom: 5px;
             right: -1px;
             border:2px solid #fff;
-            box-shadow: 0 0 5px rgba(0,0,0,0.15);
+            box-shadow: 0 0 5px rgba(0,0,0,0.2);
+            -webkit-box-shadow: 0 0 5px rgba(0,0,0,0.2);
+            -moz-box-shadow: 0 0 5px rgba(0,0,0,0.2);
          }
 
          .active-AttDnc{
@@ -655,3 +657,68 @@
             color: #7226FF;
             font-weight: 500;
           }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+          /* Existing styles remain unchanged, add these new styles for the dropdown */
+.relative { position: relative; }
+.dropdown-menu {
+  position: absolute;
+  background-color: #fff;
+  border: 1px solid #e7e2f7;
+  box-shadow: 0 0 20px rgb(74 45 197 / .1);
+  -webkit-box-shadow: 0 0 20px rgb(74 45 197 / .1);
+  -moz-box-shadow: 0 0 20px rgb(74 45 197 / .1);
+  border-radius: 8px;
+  z-index: 100;
+  min-width: 80px;
+  right: 0;
+  margin-top: 5px;
+  overflow: hidden;
+}
+.dropdown-menu.not-last-row-dropdown{
+    top: 45% !important;
+}
+.dropdown-menu.last-row-dropdown{
+    bottom: -50% !important;
+}
+.dropdown-menu a {
+  display: block;
+  padding: 5px 15px;
+  text-decoration: none;
+  font-size: 10px;
+  transition: all 0.3s ease-in;
+  color: #666084;
+}
+.dropdown-menu a:hover {
+  background: #ebe6ff;
+  color: #7226FF;
+}
+.mmmo-BBTH-Drop {
+  padding: 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+.mmmo-BBTH-Drop svg {
+  width: 24px;
+  height: 24px;
+}
