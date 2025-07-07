@@ -1085,19 +1085,19 @@ const Home = () => {
                        <td>1</td>
                       <td>POL-00021</td>
                       <td>
-                        <div className='Proliks-Seec'>
+                        <a href="#" className='Proliks-Seec'>
                           <div className='Proliks-1'>
                             <span>
                               <img src={DefaulUser} />
+                              <i className='active-AttDnc'></i>
                             </span>
                           </div>
                           <div className='Proliks-2'>
                             <div>
-                              <h4>Ndubuisi Prince Godson</h4>
-                              <span>Active</span>
+                              <h4>Prince Godson</h4>
                             </div>
                           </div>
-                        </div>
+                        </a>
                       </td>
                       <td>Staff</td>
                       <td>IT Department</td>
@@ -1114,7 +1114,7 @@ const Home = () => {
                         </div>
                       </td>
                       <td className='remack-SmmmnRy'>
-                        <span>Clocked in <b>early</b> and clocked out <b>late</b></span>
+                        <span>Clocked in early and clocked out late</span>
                       </td>
                       <td>
                        <button
@@ -1131,19 +1131,19 @@ const Home = () => {
                        <td>2</td>
                       <td>POL-00021</td>
                       <td>
-                        <div className='Proliks-Seec'>
+                        <a href="#" className='Proliks-Seec'>
                           <div className='Proliks-1'>
                             <span>
                               <img src={MembImg1} />
+                              <i></i>
                             </span>
                           </div>
                           <div className='Proliks-2'>
                             <div>
                               <h4>Mary Danis</h4>
-                              <span>Active</span>
                             </div>
                           </div>
-                        </div>
+                        </a>
                       </td>
                       <td>Staff</td>
                       <td>Mrketing</td>
@@ -1160,7 +1160,7 @@ const Home = () => {
                         </div>
                       </td>
                       <td className='remack-SmmmnRy'>
-                        <span>Clocked in <b>late</b> and clocked out <b>early</b></span>
+                        <span>Clocked in late and clocked out early</span>
                       </td>
                       <td>
                        <button
@@ -1177,19 +1177,19 @@ const Home = () => {
                        <td>2</td>
                       <td>POL-00021</td>
                       <td>
-                        <div className='Proliks-Seec'>
+                        <a href="#" className='Proliks-Seec'>
                           <div className='Proliks-1'>
                             <span>
                               <img src={MembImg2} />
+                              <i></i>
                             </span>
                           </div>
                           <div className='Proliks-2'>
                             <div>
                               <h4>Promise Eze</h4>
-                              <span>Active</span>
                             </div>
                           </div>
-                        </div>
+                        </a>
                       </td>
                       <td>Staff</td>
                       <td>HR</td>
@@ -1206,7 +1206,7 @@ const Home = () => {
                         </div>
                       </td>
                       <td className='remack-SmmmnRy'>
-                        <span>Clocked in <b>late</b> and clocked out <b>late</b></span>
+                        <span>Clocked in late and clocked out late</span>
                       </td>
                       <td>
                        <button

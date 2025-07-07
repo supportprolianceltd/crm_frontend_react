@@ -583,7 +583,12 @@
             display: grid;
             grid-template-columns: auto 1fr;
             gap: 10px;
+            transition: all 0.3s ease-in-out;
          }
+
+          .Proliks-Seec:hover{
+            color: #7226FF;
+          }
 
          .Proliks-1{
             position: relative;
@@ -593,11 +598,28 @@
 
          .Proliks-1 img{
             position: relative;
-            width: 30px;
-            height: 30px;
+            width: 27px;
+            height: 27px;
             border-radius: 50%;
             object-fit: cover;
             object-position: center;
+         }
+
+         .Proliks-1 i{
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #a0a1a1;
+            z-index: 10px;
+            border-radius: 50%;
+            bottom: 5px;
+            right: -1px;
+            border:2px solid #fff;
+            box-shadow: 0 0 5px rgba(0,0,0,0.15);
+         }
+
+         .active-AttDnc{
+            background-color: #10b981 !important;
          }
 
          .Proliks-2{
@@ -617,8 +639,8 @@
             text-overflow: ellipsis;
             position: relative;
             width: 100%;
-            font-size: 12px;
-            font-weight: 600;
+            font-size: 11px;
+            font-weight: 400;
          }
 
           .Proliks-2 span{
