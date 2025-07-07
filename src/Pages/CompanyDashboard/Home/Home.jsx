@@ -801,6 +801,10 @@ const Home = () => {
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   
+  // Add state for attendance calendar
+  const [showAttendanceCalendar, setShowAttendanceCalendar] = useState(false);
+  const [attendanceDate, setAttendanceDate] = useState(new Date());
+  
   const tabTitles = {
     operations: 'Operation Statistics',
     finance: 'Finance Statistics',
@@ -841,6 +845,12 @@ const Home = () => {
     setPeriodText(formatDate(date));
     setActivePeriod('Today');
     setShowCalendar(false);
+  };
+
+  // Handle attendance date selection
+  const handleAttendanceDateSelect = (date) => {
+    setAttendanceDate(date);
+    setShowAttendanceCalendar(false);
   };
 
   // Handle month selection
@@ -919,8 +929,18 @@ const Home = () => {
             <li 
               className={activePeriod === 'Calendar' ? 'active-GGTba-LI' : ''}
               onClick={() => setShowCalendar(!showCalendar)}
+              style={{ position: 'relative' }}
             >
               <CalendarDaysIcon /> Calendar
+              {showCalendar && (
+                <div className='OOcalendar-container' style={{ position: 'absolute', top: '100%', left: 0, zIndex: 100 }}>
+                  <CalendarDropdown 
+                    selectedDate={selectedDate} 
+                    onSelect={handleDateSelect}
+                    onClose={() => setShowCalendar(false)}
+                  />
+                </div>
+              )}
             </li>
             <select value={selectedMonth} onChange={handleMonthSelect}>
               <option value='Month'>Month</option>
@@ -948,17 +968,6 @@ const Home = () => {
             </select>
           </ul>
         </div>
-
-        {/* Calendar dropdown */}
-        {showCalendar && (
-          <div className='OOcalendar-container'>
-            <CalendarDropdown 
-              selectedDate={selectedDate} 
-              onSelect={handleDateSelect}
-              onClose={() => setShowCalendar(false)}
-            />
-          </div>
-        )}
 
         {/* Cards */}
         <div className='ooilaui-Cards'>
@@ -1055,7 +1064,7 @@ const Home = () => {
       <div className='Attendd-Sec Simp-Boxshadow'>
          <div className='GHGb-MMIn-DDahs-Top'>
           <div className='olikk-IOkiks'>
-            <h3>Attendance - Mon, Jul 7, 2025</h3>
+            <h3>Attendance - {formatDate(attendanceDate)}</h3>
           </div>
         
 
@@ -1071,15 +1080,23 @@ const Home = () => {
             </select>
 
               <ul className='period-controls'>
-            <li>
-              <CalendarDaysIcon /> Calendar
-            </li>
-   
-          </ul>
-
+                <li 
+                  style={{ position: 'relative' }}
+                  onClick={() => setShowAttendanceCalendar(!showAttendanceCalendar)}
+                >
+                  <CalendarDaysIcon /> Calendar
+                  {showAttendanceCalendar && (
+                    <div className='OOcalendar-container' style={{ position: 'absolute', top: '100%', right: 0, zIndex: 100 }}>
+                      <CalendarDropdown 
+                        selectedDate={attendanceDate} 
+                        onSelect={handleAttendanceDateSelect}
+                        onClose={() => setShowAttendanceCalendar(false)}
+                      />
+                    </div>
+                  )}
+                </li>
+              </ul>
           </div>
-
-
         </div>
 
             <div className="table-container">
@@ -1141,7 +1158,6 @@ const Home = () => {
                       >
                         <EllipsisHorizontalIcon />
                       </button>
-
                       </td>
                     </tr>
                      <tr>
@@ -1187,11 +1203,10 @@ const Home = () => {
                       >
                         <EllipsisHorizontalIcon />
                       </button>
-
                       </td>
                     </tr>
                        <tr>
-                       <td>2</td>
+                       <td>3</td>
                       <td>POL-00021</td>
                       <td>
                         <a href="#" className='Proliks-Seec'>
@@ -1233,7 +1248,6 @@ const Home = () => {
                       >
                         <EllipsisHorizontalIcon />
                       </button>
-
                       </td>
                     </tr>
                    </tbody>
