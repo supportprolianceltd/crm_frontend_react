@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { motion, AnimatePresence } from 'framer-motion';
-import NoAdvertBanner from '../../../assets/Img/noAdvertBanner.png';
 import {
   InformationCircleIcon,
   PencilIcon,
@@ -18,7 +17,6 @@ import {
   GlobeAltIcon,
 } from '@heroicons/react/24/outline';
 import { fetchRequisition, updateRequisition, deleteRequisition, updateRequisitionStatus, togglePublishRequisition } from './ApiService';
-import config from '../../../config';
 
 // Date formatting function
 const formatDisplayDate = (dateString) => {
@@ -30,7 +28,6 @@ const formatDisplayDate = (dateString) => {
     year: 'numeric',
   });
 };
-
 
 // Get initials from user data
 const getInitials = (user) => {
@@ -68,7 +65,7 @@ const Backdrop = ({ onClick }) => (
     initial={{ opacity: 0 }}
     animate={{ opacity: 0.5 }}
     exit={{ opacity: 0 }}
- onClick={onClick}
+    onClick={onClick}
   />
 );
 
@@ -176,7 +173,6 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
   const [checkedItems, setCheckedItems] = useState(['Right to Work Check']);
   const [documentTitle, setDocumentTitle] = useState('');
   const [documents, setDocuments] = useState(['Resume']);
-  const [userHasAdded, setUserHasAdded] = useState(false);
   const [requisitionData, setRequisitionData] = useState(job || { requested_by: null });
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   
@@ -185,6 +181,10 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
   const [newComplianceDoc, setNewComplianceDoc] = useState('');
   const [complianceDocError, setComplianceDocError] = useState('');
   const [customComplianceItems, setCustomComplianceItems] = useState([]);
+  
+  // Editing state for compliance documents
+  const [editingComplianceItem, setEditingComplianceItem] = useState(null);
+  const [editingComplianceText, setEditingComplianceText] = useState('');
 
   // Animation variants for compliance input
   const inputSectionVariants = {
@@ -770,7 +770,6 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
       setAdvertBannerFile(null);
       setDocuments(['Resume']);
       setDocumentTitle('');
-      setUserHasAdded(false);
       setCheckedItems(['Right to Work Check']);
       setResponsibilities([]);
       setActiveSection(0);
@@ -797,7 +796,6 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
     const trimmed = documentTitle.trim();
     if (trimmed && !documents.includes(trimmed)) {
       setDocuments((prev) => [...prev, trimmed]);
-      setUserHasAdded(true);
       setDocumentTitle('');
       setErrors((prev) => ({ ...prev, documents: '' }));
     } else if (!trimmed) {
@@ -829,6 +827,7 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
     setCustomComplianceItems(prev => [...prev, trimmed]);
     setNewComplianceDoc('');
     setComplianceDocError('');
+    setShowAddComplianceInput(false);
   };
 
   const handleRemoveComplianceDocument = (doc) => {
@@ -838,6 +837,57 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
     if (checkedItems.includes(doc)) {
       setCheckedItems(prev => prev.filter(item => item !== doc));
     }
+  };
+  
+  // Handle edit compliance document
+  const handleEditComplianceDocument = (item) => {
+    setEditingComplianceItem(item);
+    setEditingComplianceText(item);
+    setShowAddComplianceInput(true);
+  };
+
+  // Handle update compliance document
+  const handleUpdateComplianceDocument = () => {
+    const trimmed = editingComplianceText.trim();
+    
+    if (!trimmed) {
+      setComplianceDocError('Document title cannot be empty');
+      return;
+    }
+    
+    if (allComplianceItems.includes(trimmed) && trimmed !== editingComplianceItem) {
+      setComplianceDocError('This document already exists');
+      return;
+    }
+    
+    // Update the custom compliance item
+    const updatedItems = customComplianceItems.map(item => 
+      item === editingComplianceItem ? trimmed : item
+    );
+    
+    setCustomComplianceItems(updatedItems);
+    
+    // Update checked items if needed
+    if (checkedItems.includes(editingComplianceItem)) {
+      const updatedCheckedItems = checkedItems.map(item => 
+        item === editingComplianceItem ? trimmed : item
+      );
+      setCheckedItems(updatedCheckedItems);
+    }
+    
+    // Reset editing state
+    setEditingComplianceItem(null);
+    setEditingComplianceText('');
+    setShowAddComplianceInput(false);
+    setComplianceDocError('');
+  };
+
+  // Cancel edit compliance
+  const cancelEditCompliance = () => {
+    setEditingComplianceItem(null);
+    setEditingComplianceText('');
+    setShowAddComplianceInput(false);
+    setComplianceDocError('');
   };
 
   const hasAdvertData = () => {
@@ -1087,316 +1137,345 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                         <input
                           name="companyName"
                           type='text'
-                            placeholder='e.g. ValueFlowTech Ltd'
-                            value={formData.companyName}
-                            onChange={handleInputChange}
-                            required
-                            disabled={!isFormMutable}
-                          />
-                          {errors.companyName && <p className='error'>{errors.companyName}</p>}
-                        </div>
+                          placeholder='e.g. ValueFlowTech Ltd'
+                          value={formData.companyName}
+                          onChange={handleInputChange}
+                          required
+                          disabled={!isFormMutable}
+                        />
+                        {errors.companyName && <p className='error'>{errors.companyName}</p>}
+                      </div>
 
-                        <div className='Gland-All-Grid'>
-                          <div className='GHuh-Form-Input'>
-                            <label>Job Type</label>
-                            <select
-                              name="jobType"
-                              value={formData.jobType}
-                              onChange={handleInputChange}
-                              disabled={!isFormMutable}
-                            >
-                              <option>Full-time</option>
-                              <option>Part-time</option>
-                              <option>Contract</option>
-                              <option>Freelance</option>
-                              <option>Internship</option>
-                            </select>
-                          </div>
-                          <div className='GHuh-Form-Input'>
-                            <label>Location</label>
-                            <select
-                              name="locationType"
-                              value={formData.locationType}
-                              onChange={handleInputChange}
-                              disabled={!isFormMutable}
-                            >
-                              <option>On-site</option>
-                              <option>Remote</option>
-                              <option>Hybrid</option>
-                            </select>
-                          </div>
-                        </div>
-
-                        {formData.locationType === 'On-site' && (
-                          <div className='GHuh-Form-Input'>
-                            <label>Company Address</label>
-                            <input
-                              name="companyAddress"
-                              type='text'
-                              placeholder='e.g. 24 Marina Street, Lagos QWERTY QWERTY'
-                              value={formData.companyAddress}
-                              onChange={handleInputChange}
-                              required
-                              disabled={!isFormMutable}
-                            />
-                            {errors.companyAddress && <p className='error'>{errors.companyAddress}</p>}
-                          </div>
-                        )}
-
+                      <div className='Gland-All-Grid'>
                         <div className='GHuh-Form-Input'>
-                          <label>Salary Range (optional)</label>
-                          <input
-                            name="salaryRange"
-                            type='text'
-                            placeholder='e.g. $0.00 - $0.00'
-                            value={formData.salaryRange}
+                          <label>Job Type</label>
+                          <select
+                            name="jobType"
+                            value={formData.jobType}
                             onChange={handleInputChange}
                             disabled={!isFormMutable}
-                          />
-                        </div>
-
-                        <div className='GHuh-Form-Input'>
-                          <label>Number of Candidates (Needed for Interview) (optional)</label>
-                          <input
-                            name="numberOfCandidates"
-                            type='text'
-                            placeholder='e.g. 10'
-                            value={formData.numberOfCandidates}
-                            onChange={handleInputChange}
-                            disabled={!isFormMutable}
-                          />
-                          {errors.numberOfCandidates && <p className='error'>{errors.numberOfCandidates}</p>}
-                        </div>
-
-                        <div className='GHuh-Form-Input'>
-                          <label>Qualification Requirement (optional)</label>
-                          <input
-                            name="qualificationRequirement"
-                            type='text'
-                            placeholder='e.g. Bachelor’s degree in Computer Science'
-                            value={formData.qualificationRequirement}
-                            onChange={handleInputChange}
-                            disabled={!isFormMutable}
-                          />
-                          {errors.qualificationRequirement && <p className='error'>{errors.qualificationRequirement}</p>}
-                        </div>
-
-                        <div className='GHuh-Form-Input'>
-                          <label>Experience Requirement (optional)</label>
-                          <input
-                            name="experienceRequirement"
-                            type='text'
-                            placeholder='e.g. 3+ years in web development'
-                            value={formData.experienceRequirement}
-                            onChange={handleInputChange}
-                            disabled={!isFormMutable}
-                          />
-                          {errors.experienceRequirement && <p className='error'>{errors.experienceRequirement}</p>}
-                        </div>
-
-                        <div className='GHuh-Form-Input'>
-                          <label>Knowledge/Skill Requirement (optional)</label>
-                          <input
-                            name="knowledgeSkillRequirement"
-                            type='text'
-                            placeholder='e.g. React, JavaScript, CSS'
-                            value={formData.knowledgeSkillRequirement}
-                            onChange={handleInputChange}
-                            disabled={!isFormMutable}
-                          />
-                          {errors.knowledgeSkillRequirement && <p className='error'>{errors.knowledgeSkillRequirement}</p>}
-                        </div>
-
-                        <div className='GHuh-Form-Input'>
-                          <label>Reason for Requisition (optional)</label>
-                          <textarea
-                            name="reason"
-                            placeholder='e.g. Expansion of the development team'
-                            value={formData.reason}
-                            onChange={handleInputChange}
-                            disabled={!isFormMutable}
-                          ></textarea>
-                          {errors.reason && <p className='error'>{errors.reason}</p>}
-                        </div>
-
-                        <h3>Job Description</h3>
-                        <div className='GHuh-Form-Input'>
-                          <textarea
-                            name="jobDescription"
-                            placeholder='Enter job responsibilities, requirements, etc.'
-                            value={formData.jobDescription}
-                            onChange={handleInputChange}
-                            required
-                            disabled={!isFormMutable}
-                          ></textarea>
-                          {errors.jobDescription && <p className='error'>{errors.jobDescription}</p>}
-                        </div>
-
-                        <h3>
-                          Key Responsibilities{' '}
-                          <span
-                            onClick={handleAddResponsibility}
-                            className={isFormMutable ? 'cursor-pointer' : 'cursor-not-allowed'}
                           >
-                            <PlusIcon /> Add
-                          </span>
-                        </h3>
-                        <div className='GHuh-Form-Input'>
-                          <label>Responsibilities</label>
-                          {responsibilities.map((resp, index) => (
-                            <div
-                              key={index}
-                              className='responsibility-Inn-Box'
-                              style={{ display: 'flex', alignItems: 'center', marginTop: '8px' }}
-                            >
-                              <input
-                                type='text'
-                                placeholder='Add a responsibility'
-                                value={resp}
-                                onChange={(e) => handleResponsibilityChange(index, e.target.value)}
-                                disabled={!isFormMutable}
-                              />
-                              {index > 0 && (
-                                <span
-                                  onClick={() => handleRemoveResponsibility(index)}
-                                  style={{
-                                    cursor: isFormMutable ? 'pointer' : 'not-allowed',
-                                    marginLeft: '8px',
-                                  }}
-                                >
-                                  <XMarkIcon className='w-4 h-4' />
-                                </span>
-                              )}
-                            </div>
-                          ))}
-                          {errors.responsibilities && <p className='error'>{errors.responsibilities}</p>}
+                            <option>Full-time</option>
+                            <option>Part-time</option>
+                            <option>Contract</option>
+                            <option>Freelance</option>
+                            <option>Internship</option>
+                          </select>
                         </div>
-
-                        <h3>Application Details</h3>
-                        <div className='Gland-All-Grid'>
-                          <div className='GHuh-Form-Input'>
-                            <label>Deadline for Applications</label>
-                            <DatePicker
-                              selected={deadlineDate}
-                              onChange={(date) => {
-                                if (!isFormMutable) return;
-                                setDeadlineDate(date);
-                                setErrors((prev) => ({ ...prev, deadlineDate: '' }));
-                              }}
-                              placeholderText="yyyy-MM-dd"
-                              dateFormat="yyyy-MM-dd"
-                              className="custom-datepicker-input"
-                              required
-                              disabled={!isFormMutable}
-                            />
-                            {errors.deadlineDate && <p className='error'>{errors.deadlineDate}</p>}
-                          </div>
-
-                          <div className='GHuh-Form-Input'>
-                            <label>Start Date (optional)</label>
-                            <DatePicker
-                              selected={startDate}
-                              onChange={(date) => {
-                                if (!isFormMutable) return;
-                                setStartDate(date);
-                                setErrors((prev) => ({ ...prev, startDate: '' }));
-                              }}
-                              placeholderText="yyyy-MM-dd"
-                              dateFormat="yyyy-MM-dd"
-                              className="custom-datepicker-input"
-                              disabled={!isFormMutable}
-                            />
-                          </div>
-                        </div>
-                      </>
-                    )}
-
-                    {activeSection === 1 && (
-                      <>
-                        <h3>Document Uploads</h3>
                         <div className='GHuh-Form-Input'>
-                          <label>Title</label>
-                          <div className='ooi-flex'>
+                          <label>Location</label>
+                          <select
+                            name="locationType"
+                            value={formData.locationType}
+                            onChange={handleInputChange}
+                            disabled={!isFormMutable}
+                          >
+                            <option>On-site</option>
+                            <option>Remote</option>
+                            <option>Hybrid</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {formData.locationType === 'On-site' && (
+                        <div className='GHuh-Form-Input'>
+                          <label>Company Address</label>
+                          <input
+                            name="companyAddress"
+                            type='text'
+                            placeholder='e.g. 24 Marina Street, Lagos'
+                            value={formData.companyAddress}
+                            onChange={handleInputChange}
+                            required
+                            disabled={!isFormMutable}
+                          />
+                          {errors.companyAddress && <p className='error'>{errors.companyAddress}</p>}
+                        </div>
+                      )}
+
+                      <div className='GHuh-Form-Input'>
+                        <label>Salary Range (optional)</label>
+                        <input
+                          name="salaryRange"
+                          type='text'
+                          placeholder='e.g. $0.00 - $0.00'
+                          value={formData.salaryRange}
+                          onChange={handleInputChange}
+                          disabled={!isFormMutable}
+                        />
+                      </div>
+
+                      <div className='GHuh-Form-Input'>
+                        <label>Number of Candidates (optional)</label>
+                        <input
+                          name="numberOfCandidates"
+                          type='text'
+                          placeholder='e.g. 10'
+                          value={formData.numberOfCandidates}
+                          onChange={handleInputChange}
+                          disabled={!isFormMutable}
+                        />
+                        {errors.numberOfCandidates && <p className='error'>{errors.numberOfCandidates}</p>}
+                      </div>
+
+                      <div className='GHuh-Form-Input'>
+                        <label>Qualification Requirement (optional)</label>
+                        <input
+                          name="qualificationRequirement"
+                          type='text'
+                          placeholder='e.g. Bachelor’s degree in Computer Science'
+                          value={formData.qualificationRequirement}
+                          onChange={handleInputChange}
+                          disabled={!isFormMutable}
+                        />
+                        {errors.qualificationRequirement && <p className='error'>{errors.qualificationRequirement}</p>}
+                      </div>
+
+                      <div className='GHuh-Form-Input'>
+                        <label>Experience Requirement (optional)</label>
+                        <input
+                          name="experienceRequirement"
+                          type='text'
+                          placeholder='e.g. 3+ years in web development'
+                          value={formData.experienceRequirement}
+                          onChange={handleInputChange}
+                          disabled={!isFormMutable}
+                        />
+                        {errors.experienceRequirement && <p className='error'>{errors.experienceRequirement}</p>}
+                      </div>
+
+                      <div className='GHuh-Form-Input'>
+                        <label>Knowledge/Skill Requirement (optional)</label>
+                        <input
+                          name="knowledgeSkillRequirement"
+                          type='text'
+                          placeholder='e.g. React, JavaScript, CSS'
+                          value={formData.knowledgeSkillRequirement}
+                          onChange={handleInputChange}
+                          disabled={!isFormMutable}
+                        />
+                        {errors.knowledgeSkillRequirement && <p className='error'>{errors.knowledgeSkillRequirement}</p>}
+                      </div>
+
+                      <div className='GHuh-Form-Input'>
+                        <label>Reason for Requisition (optional)</label>
+                        <textarea
+                          name="reason"
+                          placeholder='e.g. Expansion of the development team'
+                          value={formData.reason}
+                          onChange={handleInputChange}
+                          disabled={!isFormMutable}
+                        ></textarea>
+                        {errors.reason && <p className='error'>{errors.reason}</p>}
+                      </div>
+
+                      <h3>Job Description</h3>
+                      <div className='GHuh-Form-Input'>
+                        <textarea
+                          name="jobDescription"
+                          placeholder='Enter job responsibilities, requirements, etc.'
+                          value={formData.jobDescription}
+                          onChange={handleInputChange}
+                          required
+                          disabled={!isFormMutable}
+                        ></textarea>
+                        {errors.jobDescription && <p className='error'>{errors.jobDescription}</p>}
+                      </div>
+
+                      <h3>
+                        Key Responsibilities{' '}
+                        <span
+                          onClick={handleAddResponsibility}
+                          className={isFormMutable ? 'cursor-pointer' : 'cursor-not-allowed'}
+                        >
+                          <PlusIcon /> Add
+                        </span>
+                      </h3>
+                      <div className='GHuh-Form-Input'>
+                        <label>Responsibilities</label>
+                        {responsibilities.map((resp, index) => (
+                          <div
+                            key={index}
+                            className='responsibility-Inn-Box'
+                            style={{ display: 'flex', alignItems: 'center', marginTop: '8px' }}
+                          >
                             <input
                               type='text'
-                              placeholder='Enter Document Title'
-                              value={documentTitle}
-                              onChange={(e) => setDocumentTitle(e.target.value)}
-                              required
+                              placeholder='Add a responsibility'
+                              value={resp}
+                              onChange={(e) => handleResponsibilityChange(index, e.target.value)}
                               disabled={!isFormMutable}
                             />
-                            <span
-                              onClick={handleAddDocument}
-                              style={{
-                                cursor: isFormMutable ? 'pointer' : 'not-allowed',
-                                opacity: isFormMutable ? 1 : 0.5,
-                              }}
-                            >
-                              <PlusIcon className='w-5 h-5' />
-                              Add Document
-                            </span>
+                            {index > 0 && (
+                              <span
+                                onClick={() => handleRemoveResponsibility(index)}
+                                style={{
+                                  cursor: isFormMutable ? 'pointer' : 'not-allowed',
+                                  marginLeft: '8px',
+                                }}
+                              >
+                                <XMarkIcon className='w-4 h-4' />
+                              </span>
+                            )}
                           </div>
-                          {errors.documents && <p className='error'>{errors.documents}</p>}
-                          <ul className='apooul-Ul'>
-                            {documents.map((doc, index) => (
-                              <li key={index} className='flex justify-between items-center'>
-                                <p>
-                                  <MinusIcon className='w-4 h-4 inline-block mr-2' /> {doc}
-                                </p>
-                                <button
-                                  onClick={() => handleRemoveDocument(doc)}
-                                  className='text-red-600 hover:text-red-800'
-                                  disabled={!isFormMutable}
-                                >
-                                  <XMarkIcon className='w-4 h-4' />
-                                </button>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      </>
-                    )}
+                        ))}
+                        {errors.responsibilities && <p className='error'>{errors.responsibilities}</p>}
+                      </div>
 
-                    {activeSection === 2 && (
-                      <>
-                        <h3>
-                          Compliance document 
+                      <h3>Application Details</h3>
+                      <div className='Gland-All-Grid'>
+                        <div className='GHuh-Form-Input'>
+                          <label>Deadline for Applications</label>
+                          <DatePicker
+                            selected={deadlineDate}
+                            onChange={(date) => {
+                              if (!isFormMutable) return;
+                              setDeadlineDate(date);
+                              setErrors((prev) => ({ ...prev, deadlineDate: '' }));
+                            }}
+                            placeholderText="yyyy-MM-dd"
+                            dateFormat="yyyy-MM-dd"
+                            className="custom-datepicker-input"
+                            required
+                            disabled={!isFormMutable}
+                          />
+                          {errors.deadlineDate && <p className='error'>{errors.deadlineDate}</p>}
+                        </div>
+
+                        <div className='GHuh-Form-Input'>
+                          <label>Start Date (optional)</label>
+                          <DatePicker
+                            selected={startDate}
+                            onChange={(date) => {
+                              if (!isFormMutable) return;
+                              setStartDate(date);
+                              setErrors((prev) => ({ ...prev, startDate: '' }));
+                            }}
+                            placeholderText="yyyy-MM-dd"
+                            dateFormat="yyyy-MM-dd"
+                            className="custom-datepicker-input"
+                            disabled={!isFormMutable}
+                          />
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {activeSection === 1 && (
+                    <>
+                      <h3>Document Uploads</h3>
+                      <div className='GHuh-Form-Input'>
+                        <label>Title</label>
+                        <div className='ooi-flex'>
+                          <input
+                            type='text'
+                            placeholder='Enter Document Title'
+                            value={documentTitle}
+                            onChange={(e) => setDocumentTitle(e.target.value)}
+                            required
+                            disabled={!isFormMutable}
+                          />
                           <span
-                            className='cursor-pointer'
-                            title='Add more compliance document'
-                            onClick={() => setShowAddComplianceInput(!showAddComplianceInput)}
-                            style={{ marginLeft: '10px' }}
+                            onClick={handleAddDocument}
+                            style={{
+                              cursor: isFormMutable ? 'pointer' : 'not-allowed',
+                              opacity: isFormMutable ? 1 : 0.5,
+                            }}
                           >
                             <PlusIcon className='w-5 h-5' />
-                            {showAddComplianceInput ? ' Close' : ' Add'}
+                            Add Document
                           </span>
-                        </h3>
-                        
-                        <AnimatePresence>
-                          {showAddComplianceInput && (
-                            <motion.div
-                              variants={inputSectionVariants}
-                              initial="hidden"
-                              animate="visible"
-                              exit="exit"
-                              className="overflow-hidden"
-                            >
-                              <div className='GHuh-Form-Input'>
-                                <label>Add compliance document</label>
-                                <div className='ooi-flex'>
-                                  <input
-                                    type='text'
-                                    placeholder='Enter Document Title'
-                                    value={newComplianceDoc}
-                                    onChange={(e) => {
+                        </div>
+                        {errors.documents && <p className='error'>{errors.documents}</p>}
+                        <ul className='apooul-Ul'>
+                          {documents.map((doc, index) => (
+                            <li key={index} className='flex justify-between items-center'>
+                              <p>
+                                <MinusIcon className='w-4 h-4 inline-block mr-2' /> {doc}
+                              </p>
+                              <button
+                                onClick={() => handleRemoveDocument(doc)}
+                                className='text-red-600 hover:text-red-800'
+                                disabled={!isFormMutable}
+                              >
+                                <XMarkIcon className='w-4 h-4' />
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </>
+                  )}
+
+                  {activeSection === 2 && (
+                    <>
+                      <h3>
+                        Compliance document 
+                        <span
+                          className='cursor-pointer'
+                          title={editingComplianceItem ? 'Update compliance document' : 'Add more compliance document'}
+                          onClick={() => {
+                            if (editingComplianceItem) return;
+                            setShowAddComplianceInput(!showAddComplianceInput);
+                            setEditingComplianceItem(null);
+                            setEditingComplianceText('');
+                          }}
+                        >
+                          <PlusIcon className='w-5 h-5' />
+                          {showAddComplianceInput && !editingComplianceItem ? ' Close' : ' Add'}
+                        </span>
+                      </h3>
+                      
+                      <AnimatePresence>
+                        {showAddComplianceInput && (
+                          <motion.div
+                            variants={inputSectionVariants}
+                            initial="hidden"
+                            animate="visible"
+                            exit="exit"
+                            className="overflow-hidden"
+                          >
+                            <div className='GHuh-Form-Input'>
+                              <label>
+                                {editingComplianceItem 
+                                  ? "Edit compliance document" 
+                                  : "Add more compliance document"}
+                              </label>
+                              <div className='ooi-flex'>
+                                <input
+                                  type='text'
+                                  placeholder='Enter Document Title'
+                                  value={editingComplianceItem ? editingComplianceText : newComplianceDoc}
+                                  onChange={(e) => {
+                                    if (editingComplianceItem) {
+                                      setEditingComplianceText(e.target.value);
+                                    } else {
                                       setNewComplianceDoc(e.target.value);
-                                      if (complianceDocError && e.target.value.trim()) {
-                                        setComplianceDocError('');
-                                      }
-                                    }}
-                                    required
-                                    disabled={!isFormMutable}
-                                  />
+                                    }
+                                    // Clear error when user starts typing
+                                    if (complianceDocError && e.target.value.trim()) {
+                                      setComplianceDocError('');
+                                    }
+                                  }}
+                                  required
+                                  disabled={!isFormMutable}
+                                />
+                                {editingComplianceItem ? (
+                                  <div className='Edilol-OLka'>
+                                    <span
+                                      className='cursor-pointer btn-primary-bg'
+                                      onClick={handleUpdateComplianceDocument}
+                                    >
+                                      Update
+                                    </span>
+                                    <span
+                                      className='cursor-pointer bg-gray-300 px-3 py-1 rounded'
+                                      onClick={cancelEditCompliance}
+                                    >
+                                      Cancel
+                                    </span>
+                                  </div>
+                                ) : (
                                   <span
                                     className='cursor-pointer btn-primary-bg'
                                     onClick={handleAddComplianceDocument}
@@ -1404,289 +1483,299 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
                                     <PlusIcon className='w-5 h-5' />
                                     Add
                                   </span>
-                                </div>
-                                {complianceDocError && <p className='error'>{complianceDocError}</p>}
+                                )}
                               </div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
+                              {complianceDocError && <p className='error'>{complianceDocError}</p>}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
 
-                        <div className='GHuh-Form-Input'>
-                          <ul className='checcck-lissT'>
-                            {allComplianceItems.map((item, index) => {
-                              const isCustom = customComplianceItems.includes(item);
-                              const isChecked = checkedItems.includes(item);
-                              
-                              return (
-                                <li
-                                  key={index}
-                                  className={
-                                    isCustom 
-                                      ? `added-COmpll-list ${isChecked ? 'custom-active' : ''}`
-                                      : (isChecked ? 'active-Li-Check' : '')
-                                  }
-                                  onClick={() => toggleChecklistItem(item)}
-                                  style={{
-                                    cursor: isFormMutable ? 'pointer' : 'not-allowed',
-                                    opacity: isFormMutable ? 1 : 0.5,
-                                  }}
-                                >
-                                  <p>{item}</p>
-                                  
-                                  {isCustom ? (
+                      <div className='GHuh-Form-Input'>
+                        <ul className='checcck-lissT'>
+                          {allComplianceItems.map((item, index) => {
+                            const isCustom = customComplianceItems.includes(item);
+                            const isChecked = checkedItems.includes(item);
+                            
+                            return (
+                              <li
+                                key={index}
+                                className={
+                                  isCustom 
+                                    ? `added-COmpll-list ${isChecked ? 'custom-active' : ''}`
+                                    : (isChecked ? 'active-Li-Check' : '')
+                                }
+                                onClick={() => toggleChecklistItem(item)}
+                                style={{
+                                  cursor: isFormMutable ? 'pointer' : 'not-allowed',
+                                  opacity: isFormMutable ? 1 : 0.5,
+                                }}
+                              >
+                                <p>{item}</p>
+                                
+                                {isCustom && (
+                                  <div className="GHll-POl-Dec">
+                                    <button
+                                      className="edit-compliance-btn"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleEditComplianceDocument(item);
+                                      }}
+                                      disabled={!isFormMutable}
+                                    >
+                                      <PencilIcon /> Edit
+                                    </button>
                                     <button
                                       className="remove-compliance-btn"
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         handleRemoveComplianceDocument(item);
                                       }}
+                                      disabled={!isFormMutable}
                                     >
                                       <XMarkIcon className='w-4 h-4' />
                                     </button>
-                                  ) : (
-                                    <span className="check-indicator"></span>
-                                  )}
-                                </li>
-                              );
-                            })}
-                          </ul>
-                          {errors.compliance && <p className='error'>{errors.compliance}</p>}
-                        </div>
-                      </>
-                    )}
-                  </motion.div>
-                </AnimatePresence>
-              </div>
+                                  </div>
+                                )}
+                              </li>
+                            );
+                          })}
+                        </ul>
+                        {errors.compliance && <p className='error'>{errors.compliance}</p>}
+                      </div>
+                    </>
+                  )}
+                </motion.div>
+              </AnimatePresence>
             </div>
           </div>
+        </div>
 
-          <div className='VewRequisition-Part active-preview'>
-            <div className='VewRequisition-Part-Top'>
-              <h3>Job Advert</h3>
+        <div className='VewRequisition-Part active-preview'>
+          <div className='VewRequisition-Part-Top'>
+            <h3>Job Advert</h3>
+          </div>
+
+          <div className='job-preview-container'>
+            <div className='preview-buttons'>
+              <button
+                className='publish-btn btn-primary-bg'
+                onClick={handleSaveChanges}
+                disabled={isSaving || !isFormMutable}
+              >
+                {isSaving ? (
+                  <>
+                    <motion.div
+                      initial={{ rotate: 0 }}
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                      style={{
+                        width: 15,
+                        height: 15,
+                        borderRadius: '50%',
+                        border: '3px solid #fff',
+                        borderTopColor: 'transparent',
+                        marginRight: '5px',
+                        display: 'inline-block',
+                      }}
+                    />
+                    Saving Changes...
+                  </>
+                ) : (
+                  `Save Changes${hasUnsavedChanges ? ' *' : ''}`
+                )}
+              </button>
+              <button
+                className='publish-toggle-btn'
+                onClick={handleTogglePublish}
+                disabled={isTogglingPublish || !isFormMutable}
+              >
+                {isTogglingPublish ? (
+                  <>
+                    <motion.div
+                      initial={{ rotate: 0 }}
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                      style={{
+                        width: 15,
+                        height: 15,
+                        borderRadius: '50%',
+                        border: '3px solid #fff',
+                        borderTopColor: 'transparent',
+                        marginRight: '5px',
+                        display: 'inline-block',
+                      }}
+                    />
+                    {publishStatus ? 'Saving and Unpublishing...' : 'Saving and Publishing...'}
+                  </>
+                ) : (
+                  <>
+                    <GlobeAltIcon className='w-5 h-5 inline-block mr-2' />
+                    {publishStatus ? 'Unpublish' : 'Publish'}
+                  </>
+                )}
+              </button>
+              <button
+                className='delete-btn'
+                onClick={handleDeleteAdvert}
+                disabled={!isFormMutable}
+              >
+                <TrashIcon className='w-5 h-5' /> Delete
+              </button>
             </div>
 
-            <div className='job-preview-container'>
-              <div className='preview-buttons'>
-                <button
-                  className='publish-btn btn-primary-bg'
-                  onClick={handleSaveChanges}
-                  disabled={isSaving || !isFormMutable}
-                >
-                  {isSaving ? (
-                    <>
-                      <motion.div
-                        initial={{ rotate: 0 }}
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                        style={{
-                          width: 15,
-                          height: 15,
-                          borderRadius: '50%',
-                          border: '3px solid #fff',
-                          borderTopColor: 'transparent',
-                          marginRight: '5px',
-                          display: 'inline-block',
-                        }}
-                      />
-                      Saving Changes...
-                    </>
-                  ) : (
-                    `Save Changes${hasUnsavedChanges ? ' *' : ''}`
-                  )}
-                </button>
-                <button
-                 className='delete-btn'
-                  onClick={handleTogglePublish}
-                  disabled={isTogglingPublish || !isFormMutable}
-                >
-                  {isTogglingPublish ? (
-                    <>
-                      <motion.div
-                        initial={{ rotate: 0 }}
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                        style={{
-                          width: 15,
-                          height: 15,
-                          borderRadius: '50%',
-                          border: '3px solid #fff',
-                          borderTopColor: 'transparent',
-                          marginRight: '5px',
-                          display: 'inline-block',
-                        }}
-                      />
-                      {publishStatus ? 'Saving and Unpublishing...' : 'Saving and Publishing...'}
-                    </>
-                  ) : (
-                    <>
-                      <GlobeAltIcon className='w-5 h-5 inline-block mr-2' />
-                      {publishStatus ? 'Unpublish' : 'Publish'}
-                    </>
-                  )}
-                </button>
-                <button
-                  className='delete-btn'
-                  onClick={handleDeleteAdvert}
-                  disabled={!isFormMutable}
-                >
-                  <TrashIcon className='w-5 h-5' /> Delete
-                </button>
-              </div>
+            <div className='main-Prevs-Sec custom-scroll-bar'>
+              {advertBanner && (
+                <div className='advert-banner'>
+                  <img
+                    src={advertBanner}
+                    alt="Job Advert Banner"
+                    className='w-full h-auto object-cover rounded-md mb-4'
+                  />
+                  <span>
+                    <InformationCircleIcon /> Advert Banner
+                  </span>
+                </div>
+              )}
 
-              <div className='main-Prevs-Sec custom-scroll-bar'>
-                {advertBanner && (
-                  <div className='advert-banner'>
-                    <img
-                      src={advertBanner}
-                      alt="Job Advert Banner"
-                      className='w-full h-auto object-cover rounded-md mb-4'
-                    />
-                    <span>
-                      <InformationCircleIcon /> Advert Banner
-                    </span>
+              <div className='preview-section-All'>
+                <div className='preview-section'>
+                  <h3>Basic Job Information</h3>
+                  <p>
+                    <span>Job Title:</span> {formData.jobTitle || 'Not specified'}
+                  </p>
+                  <p>
+                    <span>Company Name:</span> {formData.companyName || 'Not specified'}
+                  </p>
+                  <p>
+                    <span>Job Type:</span> {formData.jobType || 'Not specified'}
+                  </p>
+                  <p>
+                    <span>Location:</span> {formData.locationType || 'Not specified'}
+                  </p>
+                  {formData.companyAddress && (
+                    <p>
+                      <span>Company Address:</span> {formData.companyAddress}
+                    </p>
+                  )}
+                  {formData.salaryRange && (
+                    <p>
+                      <span>Salary Range:</span> {formData.salaryRange}
+                    </p>
+                  )}
+                  {formData.numberOfCandidates && (
+                    <p>
+                      <span>Number of Candidates:</span> {formData.numberOfCandidates}
+                    </p>
+                  )}
+                  {formData.qualificationRequirement && (
+                    <p>
+                      <span>Qualification Requirement:</span> {formData.qualificationRequirement}
+                    </p>
+                  )}
+                  {formData.experienceRequirement && (
+                    <p>
+                      <span>Experience Requirement:</span> {formData.experienceRequirement}
+                    </p>
+                  )}
+                  {formData.knowledgeSkillRequirement && (
+                    <p>
+                      <span>Knowledge/Skill Requirement:</span> {formData.knowledgeSkillRequirement}
+                    </p>
+                  )}
+                  {formData.reason && (
+                    <p>
+                      <span>Reason for Requisition:</span>{' '}
+                      <div
+                        dangerouslySetInnerHTML={{
+                          __html: formData.reason.replace(/\n/g, '<br/>'),
+                        }}
+                      />
+                    </p>
+                  )}
+                </div>
+
+                {formData.jobDescription && (
+                  <div className='preview-section aadda-poa'>
+                    <h3>Job Description</h3>
+                    <p>
+                      <div
+                        dangerouslySetInnerHTML={{
+                          __html: formData.jobDescription.replace(/\n/g, '<br/>'),
+                        }}
+                      />
+                    </p>
                   </div>
                 )}
 
-                <div className='preview-section-All'>
+                {responsibilities.length > 0 && (
                   <div className='preview-section'>
-                    <h3>Basic Job Information</h3>
-                    <p>
-                      <span>Job Title:</span> {formData.jobTitle || 'Not specified'}
-                    </p>
-                    <p>
-                      <span>Company Name:</span> {formData.companyName || 'Not specified'}
-                    </p>
-                    <p>
-                      <span>Job Type:</span> {formData.jobType || 'Not specified'}
-                    </p>
-                    <p>
-                      <span>Location:</span> {formData.locationType || 'Not specified'}
-                    </p>
-                    {formData.companyAddress && (
-                      <p>
-                        <span>Company Address:</span> {formData.companyAddress}
-                      </p>
-                    )}
-                    {formData.salaryRange && (
-                      <p>
-                        <span>Salary Range:</span> {formData.salaryRange}
-                      </p>
-                    )}
-                    {formData.numberOfCandidates && (
-                      <p>
-                        <span>Number of Candidates:</span> {formData.numberOfCandidates}
-                      </p>
-                    )}
-                    {formData.qualificationRequirement && (
-                      <p>
-                        <span>Qualification Requirement:</span> {formData.qualificationRequirement}
-                      </p>
-                    )}
-                    {formData.experienceRequirement && (
-                      <p>
-                        <span>Experience Requirement:</span> {formData.experienceRequirement}
-                      </p>
-                    )}
-                    {formData.knowledgeSkillRequirement && (
-                      <p>
-                        <span>Knowledge/Skill Requirement:</span> {formData.knowledgeSkillRequirement}
-                      </p>
-                    )}
-                    {formData.reason && (
-                      <p>
-                        <span>Reason for Requisition:</span>{' '}
-                        <div
-                          dangerouslySetInnerHTML={{
-                            __html: formData.reason.replace(/\n/g, '<br/>'),
-                          }}
-                        />
-                      </p>
-                    )}
-                  </div>
-
-                  {formData.jobDescription && (
-                    <div className='preview-section aadda-poa'>
-                      <h3>Job Description</h3>
-                      <p>
-                        <div
-                          dangerouslySetInnerHTML={{
-                            __html: formData.jobDescription.replace(/\n/g, '<br/>'),
-                          }}
-                        />
-                      </p>
-                    </div>
-                  )}
-
-                  {responsibilities.length > 0 && (
-                    <div className='preview-section'>
-                      <h3>Responsibilities</h3>
-                      <ul>
-                        {responsibilities
-                          .filter((resp) => resp.trim())
-                          .map((resp, i) => (
-                            <li key={i}>{resp}</li>
-                          ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  <div className='preview-section'>
-                    <h3>Application Details</h3>
-                    <p>
-                      <span>Deadline for Applications:</span>{' '}
-                      {deadlineDate ? formatDisplayDate(deadlineDate) : 'Not specified'}
-                    </p>
-                    <p>
-                      <span>Start Date:</span>{' '}
-                      {startDate ? formatDisplayDate(startDate) : 'Not specified'}
-                    </p>
-                  </div>
-
-                  <div className='preview-section'>
-                    <h3>Documents Required</h3>
+                    <h3>Responsibilities</h3>
                     <ul>
-                      {documents.length > 0 ? (
-                        documents.map((doc, i) => <li key={i}>{doc}</li>)
-                      ) : (
-                        <li>No documents specified</li>
-                      )}
+                      {responsibilities
+                        .filter((resp) => resp.trim())
+                        .map((resp, i) => (
+                          <li key={i}>{resp}</li>
+                        ))}
                     </ul>
                   </div>
+                )}
 
-                  <div className='preview-section'>
-                    <h3>Compliance Checklist</h3>
-                    <ul>
-                      {checkedItems.length > 0 ? (
-                        checkedItems.map((item, i) => <li key={i}>{item}</li>)
-                      ) : (
-                        <li>No compliance items specified</li>
-                      )}
-                    </ul>
-                  </div>
+                <div className='preview-section'>
+                  <h3>Application Details</h3>
+                  <p>
+                    <span>Deadline for Applications:</span>{' '}
+                    {deadlineDate ? formatDisplayDate(deadlineDate) : 'Not specified'}
+                  </p>
+                  <p>
+                    <span>Start Date:</span>{' '}
+                    {startDate ? formatDisplayDate(startDate) : 'Not specified'}
+                  </p>
+                </div>
+
+                <div className='preview-section'>
+                  <h3>Documents Required</h3>
+                  <ul>
+                    {documents.length > 0 ? (
+                      documents.map((doc, i) => <li key={i}>{doc}</li>)
+                    ) : (
+                      <li>No documents specified</li>
+                    )}
+                  </ul>
+                </div>
+
+                <div className='preview-section'>
+                  <h3>Compliance Checklist</h3>
+                  <ul>
+                    {checkedItems.length > 0 ? (
+                      checkedItems.map((item, i) => <li key={i}>{item}</li>)
+                    ) : (
+                      <li>No compliance items specified</li>
+                    )}
+                  </ul>
                 </div>
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
+      </motion.div>
 
-        {showDeleteModal && (
-          <Modal
-            title="Delete Job Advert"
-            message="Are you sure you want to delete this job advert? This will clear all entered data."
-            onConfirm={confirmDeleteAdvert}
-            onCancel={cancelDeleteAdvert}
-            confirmText="Delete"
-            cancelText="Cancel"
-          />
-        )}
+      {showDeleteModal && (
+        <Modal
+          title="Delete Job Advert"
+          message="Are you sure you want to delete this job advert? This will clear all entered data."
+          onConfirm={confirmDeleteAdvert}
+          onCancel={cancelDeleteAdvert}
+          confirmText="Delete"
+          cancelText="Cancel"
+        />
+      )}
 
-        {alertModal && (
-          <AlertModal title={alertModal.title} message={alertModal.message} onClose={closeAlert} />
-        )}
-      </div>
-    );
-  };
+      {alertModal && (
+        <AlertModal title={alertModal.title} message={alertModal.message} onClose={closeAlert} />
+      )}
+    </div>
+  );
+};
 
-  export default EditRequisition;
-
-  
+export default EditRequisition;x
