@@ -220,7 +220,13 @@ p,h1,h2,h3,h4,h5,h6,ul,ol,li,a,button,input,span,textarea, select{
     -moz-box-shadow: 0 0 #0000, 0 0 #0000, 0 .25rem .5rem 0 rgb(74 45 197 / .1);
     background-color: #fff;
 }
-
+.Simp-Boxshadow{
+  background-color: #fff;
+   border: 1px solid #e7e2f7;
+    box-shadow: 0 0 20px rgb(74 45 197 / .1);
+    -webkit-box-shadow: 0 0 20px rgb(74 45 197 / .1);
+    -moz-box-shadow: 0 0 20px rgb(74 45 197 / .1);
+}
 
 
 p.error,
