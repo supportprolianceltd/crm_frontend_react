@@ -1778,4 +1778,4 @@ const EditRequisition = ({ job, onClose, onHideEditRequisition, isFormMutable = 
   );
 };
 
-export default EditRequisition;x
+export default EditRequisition;
