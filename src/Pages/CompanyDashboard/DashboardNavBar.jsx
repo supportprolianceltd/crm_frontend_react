@@ -270,8 +270,8 @@ const getPosition = (user) => {
                   <Link to="/add-staff" onClick={closeProfileDropdown}>
                     <PlusIcon /> Add a User
                   </Link>
-                   <Link to="/create-a-unit" onClick={closeProfileDropdown}>
-                    <PencilIcon/> Create a Unit
+                   <Link to="/create-a-branch" onClick={closeProfileDropdown}>
+                    <PencilIcon/> Create a Branch
                   </Link>
                   <button className="logout-btn btn-primary-bg" onClick={handleLogout}>
                     Logout

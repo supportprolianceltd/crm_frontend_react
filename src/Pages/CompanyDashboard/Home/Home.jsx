@@ -1081,19 +1081,19 @@ const Home = () => {
                       <td>Staff</td>
                       <td>IT Department</td>
                       <td>
-                        <div>
+                        <div className='DDa-Statuss'>
                           <p>7:30 AM</p>
-                          <span>Came Early</span>
+                          <span className='early-entry'>Early Entry</span>
                         </div>
                       </td>
                       <td>
-                        <div>
+                        <div className='DDa-Statuss'>
                           <p>5:45 PM</p>
-                          <span>Left Early</span>
+                          <span className='late-exit'>Late Exit</span>
                         </div>
                       </td>
-                      <td>
-                        <span>Was Late to work</span>
+                      <td className='remack-SmmmnRy'>
+                        <span>Clocked in early and clockedout late</span>
                       </td>
                       <td></td>
                     </tr>

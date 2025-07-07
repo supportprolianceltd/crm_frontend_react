@@ -518,3 +518,48 @@
             border-radius: 8px;
             padding: 20px;
         }
+
+
+        /* DDa-Statuss */
+
+        .DDa-Statuss{
+            position: relative;
+            width: 100%;
+            height: auto;
+        }
+
+        .DDa-Statuss span{
+            position: relative;
+            font-size: 8px;
+            padding: 3px 8px;
+            background-color: #ebe6ff;
+            border-radius: 30px;
+            font-weight: 500;
+            margin-top: 5px;
+            display: inline-flex;
+            color: #7226FF;
+            font-weight: 500;
+        }
+
+        .early-entry{
+            background-color: rgba(16, 185, 129, 0.1) !important;
+            color: #10b981 !important;
+        }
+          .late-entry{
+            background-color: rgba(245, 158, 11, 0.1) !important;
+            color: #f59e0b !important;
+        }
+
+
+        .late-exit{
+            background-color: #ebe6ff !important;
+            color: #7226FF !important;
+        }
+        .late-exit{
+            background-color: rgba(245, 158, 11, 0.1) !important;
+            color: #f59e0b !important;
+        }
+
+        .remack-SmmmnRy{
+            white-space: normal !important;
+        }
