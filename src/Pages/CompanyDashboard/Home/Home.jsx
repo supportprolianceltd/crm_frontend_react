@@ -104,6 +104,7 @@ const attendanceData = [
   },
 ];
 
+
 // Cards Data per branch type and period
 const cardsData = {
   operations: {
