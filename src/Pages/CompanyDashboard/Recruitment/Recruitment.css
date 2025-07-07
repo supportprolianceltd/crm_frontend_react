@@ -3989,7 +3989,7 @@ background: linear-gradient(135deg, #FF6FD8 0%, #FF42A1 50%, #FF9770 100%) !impo
     height: auto;
     margin-top: 30px;
     display: grid;
-    grid-template-columns: auto 1fr;
+    grid-template-columns: 200px 1fr;
     gap: 20px;
     border-bottom: 1px solid #e7e2f7;
     padding-bottom: 20px;
@@ -3998,7 +3998,10 @@ background: linear-gradient(135deg, #FF6FD8 0%, #FF42A1 50%, #FF9770 100%) !impo
 .EmailNotifications-Partss:first-child{
     margin-top: 0px !important;
 }
-
+.EmailNotifications-Partss:last-child{
+    border-bottom: none !important;
+    padding-bottom: 0px !important;
+}
 .EmailNotifications-Partss-1{
     position: relative;
     width: 100%;
@@ -4006,8 +4009,9 @@ background: linear-gradient(135deg, #FF6FD8 0%, #FF42A1 50%, #FF9770 100%) !impo
 }
 
 .EmailNotifications-Partss-1 h4{
-    font-size:15px;
-    font-weight: 600;
+    font-size:13px;
+    font-weight: 500;
+    text-transform: capitalize;
 }
 
 .EmailNotifications-Partss-2{
@@ -4018,4 +4022,27 @@ background: linear-gradient(135deg, #FF6FD8 0%, #FF42A1 50%, #FF9770 100%) !impo
 
 .EmailNotifications-Partss-2 .GGtg-DDDVa{
     margin-top: 0px !important;
+}
+
+.ookk-Saoksl{
+    margin-top: 5px !important;
+}
+
+
+
+/* address-suggestions */
+
+.address-suggestions{
+    position: relative;
+}
+
+.address-suggestions p{
+    font-size: 11px;
+    font-weight: 500;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+.address-suggestions ul li{
+    font-size: 11px;
 }

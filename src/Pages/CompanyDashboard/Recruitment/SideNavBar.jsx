@@ -252,9 +252,9 @@ const SideNavBar = ({ setShrinkNav }) => {
                   to={`${basePath}/email-configuration`}
                 />
                   <SubMenuItem
-                  name="email-notifications"
-                  label="Email Notifications"
-                  to={`${basePath}/email-notifications`}
+                  name="notification-settings"
+                  label="Notification Settings"
+                  to={`${basePath}/notification-settings`}
                 />
               </motion.ul>
             )}

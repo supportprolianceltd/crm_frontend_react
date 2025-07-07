@@ -1,0 +1,227 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+
+/* ---------- Floating Success Alert ---------- */
+const SuccessAlert = ({ message, show }) => (
+  <AnimatePresence>
+    {show && (
+      <motion.div
+        className="success-alert"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        transition={{ duration: 0.4 }}
+        style={{
+          position: 'fixed',
+          top: 10,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          backgroundColor: '#38a169',
+          color: '#fff',
+          padding: '10px 20px',
+          fontSize: 12,
+          borderRadius: 6,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+          zIndex: 9999,
+        }}
+      >
+        {message}
+      </motion.div>
+    )}
+  </AnimatePresence>
+);
+
+/* ---------- Reusable Template Editor ---------- */
+const EmailTemplateEditor = ({ id, defaultValue, triggerGlobalSuccess }) => {
+  const [value, setValue] = useState(defaultValue);
+  const [isDirty, setIsDirty] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const textareaRef = useRef(null);
+
+  /* autoresize on mount */
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, []);
+
+  /* autoresize while typing */
+  const handleInput = (e) => {
+    const el = e.target;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+    setValue(el.value);
+    setIsDirty(el.value !== defaultValue);
+  };
+
+  /* simulate async save */
+  const handleSave = () => {
+    setIsSaving(true);
+    setIsDirty(false);
+
+    setTimeout(() => {
+      setIsSaving(false);
+      triggerGlobalSuccess(
+        `"${id.replace(/([a-z])([A-Z])/g, '$1 $2')}" notification updated successfully!`
+      );
+    }, 3000);
+  };
+
+  /* slide‑down bar animation variants */
+  const barVariants = {
+    hidden: { opacity: 0, y: -10, height: 0, overflow: 'hidden' },
+    shown: {
+      opacity: 1,
+      y: 0,
+      height: 'auto',
+      transition: { type: 'spring', stiffness: 260, damping: 24 },
+    },
+  };
+
+  const showBar = focused || isDirty || isSaving;
+
+  return (
+    <div className="GGtg-DDDVa">
+      <textarea
+        ref={textareaRef}
+        id={id}
+        className="oujka-Inpuauy OIUja-Tettxa"
+        value={value}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        onInput={handleInput}
+        style={{ overflow: 'hidden' }}
+      />
+
+      <AnimatePresence>
+        {showBar && (
+          <motion.div
+            className="oioak-POldj-BTn ookk-Saoksl"
+            initial="hidden"
+            animate="shown"
+            exit="hidden"
+            variants={barVariants}
+          >
+            <button
+              className="btn-primary-bg"
+              onClick={handleSave}
+              disabled={isSaving}
+              style={{ display: 'flex', alignItems: 'center' }}
+            >
+              {isSaving && (
+                <motion.div
+                  initial={{ rotate: 0 }}
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                  style={{
+                    width: 15,
+                    height: 15,
+                    borderRadius: '50%',
+                    border: '3px solid rgba(255,255,255,0.3)',
+                    borderTopColor: '#fff',
+                    marginRight: 6,
+                  }}
+                />
+              )}
+              {isSaving ? 'Saving…' : 'Save Update'}
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+/* ---------- Main Notification Settings ---------- */
+const NotificationSettings = () => {
+  /* global success alert state */
+  const [globalSuccess, setGlobalSuccess] = useState({ show: false, message: '' });
+
+  /* search term */
+  const [searchTerm, setSearchTerm] = useState('');
+
+  /* pseudo‑DB of templates */
+  const templates = {
+    interviewScheduling: `Hello [Candidate Name],\n\nWe’re pleased to invite you to an interview for the [Position] role at [Company].\nPlease let us know your availability so we can confirm a convenient time.\n\nBest regards,\n[Your Name]`,
+    interviewRescheduling: `Hello [Candidate Name],\n\nDue to unforeseen circumstances, we need to reschedule your interview originally set for [Old Date/Time]. Kindly share a few alternative slots that work for you.\n\nThanks for your understanding,\n[Your Name]`,
+    interviewRejection: `Hello [Candidate Name],\n\nThank you for taking the time to interview. After careful consideration, we have decided not to move forward.\n\nBest wishes,\n[Your Name]`,
+    interviewAcceptance: `Hello [Candidate Name],\n\nCongratulations! We are moving you to the next stage. We’ll follow up with next steps.\n\nLooking forward,\n[Your Name]`,
+    jobRejection: `Hello [Candidate Name],\n\nThank you for applying. Unfortunately, we’ve chosen another candidate at this time.\n\nKind regards,\n[Your Name]`,
+    jobAcceptance: `Hello [Candidate Name],\n\nWe’re excited to offer you the [Position] role at [Company]! Please find the offer letter attached.\n\nWelcome aboard!\n[Your Name]`,
+  };
+
+  const triggerGlobalSuccess = (msg) => {
+    setGlobalSuccess({ show: true, message: msg });
+    setTimeout(() => setGlobalSuccess({ show: false, message: '' }), 2000);
+  };
+
+  /* ------------------ SEARCH FILTER ------------------ */
+  const filteredTemplates = Object.entries(templates).filter(([key, value]) => {
+    if (!searchTerm.trim()) return true;
+
+    const readableKey = key.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase();
+    return (
+      readableKey.includes(searchTerm.toLowerCase()) ||
+      value.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  });
+
+  return (
+    <>
+      <SuccessAlert message={globalSuccess.message} show={globalSuccess.show} />
+
+      <div className="EmailNotifications">
+        {/* ---------- Top Bar ---------- */}
+        <div className="Dash-OO-Boas OOOP-LOa">
+          <div className="Dash-OO-Boas-Top">
+            <div className="Dash-OO-Boas-Top-1">
+              <h3>Notification Settings</h3>
+            </div>
+
+            <div className="Dash-OO-Boas-Top-2">
+              <div className="genn-Drop-Search">
+                <span>
+                  <MagnifyingGlassIcon className="h-6 w-6" />
+                </span>
+                <input
+                  type="text"
+                  placeholder="Search for notification(s)"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ---------- Templates List ---------- */}
+        <div className="Dash-OO-Boas Gen-Boxshadow">
+          {filteredTemplates.length ? (
+            filteredTemplates.map(([key, value]) => (
+              <div key={key} className="EmailNotifications-Partss">
+                <div className="EmailNotifications-Partss-1">
+                  <h4>{key.replace(/([a-z])([A-Z])/g, '$1 $2')}</h4>
+                </div>
+                <div className="EmailNotifications-Partss-2">
+                  <EmailTemplateEditor
+                    id={key}
+                    defaultValue={value}
+                    triggerGlobalSuccess={triggerGlobalSuccess}
+                  />
+                </div>
+              </div>
+            ))
+          ) : (
+            <p style={{ padding: '1rem' }}>No notifications match “{searchTerm}”.</p>
+          )}
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default NotificationSettings;

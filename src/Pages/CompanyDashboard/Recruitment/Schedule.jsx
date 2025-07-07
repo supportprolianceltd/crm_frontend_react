@@ -670,7 +670,7 @@ const Schedule = () => {
                     {/* Address Suggestions */}
                     {(activeJob.company_address || activeJob.job_location) ? (
                       <div className="address-suggestions" style={{ marginTop: '0.5rem' }}>
-                        <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '0.5rem' }}>
+                        <p>
                           Suggested Addresses:
                         </p>
                         <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
