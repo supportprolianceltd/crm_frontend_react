@@ -1160,7 +1160,7 @@ const Home = () => {
                         </div>
                       </td>
                       <td className='remack-SmmmnRy'>
-                        <span>Clocked in <b>latey</b> and clocked out <b>early</b></span>
+                        <span>Clocked in <b>late</b> and clocked out <b>early</b></span>
                       </td>
                       <td>
                        <button
