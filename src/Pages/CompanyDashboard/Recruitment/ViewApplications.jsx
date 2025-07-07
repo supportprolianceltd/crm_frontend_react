@@ -270,6 +270,8 @@ const ViewApplications = () => {
       setLoading(true);
       const response = await fetchJobApplicationsByRequisition(job.id);
 
+      
+
       const transformedData = response.map(app => ({
         id: app.id,
         name: app.full_name,

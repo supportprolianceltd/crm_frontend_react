@@ -460,3 +460,64 @@ export const updateTenantConfig = async (id, configData) => {
     throw new Error(error.response?.data?.detail || 'Failed to update tenant configuration.');
   }
 };
+
+
+
+export const createComplianceItem = async (jobRequisitionId, itemData) => {
+  try {
+    const response = await apiClient.post(
+      `/api/talent-engine/requisitions/${jobRequisitionId}/compliance-items/`,
+      itemData
+    );
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.detail || 'Failed to create compliance item.');
+  }
+};
+
+export const updateApplicantComplianceStatus = async (jobApplicationId, itemId, data) => {
+  try {
+    const response = await apiClient.put(
+      `/api/talent-engine-job-applications/applications/compliance/${jobApplicationId}/compliance-items/${itemId}/`,
+      data
+    );
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.detail || 'Failed to update compliance status.');
+  }
+};
+
+export const deleteComplianceItem = async (jobRequisitionId, itemId) => {
+    try {
+        const response =  await apiClient.delete(
+            `/api/talent-engine/requisitions/${jobRequisitionId}/compliance-items/${itemId}/`,
+            {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+                },
+            }
+        );
+        return response.data; // Should be empty for 204 No Content
+    } catch (error) {
+        console.error('Error deleting compliance item:', error);
+        throw error;
+    }
+};
+
+export const updateComplianceItem = async (jobRequisitionId, itemId, data) => {
+    try {
+        const response =  await apiClient.put(
+            `/api/talent-engine/requisitions/${jobRequisitionId}/compliance-items/${itemId}/`,
+            data,
+            {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+                },
+            }
+        );
+        return response.data; // Expecting { id, name, description, required, status, checked_by, checked_at }
+    } catch (error) {
+        console.error('Error updating compliance item:', error);
+        throw error;
+    }
+};

@@ -287,3 +287,399 @@ const ApplicantTable = () => {
 };
 
 export default ApplicantTable;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// import React, { useState, useEffect, useRef } from 'react';
+// import { motion } from 'framer-motion';
+// import {
+//   MagnifyingGlassIcon,
+//   DocumentTextIcon,
+//   CheckCircleIcon,
+//   TrashIcon,
+//   ChevronLeftIcon,
+//   ChevronRightIcon,
+//   ExclamationTriangleIcon
+// } from '@heroicons/react/24/outline';
+// import ApplicantDocumentCheck from './ApplicantDocumentCheck';
+// import { fetchJobApplicationsByRequisition, updateApplicantComplianceStatus } from './ApiService'; // Assume API functions
+// import SampleCV from '../../../assets/resume.pdf';
+
+// const ApplicantTable = ({ jobId, complianceChecklist }) => {
+//   const [searchTerm, setSearchTerm] = useState('');
+//   const [currentPage, setCurrentPage] = useState(1);
+//   const [rowsPerPage, setRowsPerPage] = useState(10);
+//   const [selectedIds, setSelectedIds] = useState([]);
+//   const [applicants, setApplicants] = useState([]);
+//   const [showApplicantDocumentCheck, setShowApplicantDocumentCheck] = useState(false);
+//   const [selectedApplicant, setSelectedApplicant] = useState(null);
+//   const masterCheckboxRef = useRef(null);
+
+//   useEffect(() => {
+//     const fetchApplicants = async () => {
+//       if (jobId) {
+//         try {
+//           const response = await fetchJobApplicationsByRequisition(jobId);
+//           setApplicants(response);
+//         } catch (error) {
+//           console.error('Error fetching applicants:', error);
+//         }
+//       }
+//     };
+//     fetchApplicants();
+//   }, [jobId]);
+
+//   const handleComplianceStatusChange = async (applicantId, itemId, status, notes = '') => {
+//     try {
+//       const updatedItem = await updateApplicantComplianceStatus(applicantId, itemId, { status, notes });
+//       setApplicants(applicants.map(app => 
+//         app.id === applicantId 
+//           ? { 
+//               ...app, 
+//               compliance_status: app.compliance_status.map(item => 
+//                 item.id === itemId ? updatedItem : item
+//               ) 
+//             } 
+//           : app
+//       ));
+//     } catch (error) {
+//       console.error('Error updating compliance status:', error);
+//     }
+//   };
+
+//   const filteredApplicants = applicants.filter((applicant) =>
+//     applicant.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+//     applicant.id.toLowerCase().includes(searchTerm.toLowerCase())
+//   );
+
+//   const totalPages = Math.ceil(filteredApplicants.length / rowsPerPage);
+//   const startIndex = (currentPage - 1) * rowsPerPage;
+//   const currentApplicants = filteredApplicants.slice(startIndex, startIndex + rowsPerPage);
+
+//   const handleCheckboxChange = (id) => {
+//     setSelectedIds((prev) =>
+//       prev.includes(id) ? prev.filter((appId) => appId !== id) : [...prev, id]
+//     );
+//   };
+
+//   const handleSelectAllVisible = () => {
+//     if (currentApplicants.every((app) => selectedIds.includes(app.id))) {
+//       setSelectedIds((prev) => prev.filter((id) => !currentApplicants.some((app) => app.id === id)));
+//     } else {
+//       setSelectedIds((prev) => [
+//         ...prev,
+//         ...currentApplicants.filter((app) => !prev.includes(app.id)).map((app) => app.id),
+//       ]);
+//     }
+//   };
+
+//   const handleBulkDelete = async () => {
+//     if (selectedIds.length === 0) return;
+//     try {
+//       await bulkDeleteJobApplications(selectedIds);
+//       setApplicants(prev => prev.filter(app => !selectedIds.includes(app.id)));
+//       setSelectedIds([]);
+//     } catch (error) {
+//       console.error('Error deleting applications:', error);
+//     }
+//   };
+
+//   const handleViewClick = (applicant) => {
+//     setSelectedApplicant(applicant);
+//     setShowApplicantDocumentCheck(true);
+//   };
+
+//   const handleHideApplicantDocumentCheck = () => {
+//     setShowApplicantDocumentCheck(false);
+//     setSelectedApplicant(null);
+//   };
+
+//   return (
+//     <div className="DocumentVerification-sec">
+//       <div className="Dash-OO-Boas OOOP-LOa OILUJ-Pla">
+//         <div className="Dash-OO-Boas-Top ouka-OpOl">
+//           <div className="Dash-OO-Boas-Top-1">
+//             <h3>Applicants</h3>
+//           </div>
+//           <div className="Dash-OO-Boas-Top-2">
+//             <div className="genn-Drop-Search">
+//               <span><MagnifyingGlassIcon className="h-6 w-6" /></span>
+//               <input 
+//                 type="text" 
+//                 placeholder="Search applicants..." 
+//                 value={searchTerm}
+//                 onChange={(e) => setSearchTerm(e.target.value)}
+//               />
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+
+//       <div className="Dash-OO-Boas dOikpO-PPol oluja-PPPl">
+//         <div className="table-container">
+//           <table className="Gen-Sys-table">
+//             <thead>
+//               <tr>
+//                 <th>
+//                   <input
+//                     type="checkbox"
+//                     ref={masterCheckboxRef}
+//                     onChange={handleSelectAllVisible}
+//                     checked={currentApplicants.length > 0 && 
+//                             currentApplicants.every(app => selectedIds.includes(app.id))}
+//                   />
+//                 </th>
+//                 <th>Applicant Name</th>
+//                 <th>Date Applied</th>
+//                 <th>Submitted Documents</th>
+//                 <th>Total File Size</th>
+//                 <th>Compliance Status</th>
+//                 <th>Actions</th>
+//               </tr>
+//             </thead>
+//             <tbody>
+//               {currentApplicants.length === 0 ? (
+//                 <tr>
+//                   <td colSpan={7} className="text-center py-4 italic">
+//                     No matching applicants found
+//                   </td>
+//                 </tr>
+//               ) : (
+//                 currentApplicants.map((applicant) => (
+//                   <tr key={applicant.id}>
+//                     <td>
+//                       <input
+//                         type="checkbox"
+//                         checked={selectedIds.includes(applicant.id)}
+//                         onChange={() => handleCheckboxChange(applicant.id)}
+//                       />
+//                     </td>
+//                     <td>{applicant.full_name}</td>
+//                     <td>{applicant.applied_at.split('T')[0]}</td>
+//                     <td>
+//                       <div className='ouk0UUJal-POl'>
+//                         <DocumentTextIcon className="h-5 w-5 mr-1" />
+//                         <p>{applicant.documents.length} out of {complianceChecklist.length}</p> 
+//                       </div>
+//                     </td>
+//                     <td>{applicant.documents.reduce((acc, doc) => acc + (doc.file_size || 0), 0).toFixed(1)} MB</td>
+//                     <td>
+//                       <div className='oaiks-OOikakushj'>
+//                         <span className={`status ${applicant.compliance_status.every(item => item.status === 'completed') ? 'completed' : 'pending'} haggsb-status`}>
+//                           {applicant.compliance_status.every(item => item.status === 'completed') ? 'Completed' : 'Pending'}
+//                         </span>
+//                         {applicant.compliance_status.some(item => item.status === 'failed') && (
+//                           <ExclamationTriangleIcon className="Warrri-Iocn" title='Failed compliance item(s)' />
+//                         )}
+//                       </div>
+//                     </td>
+//                     <td>
+//                       <div className="gen-td-btns">
+//                         <button
+//                           className="link-btn btn-primary-bg"
+//                           onClick={() => handleViewClick(applicant)}
+//                         >
+//                           <CheckCircleIcon className="h-5 w-5 mr-1" />
+//                           Check Documents
+//                         </button>
+//                       </div>
+//                     </td>
+//                   </tr>
+//                 ))
+//               )}
+//             </tbody>
+//           </table>
+//         </div>
+
+//         {filteredApplicants.length > 0 && (
+//           <div className="pagination-controls">
+//             <div className="Dash-OO-Boas-foot">
+//               <div className="Dash-OO-Boas-foot-1">
+//                 <div className="items-per-page">
+//                   <p>Number of rows:</p>
+//                   <select
+//                     className="form-select"
+//                     value={rowsPerPage}
+//                     onChange={(e) => setRowsPerPage(Number(e.target.value))}
+//                   >
+//                     <option value={5}>5</option>
+//                     <option value={10}>10</option>
+//                     <option value={20}>20</option>
+//                     <option value={50}>50</option>
+//                   </select>
+//                 </div>
+//               </div>
+
+//               <div className="Dash-OO-Boas-foot-2">
+//                 <button 
+//                   onClick={handleBulkDelete}
+//                   className="delete-marked-btn"
+//                   disabled={selectedIds.length === 0}
+//                 >
+//                   <TrashIcon className="h-5 w-5 mr-1" />
+//                   Delete Selected
+//                 </button>
+//               </div>
+//             </div>
+
+//             <div className="page-navigation">
+//               <span className="page-info">
+//                 Page {currentPage} of {totalPages}
+//               </span>
+//               <div className="page-navigation-Btns">
+//                 <button
+//                   className="page-button"
+//                   onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+//                   disabled={currentPage === 1}
+//                 >
+//                   <ChevronLeftIcon className="h-5 w-5" />
+//                 </button>
+//                 <button
+//                   className="page-button"
+//                   onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+//                   disabled={currentPage === totalPages}
+//                 >
+//                   <ChevronRightIcon className="h-5 w-5" />
+//                 </button>
+//               </div>
+//             </div>
+//           </div>
+//         )}
+//       </div>
+
+//       {showApplicantDocumentCheck && selectedApplicant && (
+//         <ApplicantDocumentCheck 
+//           applicant={selectedApplicant}
+//           complianceChecklist={complianceChecklist}
+//           onHide={handleHideApplicantDocumentCheck}
+//           onComplianceStatusChange={handleComplianceStatusChange}
+//         />
+//       )}
+//     </div>
+//   );
+// };
+
+// export default ApplicantTable;

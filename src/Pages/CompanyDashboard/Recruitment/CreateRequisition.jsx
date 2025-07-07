@@ -24,6 +24,7 @@ const CreateRequisition = ({ onClose }) => {
   const recognitionRef = useRef(null);
   const timerRef = useRef(null);
 
+
   const handleSendRequest = async () => {
     if (!title.trim()) {
       setErrorMessage("Job title is required.");
