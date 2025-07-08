@@ -18,13 +18,11 @@ const getFileTypeInfo = (filename) => {
 };
 
 const ComplianceCheckTable = ({ complianceChecklist = [] }) => {
-  // console.log("ComplianceCheckTable Here", complianceChecklist);
-
   const [complianceData, setComplianceData] = useState(
     complianceChecklist.map((item, index) => {
       if (index === 0) {
         return {
-          title: item.name, // Use the 'name' field from the object
+          title: item.name,
           file: null,
           fileName: 'invalid_passport.pdf',
           fileType: 'PDF',
@@ -35,7 +33,7 @@ const ComplianceCheckTable = ({ complianceChecklist = [] }) => {
         };
       }
       return {
-        title: item.name, // Use the 'name' field from the object
+        title: item.name,
         file: null,
         fileName: '',
         fileType: '',
@@ -54,7 +52,6 @@ const ComplianceCheckTable = ({ complianceChecklist = [] }) => {
   const [rejectionReason, setRejectionReason] = useState('');
   const fileInputRefs = useRef([]);
 
-  // Close modals when clicking outside modal content
   const handleOutsideClick = (e, closeFunc) => {
     if (e.target === e.currentTarget) {
       closeFunc(false);
