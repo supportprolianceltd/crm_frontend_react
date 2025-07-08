@@ -267,7 +267,7 @@ const getPosition = (user) => {
                   <Link to="/company/profile" onClick={closeProfileDropdown}>
                     <UserIcon /> Profile
                   </Link>
-                  <Link to="/company/add-user" onClick={closeProfileDropdown}>
+                  <Link to="/add-user" onClick={closeProfileDropdown}>
                     <PlusIcon /> Add  User
                   </Link>
                    <Link to="/company/create-branch" onClick={closeProfileDropdown}>
