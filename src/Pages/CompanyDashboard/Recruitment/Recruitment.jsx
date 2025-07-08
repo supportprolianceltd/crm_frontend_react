@@ -12,6 +12,7 @@ import APISettings from './APISettings';
 import EmailSettings from './EmailSettings';
 import RecycleBin from './RecycleBin';
 import ComplianceCheckPage from './ComplianceCheckPage';
+import NotificationSettings from './NotificationSettings';
 
 
 
@@ -61,6 +62,7 @@ const Recruitment = () => {
             <Route path="/email-configuration" element={<EmailSettings />} />
             <Route path="/recycle-bin" element={<RecycleBin />} />
             <Route path="/compliance" element={<ComplianceCheckPage />} />
+            <Route path="/notification-settings" element={<NotificationSettings />} />
           </Routes>
         </div>
       </div>

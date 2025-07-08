@@ -216,11 +216,11 @@ const getPosition = (user) => {
               <CalendarIconOutline className="h-6 w-6" />
             </span>
 
-            <Link to="/notifications" title="Notifications">
+            <Link to="/company/notifications" title="Notifications">
               <BellIconOutline className="h-6 w-6" />
             </Link>
 
-            <Link to="/settings" title="Settings">
+            <Link to="/company/settings" title="Settings">
               <SettingsIconOutline className="h-6 w-6" />
             </Link>
           </div>
@@ -264,14 +264,14 @@ const getPosition = (user) => {
                       <CheckIcon />
                     </div>
                   </div>
-                  <Link to="/profile" onClick={closeProfileDropdown}>
+                  <Link to="/company/profile" onClick={closeProfileDropdown}>
                     <UserIcon /> Profile
                   </Link>
-                  <Link to="/add-staff" onClick={closeProfileDropdown}>
-                    <PlusIcon /> Add a User
+                  <Link to="/company/add-user" onClick={closeProfileDropdown}>
+                    <PlusIcon /> Add  User
                   </Link>
-                   <Link to="/create-a-branch" onClick={closeProfileDropdown}>
-                    <PencilIcon/> Create a Branch
+                   <Link to="/company/create-branch" onClick={closeProfileDropdown}>
+                    <PencilIcon/> Create  Branch
                   </Link>
                   <button className="logout-btn btn-primary-bg" onClick={handleLogout}>
                     Logout

@@ -1830,6 +1830,13 @@ background: #ebe6ff;
     cursor: default !important;
 }
 
+.GHll-POl-Dec{
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
 .remove-compliance-btn{
     position: relative;
     display: inline-flex;
@@ -1854,6 +1861,35 @@ background: #ebe6ff;
     border-color: #d8d3fb;
 }
 
+.edit-compliance-btn{
+    position: relative;
+    display: inline-flex;
+    width:auto;
+    height: 20px;
+    background-color: transparent;
+    border-radius: 30px;
+    padding: 0px 10px;
+    cursor: pointer;
+    user-select: none;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    transition: all 0.3s ease-in-out;
+    background-color: #f8f7fe;
+    border:1px solid transparent;
+    gap: 5px;
+    font-size: 9px;
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+.edit-compliance-btn svg{
+    width: 10px;
+}
+.edit-compliance-btn:hover{
+    background-color: #7226FF;
+    color: #fff;
+}
 
 .checcck-lissT li p{
     position: relative;
@@ -3916,4 +3952,97 @@ background: linear-gradient(135deg, #FF6FD8 0%, #FF42A1 50%, #FF9770 100%) !impo
 .gap-badge svg{
     width: 12px;
     height: 12px;
+}
+
+/* Edilol-OLka */
+
+.Edilol-OLka{
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* EmailNotifications */
+
+.EmailNotifications{
+    position: relative;
+    width: 100%;
+    height: auto;
+}
+
+.EmailNotifications-Partss{
+    position: relative;
+    width: 100%;
+    height: auto;
+    margin-top: 30px;
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 20px;
+    border-bottom: 1px solid #e7e2f7;
+    padding-bottom: 20px;
+}
+
+.EmailNotifications-Partss:first-child{
+    margin-top: 0px !important;
+}
+.EmailNotifications-Partss:last-child{
+    border-bottom: none !important;
+    padding-bottom: 0px !important;
+}
+.EmailNotifications-Partss-1{
+    position: relative;
+    width: 100%;
+    height: auto;
+}
+
+.EmailNotifications-Partss-1 h4{
+    font-size:13px;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.EmailNotifications-Partss-2{
+    position: relative;
+    width: 100%;
+    height: auto;
+}
+
+.EmailNotifications-Partss-2 .GGtg-DDDVa{
+    margin-top: 0px !important;
+}
+
+.ookk-Saoksl{
+    margin-top: 5px !important;
+}
+
+
+
+/* address-suggestions */
+
+.address-suggestions{
+    position: relative;
+}
+
+.address-suggestions p{
+    font-size: 11px;
+    font-weight: 500;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+.address-suggestions ul li{
+    font-size: 11px;
 }

@@ -328,6 +328,33 @@ const ComplianceCheckTable = React.memo(({ complianceData: initialComplianceData
                           <EllipsisHorizontalIcon />
                         </button>
 
+                      <AnimatePresence>
+                        {openMenuIndex === index && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.2 }}
+                             className={`Gen-Boxshadow oooo-Dropdiakm ${
+                              index === complianceData.length - 1 ? 'last-row-dropdown' : 'not-last-row-dropdown'
+                            }`}
+                          >
+                            
+                            <button
+                              onClick={() => handleAccept(index)}
+                            >
+                              Accept
+                            </button>
+                            <button
+                              onClick={() => handleRejectClick(index)}
+                            >
+                              Reject
+                            </button>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  </div>
                         <AnimatePresence>
                           {openMenuIndex === index && (
                             <motion.div

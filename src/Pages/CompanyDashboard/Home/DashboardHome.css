@@ -538,7 +538,8 @@
             margin-top: 5px;
             display: inline-flex;
             color: #7226FF;
-            font-weight: 500;
+            font-weight: 400;
+            text-transform: capitalize;
         }
 
         .early-entry{
@@ -607,15 +608,17 @@
 
          .Proliks-1 i{
             position: absolute;
-            width: 10px;
-            height: 10px;
-            background-color: #a0a1a1;
+            width: 9px;
+            height: 9px;
+            background-color: #bfbfbf;
             z-index: 10px;
             border-radius: 50%;
             bottom: 5px;
             right: -1px;
             border:2px solid #fff;
-            box-shadow: 0 0 5px rgba(0,0,0,0.15);
+            box-shadow: 0 0 5px rgba(0,0,0,0.2);
+            -webkit-box-shadow: 0 0 5px rgba(0,0,0,0.2);
+            -moz-box-shadow: 0 0 5px rgba(0,0,0,0.2);
          }
 
          .active-AttDnc{
@@ -655,3 +658,330 @@
             color: #7226FF;
             font-weight: 500;
           }
+
+
+
+
+
+
+/* Existing styles remain unchanged, add these new styles for the dropdown */
+.relative { position: relative; }
+.dropdown-menu {
+  position: absolute;
+  background-color: #fff;
+  border: 1px solid #e7e2f7;
+  box-shadow: 0 0 20px rgb(74 45 197 / .1);
+  -webkit-box-shadow: 0 0 20px rgb(74 45 197 / .1);
+  -moz-box-shadow: 0 0 20px rgb(74 45 197 / .1);
+  border-radius: 8px;
+  z-index: 100;
+  min-width: 80px;
+  right: 0;
+  margin-top: 5px;
+  overflow: hidden;
+}
+.dropdown-menu.not-last-row-dropdown{
+    top: 45% !important;
+}
+.dropdown-menu.last-row-dropdown{
+    bottom: -50% !important;
+}
+.dropdown-menu a {
+  display: block;
+  padding: 5px 15px;
+  text-decoration: none;
+  font-size: 10px;
+  transition: all 0.3s ease-in;
+  color: #666084;
+}
+.dropdown-menu a:hover {
+  background: #ebe6ff;
+  color: #7226FF;
+}
+.mmmo-BBTH-Drop {
+  padding: 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+.mmmo-BBTH-Drop svg {
+  width: 24px;
+  height: 24px;
+}
+
+
+
+
+/* Gllols-AddUser */
+
+.Gllols-AddUser{
+    position: relative;
+    width: 100%;
+    height: auto;
+}
+
+.Top-Gllols-AddUser{
+    position: relative;
+    width: 100%;
+    height: auto;
+    margin-top: 20px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.Top-Gllols-AddUser h3{
+    position: relative;
+    padding:10px 20px;
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.Top-Gllols-AddUser ul{
+    position: relative;
+    width: 100%;
+    height: auto;
+    display: flex;
+    align-items: center;
+    border-top: 1px solid #eeebf9;
+}
+
+.Top-Gllols-AddUser ul li{
+    position: relative;
+    padding: 10px 15px;
+    font-size: 10px;
+    text-transform: uppercase;
+    user-select: none;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s ease-in-out;
+    font-weight: 500;
+    color: #666084;
+    border-right: 1px solid #eeebf9;
+}
+
+
+.Top-Gllols-AddUser ul li.Active-CChgba{
+    background-color: #ebe6ff;
+    color: #7226FF;
+    border-bottom-color: #7226FF;
+}
+
+.Top-Gllols-AddUser ul li:hover{
+    background-color: #f7f5ff;
+    color: #372580;
+}
+
+
+
+/* Gllols-AddUser-MMMmains */
+
+.Gllols-AddUser-MMMmains{
+     position: relative;
+    width: 100%;
+    height: auto;
+    margin-top: 10px;
+    border-radius: 8px;
+    overflow: hidden;
+    min-height: 100px;
+    padding: 20px;
+}
+
+.Gllols-AddUser-MMMmainsTop{
+    position: relative;
+    width: 100%;
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+.Gllols-AddUser-MMMmainsTop h4{
+    font-size: 14px;
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+.Gllols-AddUser-MMMmainsTop ul{
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.Gllols-AddUser-MMMmainsTop ul li{
+    position: relative;
+    user-select: none;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 8px;
+    background-color: #fff;
+    color: #666084;
+    font-size: 10px;
+    border: 1px solid #e7e2f7;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s ease-in-out;
+}
+
+.Gllols-AddUser-MMMmainsTop ul li svg{
+    width: 10px;
+}
+
+.Gllols-AddUser-MMMmainsTop ul li.continue-BTn{
+    background: #ebe6ff;
+    color: #7226FF;
+    border-color: #7226FF;
+}
+.Gllols-AddUser-MMMmainsTop ul li:hover{
+     background-color: #f7f5ff;
+}
+
+
+
+
+/* oikujuj-stha */
+
+.oikujuj-stha{
+    position: relative;
+    width: 100%;
+    height: auto;
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    gap: 20px;
+}
+
+
+.oikujuj-stha-1{
+    position: relative;
+    width: 100%;
+    height: auto;
+    min-height: 100px;
+    border: 1px solid #eeebf9;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.oikujuj-stha-1-Top{
+    position: relative;
+    width: 100%;
+    height: auto;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 10px;
+    padding:10px 20px;
+    border-bottom: 1px solid #eeebf9;
+    background-color: #f7f5ff;
+}
+
+.ool-Prols{
+    position: relative;
+}
+
+.ool-Prols img{
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.oikujuj-stha-1-Top-2{
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.oikujuj-stha-1-Top-2 h5{
+    font-size: 14px;
+    font-weight: 600;
+     display: -webkit-box;
+  -webkit-line-clamp:1; 
+  line-clamp:1; 
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: relative;
+  width: 100%;
+}
+
+.oikujuj-stha-1-Top-2 p{
+    font-size: 11px;
+    color: #666084;
+}
+
+
+/* oikujuj-stha-1-Main */
+
+.oikujuj-stha-1-Main{
+    position: relative;
+    width: 100%;
+    height: 400px;
+    padding:0px 20px;
+    padding-bottom: 20px;
+    scroll-behavior: smooth;
+    cursor: grab;
+      overflow-y: auto;
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+  -webkit-overflow-scrolling: touch; /* iOS momentum scrolling */
+}
+
+.oikujuj-stha-1-Main::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.oikujuj-stha-1-Main:active {
+  cursor: grabbing;
+  user-select: none;
+}
+
+
+
+/* Rogg-Parts */
+
+.Rogg-Parts{
+    position: relative;
+    width: 100%;
+    height: auto;
+    padding-top: 20px;
+}
+
+.Rogg-Parts h5{
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    border-bottom: 1px solid #eeebf9;
+    padding-bottom: 10px;
+}
+
+.Rogg-Parts ul{
+    position: relative;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 20px;
+    margin-top: 15px;
+}
+
+.Rogg-Parts ul li{
+    position: relative;
+    width: 100%;
+    height: auto;
+    overflow: hidden;
+}
+
+.Rogg-Parts ul li span{
+    font-size: 9px;
+    color: #666084;
+}
+
+.Rogg-Parts ul li p{
+    font-size: 12px;
+  width: 100%;
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
