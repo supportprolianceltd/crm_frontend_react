@@ -17,14 +17,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 const ComplianceCheckTable = React.memo(({ complianceData: initialComplianceData, onUpdate }) => {
-
-  
   const [complianceData, setComplianceData] = useState(initialComplianceData || []);
-
-  // console.log("QWERYY")
-  // console.log(complianceData)
-  // console.log("QWERYY")
-
 
   const [alertMessage, setAlertMessage] = useState(null);
   const [openMenuIndex, setOpenMenuIndex] = useState(null);
@@ -42,14 +35,12 @@ const ComplianceCheckTable = React.memo(({ complianceData: initialComplianceData
   const rejectModalRef = useRef(null);
   const viewReasonModalRef = useRef(null);
 
-  // Sync with prop changes only when initialComplianceData changes
   useEffect(() => {
     if (JSON.stringify(initialComplianceData) !== JSON.stringify(complianceData)) {
       setComplianceData(initialComplianceData || []);
     }
   }, [initialComplianceData]);
 
-  // Debounced onUpdate callback to prevent excessive updates
   const debouncedUpdate = useCallback(
     (newData) => {
       if (onUpdate && JSON.stringify(newData) !== JSON.stringify(complianceData)) {
@@ -59,7 +50,6 @@ const ComplianceCheckTable = React.memo(({ complianceData: initialComplianceData
     [onUpdate, complianceData]
   );
 
-  // Trigger file input
   const triggerFileInput = (index) => {
     if (fileInputRefs.current[index]) {
       fileInputRefs.current[index].click();
@@ -241,7 +231,6 @@ const ComplianceCheckTable = React.memo(({ complianceData: initialComplianceData
               return (
                 <tr key={index} style={{ position: 'relative' }}>
                   <td>{item.title}</td>
-
                   <td>
                     {item.fileUrl ? (
                       <a
@@ -256,21 +245,16 @@ const ComplianceCheckTable = React.memo(({ complianceData: initialComplianceData
                       <span className="no-file">—</span>
                     )}
                   </td>
-
                   <td>{item.fileName || <span className="no-file">No file</span>}</td>
                   <td>{item.fileType || <span className="no-file">—</span>}</td>
-
                   <td>
-                    <div className='oLL-TTDD'>
+                    <div className="oLL-TTDD">
                       <span
                         className={`status-badge ${statusClass}`}
                         style={{ display: 'flex', alignItems: 'center', gap: 5 }}
                       >
                         {item.status === 'Pending' && (
-                          <ExclamationTriangleIcon
-                            className="status-icon"
-                            title="Pending"
-                          />
+                          <ExclamationTriangleIcon className="status-icon" title="Pending" />
                         )}
                         {item.status === 'Accepted' && (
                           <CheckIcon
@@ -291,7 +275,7 @@ const ComplianceCheckTable = React.memo(({ complianceData: initialComplianceData
                       {item.status === 'Rejected' && item.rejectionReason && (
                         <button
                           onClick={() => handleViewReasonClick(index)}
-                          className='Resss-POla'
+                          className="Resss-POla"
                           title="View/Edit Rejection Reason"
                         >
                           <EyeIcon /> Reason
@@ -299,7 +283,6 @@ const ComplianceCheckTable = React.memo(({ complianceData: initialComplianceData
                       )}
                     </div>
                   </td>
-
                   <td style={{ position: 'relative', minWidth: 140 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       {item.fileUrl ? (
@@ -317,7 +300,6 @@ const ComplianceCheckTable = React.memo(({ complianceData: initialComplianceData
                       ) : (
                         <span className="no-file">—</span>
                       )}
-
                       <div ref={menuRef} style={{ position: 'relative' }}>
                         <button
                           onClick={() => toggleMenu(index)}
@@ -327,34 +309,6 @@ const ComplianceCheckTable = React.memo(({ complianceData: initialComplianceData
                         >
                           <EllipsisHorizontalIcon />
                         </button>
-
-                      <AnimatePresence>
-                        {openMenuIndex === index && (
-                          <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            transition={{ duration: 0.2 }}
-                             className={`Gen-Boxshadow oooo-Dropdiakm ${
-                              index === complianceData.length - 1 ? 'last-row-dropdown' : 'not-last-row-dropdown'
-                            }`}
-                          >
-                            
-                            <button
-                              onClick={() => handleAccept(index)}
-                            >
-                              Accept
-                            </button>
-                            <button
-                              onClick={() => handleRejectClick(index)}
-                            >
-                              Reject
-                            </button>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  </div>
                         <AnimatePresence>
                           {openMenuIndex === index && (
                             <motion.div
@@ -373,7 +327,6 @@ const ComplianceCheckTable = React.memo(({ complianceData: initialComplianceData
                         </AnimatePresence>
                       </div>
                     </div>
-
                     <input
                       type="file"
                       accept=".pdf,.jpg,.jpeg,.png"
@@ -425,7 +378,6 @@ const ComplianceCheckTable = React.memo(({ complianceData: initialComplianceData
               }}
             >
               <h3>Reason for Rejection</h3>
-
               <div className="GGtg-DDDVa">
                 <textarea
                   id="message"
