@@ -291,6 +291,8 @@ const renderPieChart = (jobData, isLoading) => {
 };
 
 const RecruitmentHome = () => {
+
+   console.log("RecruitmentHome Here");
   const [trigger, setTrigger] = useState(0);
   const [lastUpdateTime, setLastUpdateTime] = useState(new Date());
   const [jobData, setJobData] = useState([]);
