@@ -1262,7 +1262,6 @@ const AddUser = () => {
                           {fieldErrors.status}
                         </p>
                       )}
-                      
                     </div>
                     <div className="GHuh-Form-Input">
                       <label>Two-Factor Auth</label>
