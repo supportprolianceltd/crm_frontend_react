@@ -280,6 +280,7 @@ const getPosition = (user) => {
               )}
             </AnimatePresence>
           </div>
+          
         </div>
       </nav>
     </div>
