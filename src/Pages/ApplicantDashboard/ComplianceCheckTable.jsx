@@ -1,9 +1,12 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useParams } from 'react-router-dom';
 import './ComplianceCheckTable.css';
 import pdfIcon from '../../assets/icons/pdf.png';
 import imageIcon from '../../assets/icons/image.png';
 import { CloudArrowUpIcon, PencilIcon, XMarkIcon, EyeIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import axios from 'axios';
+import config from '../../config'; // Assuming config contains API_BASE_URL
 
 const getFileTypeInfo = (filename) => {
   const extension = filename.split('.').pop().toLowerCase();
@@ -17,11 +20,14 @@ const getFileTypeInfo = (filename) => {
   return { type: 'Unknown', icon: imageIcon };
 };
 
-const ComplianceCheckTable = ({ complianceChecklist = [] }) => {
+const ComplianceCheckTable = ({ complianceChecklist = [], jobApplicationId }) => {
+  const { job_application_code, email, unique_link } = useParams();
+
   const [complianceData, setComplianceData] = useState(
     complianceChecklist.map((item, index) => {
       if (index === 0) {
         return {
+          id: item.id,
           title: item.name,
           file: null,
           fileName: 'invalid_passport.pdf',
@@ -33,6 +39,7 @@ const ComplianceCheckTable = ({ complianceChecklist = [] }) => {
         };
       }
       return {
+        id: item.id,
         title: item.name,
         file: null,
         fileName: '',
@@ -50,7 +57,7 @@ const ComplianceCheckTable = ({ complianceChecklist = [] }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showRejectionModal, setShowRejectionModal] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
-  const fileInputRefs = useRef([]);
+  const fileInputRefs = useRef(complianceChecklist.map(() => null)); // Initialize as array with null values
 
   const handleOutsideClick = (e, closeFunc) => {
     if (e.target === e.currentTarget) {
@@ -69,63 +76,96 @@ const ComplianceCheckTable = ({ complianceChecklist = [] }) => {
     setShowRejectionModal(true);
   };
 
-  const handleFileChange = (index, file) => {
+  const handleFileChange = (index, event) => {
+    const file = event.target.files[0];
     if (!file) return;
 
-    const isDuplicate = complianceData.some(
-      (item, idx) => idx !== index && item.fileName === file.name
-    );
+    const isDuplicate = complianceData.some((item, idx) => idx !== index && item.fileName === file.name);
     if (isDuplicate) {
       showAlert('This file has already been uploaded for another requirement.', 'error');
       return;
     }
 
     const fileInfo = getFileTypeInfo(file.name);
-    if (!fileInfo) {
+    if (!['PDF', 'JPG Image', 'PNG Image'].includes(fileInfo.type)) {
       showAlert('Only PDF, JPG, and PNG files are allowed.', 'error');
       return;
     }
 
     const newData = [...complianceData];
     const isEdit = !!newData[index].file;
-
-    if (newData[index].fileUrl) {
-      URL.revokeObjectURL(newData[index].fileUrl);
-    }
-
-    const fileUrl = URL.createObjectURL(file);
-
-    newData[index].file = file;
-    newData[index].fileName = file.name;
-    newData[index].fileType = fileInfo.type;
-    newData[index].fileIcon = fileInfo.icon;
-    newData[index].fileUrl = fileUrl;
-    newData[index].status = 'Uploaded';
-    delete newData[index].rejectionReason;
-
+    newData[index] = {
+      ...newData[index],
+      file: file,
+      fileName: file.name,
+      fileType: fileInfo.type,
+      fileIcon: fileInfo.icon,
+      status: 'Uploaded',
+      rejectionReason: '',
+    };
     setComplianceData(newData);
-
     showAlert(isEdit ? 'Successfully edited file.' : 'Successfully uploaded file.', 'success');
   };
 
-  const confirmSubmit = () => {
-    setIsSubmitting(true);
 
-    setTimeout(() => {
-      const updated = complianceData.map((item) => {
-        if (item.file && item.status === 'Uploaded') {
-          return { ...item, status: 'In Review' };
-        }
-        return item;
-      });
-      setComplianceData(updated);
-      setShowPrompt(false);
-      setIsSubmitted(true);
-      setIsSubmitting(false);
-      showAlert('Successfully submitted for compliance review.', 'success');
-    }, 3000);
-  };
+const confirmSubmit = async () => {
+  setIsSubmitting(true);
+  try {
+    console.log('Before upload - complianceData:', complianceData);
+    const formData = new FormData();
+    complianceData.forEach((item, index) => {
+      if (item.file) {
+        formData.append(`documents[${index}][document_type]`, item.id); // Use id as document_type
+        formData.append(`documents[${index}][file]`, item.file);
+      }
+    });
+    formData.append('submit', 'true');
+    formData.append('ids', complianceData.filter((item) => item.status === 'Uploaded').map((item) => item.id));
+    formData.append('unique_link', unique_link);
 
+    const response = await axios.put(
+      `${config.API_BASE_URL}/api/talent-engine-job-applications/applications/applicant/upload/${jobApplicationId.job_application.id}/compliance-items/`,
+      formData,
+      {
+        headers: {
+          // Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+    console.log('After upload - response.data:', response.data);
+    const { job_application } = response.data;
+    if (!job_application) {
+      throw new Error('Job application data not found in response');
+    }
+
+    const updatedData = complianceChecklist.map((item) => {
+      const complianceItem = job_application.compliance_status.find((c) => c.id === item.id);
+      return complianceItem && complianceItem.document
+        ? {
+            id: item.id,
+            title: item.name,
+            file: null,
+            fileName: complianceItem.document.file_url.split('/').pop(),
+            fileType: getFileTypeInfo(complianceItem.document.file_url).type,
+            fileIcon: getFileTypeInfo(complianceItem.document.file_url).icon,
+            fileUrl: complianceItem.document.file_url,
+            status: complianceItem.status || 'In Review',
+            rejectionReason: complianceItem.notes || '',
+          }
+        : { ...complianceData.find((c) => c.id === item.id), status: complianceItem?.status || 'Not Uploaded' };
+    });
+    setComplianceData(updatedData);
+    setShowPrompt(false);
+    setIsSubmitted(true);
+    setIsSubmitting(false);
+    showAlert('Successfully submitted for compliance review.', 'success');
+  } catch (error) {
+    console.error('Error submitting for review:', error.response ? error.response.data : error.message);
+    showAlert('Failed to submit for review. Please try again.', 'error');
+    setIsSubmitting(false);
+  }
+};
   const showAlert = (message, type = 'success') => {
     setAlertMessage({ text: message, type });
     setTimeout(() => setAlertMessage(null), 3000);
@@ -224,11 +264,11 @@ const ComplianceCheckTable = ({ complianceChecklist = [] }) => {
               style={{ position: 'relative' }}
             >
               <motion.div
-                style={{ display: "inline-block" }}
+                style={{ display: 'inline-block' }}
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{
-                  type: "spring",
+                  type: 'spring',
                   stiffness: 500,
                   damping: 10,
                 }}
@@ -263,7 +303,7 @@ const ComplianceCheckTable = ({ complianceChecklist = [] }) => {
           {complianceData.map((item, index) => {
             const statusClass = item.status.toLowerCase().replace(/\s+/g, '-');
             return (
-              <tr key={index}>
+              <tr key={item.id}>
                 <td>{item.title}</td>
                 <td>{item.fileName ? <img src={item.fileIcon} alt="file icon" className="file-icon" /> : <span className="no-file">—</span>}</td>
                 <td>{item.fileName || <span className="no-file">No file</span>}</td>
@@ -335,8 +375,8 @@ const ComplianceCheckTable = ({ complianceChecklist = [] }) => {
                         type="file"
                         accept=".pdf,.jpg,.jpeg,.png"
                         style={{ display: 'none' }}
-                        ref={(el) => (fileInputRefs.current[index] = el)}
-                        onChange={(e) => handleFileChange(index, e.target.files[0])}
+                        ref={(el) => (fileInputRefs.current[index] = el)} // Assign to specific index
+                        onChange={(e) => handleFileChange(index, e)}
                       />
                     </div>
                   )}
