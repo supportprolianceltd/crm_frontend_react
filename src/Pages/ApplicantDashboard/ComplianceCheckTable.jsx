@@ -23,33 +23,49 @@ const getFileTypeInfo = (filename) => {
 const ComplianceCheckTable = ({ complianceChecklist = [], jobApplicationId }) => {
   const { job_application_code, email, unique_link } = useParams();
 
-  const [complianceData, setComplianceData] = useState(
-    complianceChecklist.map((item, index) => {
-      if (index === 0) {
+  console.log("jobApplicationId");
+  console.log(jobApplicationId.job_application);
+  console.log("jobApplicationId");
+
+  // Initialize complianceData with jobApplicationId.job_application.compliance_status or default display
+  const initialComplianceData = jobApplicationId?.job_application?.compliance_status?.length > 0
+    ? jobApplicationId.job_application.compliance_status.map(item => ({
+        id: item.id,
+        title: item.name,
+        fileName: item.document?.file_url?.split('/').pop() || '',
+        fileType: getFileTypeInfo(item.document?.file_url || '').type,
+        fileIcon: getFileTypeInfo(item.document?.file_url || '').icon,
+        fileUrl: item.document?.file_url || '',
+        status: item.status || 'Not Uploaded',
+        rejectionReason: item.notes || '',
+      }))
+    : complianceChecklist.map((item, index) => {
+        if (index === 0) {
+          return {
+            id: item.id,
+            title: item.name,
+            file: null,
+            fileName: 'invalid_passport.pdf',
+            fileType: 'PDF',
+            fileIcon: pdfIcon,
+            fileUrl: '',
+            status: 'Rejected',
+            rejectionReason: 'The document uploaded was blurry and unreadable.',
+          };
+        }
         return {
           id: item.id,
           title: item.name,
           file: null,
-          fileName: 'invalid_passport.pdf',
-          fileType: 'PDF',
-          fileIcon: pdfIcon,
+          fileName: '',
+          fileType: '',
+          fileIcon: '',
           fileUrl: '',
-          status: 'Rejected',
-          rejectionReason: 'The document uploaded was blurry and unreadable.',
+          status: 'Not Uploaded',
         };
-      }
-      return {
-        id: item.id,
-        title: item.name,
-        file: null,
-        fileName: '',
-        fileType: '',
-        fileIcon: '',
-        fileUrl: '',
-        status: 'Not Uploaded',
-      };
-    })
-  );
+      });
+
+  const [complianceData, setComplianceData] = useState(initialComplianceData);
 
   const [alertMessage, setAlertMessage] = useState(null);
   const [showPrompt, setShowPrompt] = useState(false);
@@ -57,7 +73,7 @@ const ComplianceCheckTable = ({ complianceChecklist = [], jobApplicationId }) =>
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showRejectionModal, setShowRejectionModal] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
-  const fileInputRefs = useRef(complianceChecklist.map(() => null)); // Initialize as array with null values
+  const fileInputRefs = useRef(complianceData.map(() => null)); // Initialize based on initialComplianceData length
 
   const handleOutsideClick = (e, closeFunc) => {
     if (e.target === e.currentTarget) {
@@ -107,65 +123,59 @@ const ComplianceCheckTable = ({ complianceChecklist = [], jobApplicationId }) =>
     showAlert(isEdit ? 'Successfully edited file.' : 'Successfully uploaded file.', 'success');
   };
 
+  const confirmSubmit = async () => {
+    setIsSubmitting(true);
+    try {
+      console.log('Before upload - complianceData:', complianceData);
+      const formData = new FormData();
+      complianceData.forEach((item, index) => {
+        if (item.file) {
+          formData.append(`documents[${index}][document_type]`, item.id); // Use id as document_type
+          formData.append(`documents[${index}][file]`, item.file);
+        }
+      });
+      formData.append('submit', 'true');
+      formData.append('ids', complianceData.filter((item) => item.status === 'Uploaded').map((item) => item.id));
+      formData.append('unique_link', unique_link);
 
-const confirmSubmit = async () => {
-  setIsSubmitting(true);
-  try {
-    console.log('Before upload - complianceData:', complianceData);
-    const formData = new FormData();
-    complianceData.forEach((item, index) => {
-      if (item.file) {
-        formData.append(`documents[${index}][document_type]`, item.id); // Use id as document_type
-        formData.append(`documents[${index}][file]`, item.file);
+      const response = await axios.put(
+        `${config.API_BASE_URL}/api/talent-engine-job-applications/applications/applicant/upload/${jobApplicationId.job_application.id}/compliance-items/`,
+        formData,
+        {
+          headers: {
+            // Authorization: `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+      console.log('After upload - response.data:', response.data);
+      const { job_application } = response.data;
+      if (!job_application) {
+        throw new Error('Job application data not found in response');
       }
-    });
-    formData.append('submit', 'true');
-    formData.append('ids', complianceData.filter((item) => item.status === 'Uploaded').map((item) => item.id));
-    formData.append('unique_link', unique_link);
 
-    const response = await axios.put(
-      `${config.API_BASE_URL}/api/talent-engine-job-applications/applications/applicant/upload/${jobApplicationId.job_application.id}/compliance-items/`,
-      formData,
-      {
-        headers: {
-          // Authorization: `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'multipart/form-data',
-        },
-      }
-    );
-    console.log('After upload - response.data:', response.data);
-    const { job_application } = response.data;
-    if (!job_application) {
-      throw new Error('Job application data not found in response');
+      const updatedData = job_application.compliance_status.map((item) => ({
+        id: item.id,
+        title: item.name,
+        fileName: item.document?.file_url?.split('/').pop() || '',
+        fileType: getFileTypeInfo(item.document?.file_url || '').type,
+        fileIcon: getFileTypeInfo(item.document?.file_url || '').icon,
+        fileUrl: item.document?.file_url || '',
+        status: item.status || 'In Review',
+        rejectionReason: item.notes || '',
+      }));
+      setComplianceData(updatedData);
+      setShowPrompt(false);
+      setIsSubmitted(true);
+      setIsSubmitting(false);
+      showAlert('Successfully submitted for compliance review.', 'success');
+    } catch (error) {
+      console.error('Error submitting for review:', error.response ? error.response.data : error.message);
+      showAlert('Failed to submit for review. Please try again.', 'error');
+      setIsSubmitting(false);
     }
+  };
 
-    const updatedData = complianceChecklist.map((item) => {
-      const complianceItem = job_application.compliance_status.find((c) => c.id === item.id);
-      return complianceItem && complianceItem.document
-        ? {
-            id: item.id,
-            title: item.name,
-            file: null,
-            fileName: complianceItem.document.file_url.split('/').pop(),
-            fileType: getFileTypeInfo(complianceItem.document.file_url).type,
-            fileIcon: getFileTypeInfo(complianceItem.document.file_url).icon,
-            fileUrl: complianceItem.document.file_url,
-            status: complianceItem.status || 'In Review',
-            rejectionReason: complianceItem.notes || '',
-          }
-        : { ...complianceData.find((c) => c.id === item.id), status: complianceItem?.status || 'Not Uploaded' };
-    });
-    setComplianceData(updatedData);
-    setShowPrompt(false);
-    setIsSubmitted(true);
-    setIsSubmitting(false);
-    showAlert('Successfully submitted for compliance review.', 'success');
-  } catch (error) {
-    console.error('Error submitting for review:', error.response ? error.response.data : error.message);
-    showAlert('Failed to submit for review. Please try again.', 'error');
-    setIsSubmitting(false);
-  }
-};
   const showAlert = (message, type = 'success') => {
     setAlertMessage({ text: message, type });
     setTimeout(() => setAlertMessage(null), 3000);
