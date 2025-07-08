@@ -1,11 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import pdfIcon from '../../../assets/icons/pdf.png';
 import imageIcon from '../../../assets/icons/image.png';
 
-import SampleCV from '../../../assets/resume.pdf';
-import SamplePassport from '../../../assets/Img/sample-passport.jpg';
+import config from '../../../config';
+
+const API_BASE_URL = `${config.API_BASE_URL}`;
 
 import {
   EyeIcon,
@@ -15,74 +16,16 @@ import {
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 
-const initialComplianceData = [
-  {
-    title: 'Passport / Drivers Licence',
-    fileName: 'sample-passport.jpg',
-    fileType: 'JPG Image',
-    fileIcon: imageIcon,
-    fileUrl: SamplePassport,
-    status: 'Pending',
-    rejectionReason: '',
-  },
-  {
-    title: 'Shared Code or DOB',
-    fileName: 'resume.pdf',
-    fileType: 'PDF',
-    fileIcon: pdfIcon,
-    fileUrl: SampleCV,
-    status: 'Pending',
-    rejectionReason: '',
-  },
-  {
-    title: 'DBS',
-    fileName: 'resume.pdf',
-    fileType: 'PDF',
-    fileIcon: pdfIcon,
-    fileUrl: SampleCV,
-    status: 'Pending',
-    rejectionReason: '',
-  },
-  {
-    title: 'Training Cert',
-    fileName: 'resume.pdf',
-    fileType: 'PDF',
-    fileIcon: pdfIcon,
-    fileUrl: SampleCV,
-    status: 'Pending',
-    rejectionReason: '',
-  },
-  {
-    title: 'Proof of Address',
-    fileName: 'resume.pdf',
-    fileType: 'PDF',
-    fileIcon: pdfIcon,
-    fileUrl: SampleCV,
-    status: 'Pending',
-    rejectionReason: '',
-  },
-  {
-    title: 'Right to Work Check',
-    fileName: 'resume.pdf',
-    fileType: 'PDF',
-    fileIcon: pdfIcon,
-    fileUrl: SampleCV,
-    status: 'Pending',
-    rejectionReason: '',
-  },
-  {
-    title: 'References (Links to previous)',
-    fileName: 'resume.pdf',
-    fileType: 'PDF',
-    fileIcon: pdfIcon,
-    fileUrl: SampleCV,
-    status: 'Pending',
-    rejectionReason: '',
-  },
-];
+const ComplianceCheckTable = React.memo(({ complianceData: initialComplianceData, onUpdate }) => {
 
-const ComplianceCheckTable = () => {
-  const [complianceData, setComplianceData] = useState(initialComplianceData);
+  
+  const [complianceData, setComplianceData] = useState(initialComplianceData || []);
+
+  // console.log("QWERYY")
+  // console.log(complianceData)
+  // console.log("QWERYY")
+
+
   const [alertMessage, setAlertMessage] = useState(null);
   const [openMenuIndex, setOpenMenuIndex] = useState(null);
 
@@ -99,6 +42,24 @@ const ComplianceCheckTable = () => {
   const rejectModalRef = useRef(null);
   const viewReasonModalRef = useRef(null);
 
+  // Sync with prop changes only when initialComplianceData changes
+  useEffect(() => {
+    if (JSON.stringify(initialComplianceData) !== JSON.stringify(complianceData)) {
+      setComplianceData(initialComplianceData || []);
+    }
+  }, [initialComplianceData]);
+
+  // Debounced onUpdate callback to prevent excessive updates
+  const debouncedUpdate = useCallback(
+    (newData) => {
+      if (onUpdate && JSON.stringify(newData) !== JSON.stringify(complianceData)) {
+        onUpdate(newData);
+      }
+    },
+    [onUpdate, complianceData]
+  );
+
+  // Trigger file input
   const triggerFileInput = (index) => {
     if (fileInputRefs.current[index]) {
       fileInputRefs.current[index].click();
@@ -137,6 +98,7 @@ const ComplianceCheckTable = () => {
       rejectionReason: '',
     };
     setComplianceData(newData);
+    debouncedUpdate(newData);
     showAlert('Successfully uploaded file.', 'success');
   };
 
@@ -150,13 +112,14 @@ const ComplianceCheckTable = () => {
     newData[index].status = 'Accepted';
     newData[index].rejectionReason = '';
     setComplianceData(newData);
+    debouncedUpdate(newData);
     showAlert(`"${newData[index].title}" accepted.`, 'success');
     setOpenMenuIndex(null);
   };
 
   const handleRejectClick = (index) => {
     setRejectIndex(index);
-    setRejectReason('');
+    setRejectReason(complianceData[index]?.rejectionReason || '');
     setShowRejectModal(true);
     setOpenMenuIndex(null);
   };
@@ -170,6 +133,7 @@ const ComplianceCheckTable = () => {
     newData[rejectIndex].status = 'Rejected';
     newData[rejectIndex].rejectionReason = rejectReason.trim();
     setComplianceData(newData);
+    debouncedUpdate(newData);
     showAlert(`"${newData[rejectIndex].title}" rejected.`, 'error');
     setShowRejectModal(false);
     setRejectIndex(null);
@@ -196,6 +160,7 @@ const ComplianceCheckTable = () => {
     const newData = [...complianceData];
     newData[editReasonIndex].rejectionReason = viewReasonText.trim();
     setComplianceData(newData);
+    debouncedUpdate(newData);
     showAlert(`Rejection reason updated for "${newData[editReasonIndex].title}".`, 'success');
     setShowViewReasonModal(false);
     setEditReasonIndex(null);
@@ -212,7 +177,6 @@ const ComplianceCheckTable = () => {
     setOpenMenuIndex((prev) => (prev === index ? null : index));
   };
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -223,7 +187,6 @@ const ComplianceCheckTable = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Close modals on outside click
   useEffect(() => {
     const handleClickOutsideModal = (event) => {
       if (showRejectModal && rejectModalRef.current && !rejectModalRef.current.contains(event.target)) {
@@ -239,7 +202,6 @@ const ComplianceCheckTable = () => {
 
   return (
     <div className="table-container" style={{ position: 'relative' }}>
-      {/* Alert Message */}
       <AnimatePresence>
         {alertMessage && (
           <motion.div
@@ -266,154 +228,149 @@ const ComplianceCheckTable = () => {
           </tr>
         </thead>
         <tbody>
-          {complianceData.map((item, index) => {
-            const statusClass = item.status.toLowerCase().replace(/\s+/g, '-');
+          {complianceData.length === 0 ? (
+            <tr>
+              <td colSpan="6" style={{ textAlign: 'center', padding: '20px' }}>
+                No compliance data available. Please wait for data to load or check the applicant details.
+              </td>
+            </tr>
+          ) : (
+            complianceData.map((item, index) => {
+              const statusClass = item.status.toLowerCase().replace(/\s+/g, '-');
 
-            return (
-              <tr key={index} style={{ position: 'relative' }}>
-                <td>{item.title}</td>
+              return (
+                <tr key={index} style={{ position: 'relative' }}>
+                  <td>{item.title}</td>
 
-                <td>
-                  {item.fileUrl ? (
-                    <a
-                      href={item.fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      title={`View uploaded file: ${item.fileName}`}
-                    >
-                      <img src={item.fileIcon} alt="file icon" className="file-icon" />
-                    </a>
-                  ) : (
-                    <span className="no-file">—</span>
-                  )}
-                </td>
-
-                <td>{item.fileName || <span className="no-file">No file</span>}</td>
-                <td>{item.fileType || <span className="no-file">—</span>}</td>
-
-                <td>
-                  <div  className='oLL-TTDD'>
-                  <span
-                    className={`status-badge ${statusClass}`}
-                    style={{ display: 'flex', alignItems: 'center', gap: 5 }}
-                  >
-                    {item.status === 'Pending' && (
-                      <ExclamationTriangleIcon
-                        className="status-icon"
-                        title="Pending"
-                      />
-                    )}
-                    {item.status === 'Accepted' && (
-                      <CheckIcon
-                        className="status-icon"
-                        title="Accepted"
-                        style={{ width: 14, height: 14 }}
-                      />
-                    )}
-                    {item.status === 'Rejected' && (
-                      <XMarkIcon
-                        className="status-icon"
-                        title="Rejected"
-                        style={{ width: 14, height: 14 }}
-                      />
-                    )}
-                    {item.status}
-                  </span>
-                  {/* Show View Reason button if rejected with reason */}
-                  {item.status === 'Rejected' && item.rejectionReason && (
-                    <button
-                      onClick={() => handleViewReasonClick(index)}
-                      className='Resss-POla'
-                      title="View/Edit Rejection Reason"
-                    >
-                      <EyeIcon /> Reason
-                    </button>
-                  )}
-                  </div>
-                </td>
-
-                <td style={{ position: 'relative', minWidth: 140 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    {/* View File button */}
+                  <td>
                     {item.fileUrl ? (
-                      <div className="gen-td-btns oaika">
                       <a
-                        href={item.fileUrl}
+                        href={`${API_BASE_URL}${item.fileUrl}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="oooka-BBTns link-btn"
-                        title="View Uploaded File"
+                        title={`View uploaded file: ${item.fileName}`}
                       >
-                        View File
+                        <img src={item.fileIcon} alt="file icon" className="file-icon" />
                       </a>
-                      </div>
                     ) : (
                       <span className="no-file">—</span>
                     )}
+                  </td>
 
-                    {/* Vertical menu button */}
-                    <div ref={menuRef} style={{ position: 'relative' }}>
-                      <button
-                        onClick={() => toggleMenu(index)}
-                        aria-label="More options"
-                        title="More options"
-                        className="mmmo-BBTH-Drop"
+                  <td>{item.fileName || <span className="no-file">No file</span>}</td>
+                  <td>{item.fileType || <span className="no-file">—</span>}</td>
+
+                  <td>
+                    <div className='oLL-TTDD'>
+                      <span
+                        className={`status-badge ${statusClass}`}
+                        style={{ display: 'flex', alignItems: 'center', gap: 5 }}
                       >
-                        <EllipsisHorizontalIcon />
-                      </button>
-
-                      <AnimatePresence>
-                        {openMenuIndex === index && (
-                          <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            transition={{ duration: 0.2 }}
-                             className={`Gen-Boxshadow oooo-Dropdiakm ${
-                              index === complianceData.length - 1 ? 'last-row-dropdown' : 'not-last-row-dropdown'
-                            }`}
-                          >
-                            <button
-                              onClick={() => handleAccept(index)}
-                            >
-                              Accept
-                            </button>
-                            <button
-                              onClick={() => handleRejectClick(index)}
-                            >
-                              Reject
-                            </button>
-                          </motion.div>
+                        {item.status === 'Pending' && (
+                          <ExclamationTriangleIcon
+                            className="status-icon"
+                            title="Pending"
+                          />
                         )}
-                      </AnimatePresence>
+                        {item.status === 'Accepted' && (
+                          <CheckIcon
+                            className="status-icon"
+                            title="Accepted"
+                            style={{ width: 14, height: 14 }}
+                          />
+                        )}
+                        {item.status === 'Rejected' && (
+                          <XMarkIcon
+                            className="status-icon"
+                            title="Rejected"
+                            style={{ width: 14, height: 14 }}
+                          />
+                        )}
+                        {item.status}
+                      </span>
+                      {item.status === 'Rejected' && item.rejectionReason && (
+                        <button
+                          onClick={() => handleViewReasonClick(index)}
+                          className='Resss-POla'
+                          title="View/Edit Rejection Reason"
+                        >
+                          <EyeIcon /> Reason
+                        </button>
+                      )}
                     </div>
-                  </div>
+                  </td>
 
-                  {/* Hidden upload input for future use */}
-                  <input
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    style={{ display: 'none' }}
-                    ref={(el) => (fileInputRefs.current[index] = el)}
-                    onChange={(e) => handleFileChange(index, e.target.files[0])}
-                  />
-                </td>
-              </tr>
-            );
-          })}
+                  <td style={{ position: 'relative', minWidth: 140 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      {item.fileUrl ? (
+                        <div className="gen-td-btns oaika">
+                          <a
+                            href={`${API_BASE_URL}${item.fileUrl}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="oooka-BBTns link-btn"
+                            title="View Uploaded File"
+                          >
+                            View File
+                          </a>
+                        </div>
+                      ) : (
+                        <span className="no-file">—</span>
+                      )}
+
+                      <div ref={menuRef} style={{ position: 'relative' }}>
+                        <button
+                          onClick={() => toggleMenu(index)}
+                          aria-label="More options"
+                          title="More options"
+                          className="mmmo-BBTH-Drop"
+                        >
+                          <EllipsisHorizontalIcon />
+                        </button>
+
+                        <AnimatePresence>
+                          {openMenuIndex === index && (
+                            <motion.div
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                              transition={{ duration: 0.2 }}
+                              className={`Gen-Boxshadow oooo-Dropdiakm ${
+                                index === complianceData.length - 1 ? 'last-row-dropdown' : 'not-last-row-dropdown'
+                              }`}
+                            >
+                              <button onClick={() => handleAccept(index)}>Accept</button>
+                              <button onClick={() => handleRejectClick(index)}>Reject</button>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    </div>
+
+                    <input
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      style={{ display: 'none' }}
+                      ref={(el) => (fileInputRefs.current[index] = el)}
+                      onChange={(e) => handleFileChange(index, e.target.files[0])}
+                    />
+                  </td>
+                </tr>
+              );
+            })
+          )}
         </tbody>
       </table>
 
-      {/* Rejection Reason Input Modal (for new rejection) */}
       <AnimatePresence>
         {showRejectModal && (
           <motion.div
-             className="modal-overlay"
+            className="modal-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-               style={{
-               position: 'fixed',
+            style={{
+              position: 'fixed',
               top: 0,
               left: 0,
               right: 0,
@@ -426,8 +383,8 @@ const ComplianceCheckTable = () => {
             }}
           >
             <motion.div
-             ref={rejectModalRef}
-               className="modal-content custom-scroll-bar okauj-MOadad"
+              ref={rejectModalRef}
+              className="modal-content custom-scroll-bar okauj-MOadad"
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
@@ -443,12 +400,12 @@ const ComplianceCheckTable = () => {
               <h3>Reason for Rejection</h3>
 
               <div className="GGtg-DDDVa">
-              <textarea
-               id="message"
-              className="oujka-Inpuauy OIUja-Tettxa"
-                value={rejectReason}
-                onChange={(e) => setRejectReason(e.target.value)}
-                rows={4}
+                <textarea
+                  id="message"
+                  className="oujka-Inpuauy OIUja-Tettxa"
+                  value={rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  rows={4}
                   style={{
                     width: '100%',
                     padding: '0.5rem',
@@ -456,29 +413,18 @@ const ComplianceCheckTable = () => {
                     border: '1px solid #ccc',
                     minHeight: '100px',
                   }}
-                placeholder="Enter rejection reason..."
-              />
+                  placeholder="Enter rejection reason..."
+                />
               </div>
               <div className="oioak-POldj-BTn" style={{ marginTop: '1rem', display: 'flex', justifyContent: 'space-between' }}>
-                <button
-                  onClick={cancelReject}
-                 className="CLCLCjm-BNtn"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={confirmReject}
-                  className="btn-primary-bg"
-                >
-                  Submit
-                </button>
+                <button onClick={cancelReject} className="CLCLCjm-BNtn">Cancel</button>
+                <button onClick={confirmReject} className="btn-primary-bg">Submit</button>
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Rejection Reason View/Edit Modal */}
       <AnimatePresence>
         {showViewReasonModal && (
           <motion.div
@@ -486,8 +432,8 @@ const ComplianceCheckTable = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-               style={{
-               position: 'fixed',
+            style={{
+              position: 'fixed',
               top: 0,
               left: 0,
               right: 0,
@@ -500,8 +446,8 @@ const ComplianceCheckTable = () => {
             }}
           >
             <motion.div
-            ref={viewReasonModalRef}
-               className="modal-content custom-scroll-bar okauj-MOadad"
+              ref={viewReasonModalRef}
+              className="modal-content custom-scroll-bar okauj-MOadad"
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
@@ -515,36 +461,26 @@ const ComplianceCheckTable = () => {
               }}
             >
               <h3>Edit Rejection Reason</h3>
-               <div className="GGtg-DDDVa">
-              <textarea
-              id="message"
-              className="oujka-Inpuauy OIUja-Tettxa"
-                value={viewReasonText}
-                onChange={(e) => setViewReasonText(e.target.value)}
-                rows={6}
-                     style={{
+              <div className="GGtg-DDDVa">
+                <textarea
+                  id="message"
+                  className="oujka-Inpuauy OIUja-Tettxa"
+                  value={viewReasonText}
+                  onChange={(e) => setViewReasonText(e.target.value)}
+                  rows={6}
+                  style={{
                     width: '100%',
                     padding: '0.5rem',
                     borderRadius: '4px',
                     border: '1px solid #ccc',
                     minHeight: '100px',
                   }}
-                placeholder="Edit rejection reason..."
-              />
+                  placeholder="Edit rejection reason..."
+                />
               </div>
               <div className="oioak-POldj-BTn" style={{ marginTop: '1rem', display: 'flex', justifyContent: 'space-between' }}>
-                <button
-                  onClick={cancelViewEditReason}
-                 className="CLCLCjm-BNtn"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={saveEditedReason}
-                  className="btn-primary-bg"
-                >
-                  Save
-                </button>
+                <button onClick={cancelViewEditReason} className="CLCLCjm-BNtn">Cancel</button>
+                <button onClick={saveEditedReason} className="btn-primary-bg">Save</button>
               </div>
             </motion.div>
           </motion.div>
@@ -552,6 +488,6 @@ const ComplianceCheckTable = () => {
       </AnimatePresence>
     </div>
   );
-};
+});
 
 export default ComplianceCheckTable;
