@@ -132,6 +132,10 @@ const Dashboard = () => {
           `${config.API_BASE_URL}/api/talent-engine-job-applications/applications/code/${job_application_code}/email/${email}/with-schedules/schedules/?unique_link=${unique_link}`
         );
         setData(response.data);
+
+        // console.log("response.data")
+        // console.log(response.data.application.id)
+        // console.log("response.data")
         setLoading(false);
       } catch (err) {
         setError(err.response?.data?.detail || 'Failed to fetch application data');
@@ -557,7 +561,7 @@ const Dashboard = () => {
               </p>
             </div>
             <div className="OL-Boxas-Body">
-              <ComplianceCheckTable complianceChecklist={data.job_requisition.compliance_checklist} />
+              <ComplianceCheckTable complianceChecklist={data.job_requisition.compliance_checklist}  jobApplicationId ={data} />
             </div>
           </motion.div>
         )}
