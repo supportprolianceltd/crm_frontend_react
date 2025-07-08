@@ -22,6 +22,8 @@ const InterviewCalendar = ({ interviewDate }) => {
   // Weekday labels
   const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+
+
   return (
     <div className="calendar-container">
       <div className="calendar-header">

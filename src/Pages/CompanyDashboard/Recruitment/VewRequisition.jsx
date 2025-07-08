@@ -251,77 +251,73 @@ const VewRequisition = ({ job, onClose }) => {
   });
 
   // Fetch requisition and advert details
-  useEffect(() => {
-    if (job?.id) {
-      const fetchData = async () => {
-        try {
-          const data = await fetchRequisition(job.id);
-          setRequisitionData(data);
-          setStatus(data.status);
-          setIsFormMutable(data.status === 'open');
+useEffect(() => {
+  if (job?.id) {
+    const fetchData = async () => {
+      try {
+        const data = await fetchRequisition(job.id);
+        setRequisitionData(data);
+        setStatus(data.status);
+        setIsFormMutable(data.status === 'open');
 
-          setFormData({
-            jobTitle: data.title || '',
-            companyName: data.company_name || '',
-            jobType: reverseJobTypeMap[data.job_type] || 'Full-time',
-            locationType: reverseLocationTypeMap[data.location_type] || 'On-site',
-            companyAddress: data.company_address || '',
-            job_location: data.job_location || '',
-            salaryRange: data.salary_range || '',
-            jobDescription: data.job_description || '',
-            numberOfCandidates: data.number_of_candidates ? String(data.number_of_candidates) : '',
-            qualificationRequirement: data.qualification_requirement || '',
-            experienceRequirement: data.experience_requirement || '',
-            knowledgeSkillRequirement: data.knowledge_requirement || '',
-            reasonForRequisition: data.reason || '',
-            advertBannerFile: null,
-          });
+        setFormData({
+          jobTitle: data.title || '',
+          companyName: data.company_name || '',
+          jobType: reverseJobTypeMap[data.job_type] || 'Full-time',
+          locationType: reverseLocationTypeMap[data.location_type] || 'On-site',
+          companyAddress: data.company_address || '',
+          job_location: data.job_location || '',
+          salaryRange: data.salary_range || '',
+          jobDescription: data.job_description || '',
+          numberOfCandidates: data.number_of_candidates ? String(data.number_of_candidates) : '',
+          qualificationRequirement: data.qualification_requirement || '',
+          experienceRequirement: data.experience_requirement || '',
+          knowledgeSkillRequirement: data.knowledge_requirement || '',
+          reasonForRequisition: data.reason || '',
+          advertBannerFile: null,
+        });
 
-          setDeadlineDate(data.deadline_date ? new Date(data.deadline_date) : null);
-          setStartDate(data.start_date ? new Date(data.start_date) : null);
-          setResponsibilities(data.responsibilities?.length ? data.responsibilities : ['']);
-          
-          // COMPULSORY DOCUMENTS INTEGRATION
-          const fetchedDocs = data.documents_required || [];
-          // Merge documents: compulsory first, then unique fetched docs
-          const allDocs = [
-            ...compulsoryDocuments,
-            ...fetchedDocs.filter(doc => !compulsoryDocuments.includes(doc))
-          ];
-          setDocuments(allDocs);
-          
-          setCheckedItems(data.compliance_checklist || []);
-          
-          // Separate custom compliance items
-          const complianceData = data.compliance_checklist || [];
-          const initialCustomItems = complianceData.filter(
-            item => !originalChecklistItems.includes(item)
-          );
-          setCustomComplianceItems(initialCustomItems);
-          
-          if (data.company_name || data.job_description || data.publish_status) {
-            setShowPreview(true);
-            setShowJobAdvert(true);
-          }
-          if (data.advert_banner) {
-            setAdvertBanner(
-              data.advert_banner.startsWith('http') 
-                ? data.advert_banner 
-                : `${process.env.REACT_APP_API_BASE_URL}${data.advert_banner}`
-            );
-          }
-        } catch (error) {
-          setAlertModal({
-            title: 'Error',
-            message: error,
-          });
-          console.error('Error fetching requisition:', error);
+        setDeadlineDate(data.deadline_date ? new Date(data.deadline_date) : null);
+        setStartDate(data.start_date ? new Date(data.start_date) : null);
+        setResponsibilities(data.responsibilities?.length ? data.responsibilities : ['']);
+        
+        // COMPULSORY DOCUMENTS INTEGRATION
+        const fetchedDocs = data.documents_required || [];
+        const allDocs = [...compulsoryDocuments, ...fetchedDocs.filter(doc => !compulsoryDocuments.includes(doc))];
+        setDocuments(allDocs);
+        
+        // Update checkedItems to use names instead of objects
+        setCheckedItems(data.compliance_checklist?.map(item => item.name) || []);
+        
+        // Separate custom compliance items using names
+        const complianceData = data.compliance_checklist || [];
+        const initialCustomItems = complianceData
+          .filter(item => !originalChecklistItems.includes(item.name))
+          .map(item => item.name);
+        setCustomComplianceItems(initialCustomItems);
+        
+        if (data.company_name || data.job_description || data.publish_status) {
+          setShowPreview(true);
+          setShowJobAdvert(true);
         }
-      };
-      fetchData();
-    }
-  }, [job?.id]);
-
+        if (data.advert_banner) {
+          setAdvertBanner(
+            data.advert_banner.startsWith('http') 
+              ? data.advert_banner 
+              : `${process.env.REACT_APP_API_BASE_URL}${data.advert_banner}`
+          );
+        }
+      } catch (error) {
+        setAlertModal({
+          title: 'Error',
+          message: error,
+        });
+        console.error('Error fetching requisition:', error);
+      }
+    };
+    fetchData();
+  }
+}, [job?.id]);
   const handleInputChange = (e) => {
     const { name, type, value, files } = e.target;
     if (type === 'file') {
@@ -1370,7 +1366,6 @@ const VewRequisition = ({ job, onClose }) => {
                                       } else {
                                         setNewComplianceDoc(e.target.value);
                                       }
-                                      // Clear error when user starts typing
                                       if (complianceDocError && e.target.value.trim()) {
                                         setComplianceDocError('');
                                       }
@@ -1403,7 +1398,6 @@ const VewRequisition = ({ job, onClose }) => {
                                     </span>
                                   )}
                                 </div>
-                                {/* Show error message if exists */}
                                 {complianceDocError && <p className='error'>{complianceDocError}</p>}
                               </div>
                             </motion.div>
@@ -1422,7 +1416,7 @@ const VewRequisition = ({ job, onClose }) => {
                                   className={
                                     isCustom 
                                       ? `added-COmpll-list ${isChecked ? 'custom-active' : ''}`
-                                      : (isChecked ? 'active-Li-Check' : '')
+                                      : isChecked ? 'active-Li-Check' : ''
                                   }
                                   onClick={() => toggleChecklistItem(item)}
                                   style={{
@@ -1430,7 +1424,7 @@ const VewRequisition = ({ job, onClose }) => {
                                     opacity: isFormMutable ? 1 : 0.5,
                                   }}
                                 >
-                                  <p>{item}</p>
+                                  <p>{item}</p> {/* Render the item name directly */}
                                   
                                   {isCustom ? (
                                     <div className="GHll-POl-Dec">
@@ -1441,7 +1435,7 @@ const VewRequisition = ({ job, onClose }) => {
                                           handleEditComplianceDocument(item);
                                         }}
                                       >
-                                        <PencilIcon  /> Edit
+                                        <PencilIcon /> Edit
                                       </button>
                                       <button
                                         className="remove-compliance-btn"

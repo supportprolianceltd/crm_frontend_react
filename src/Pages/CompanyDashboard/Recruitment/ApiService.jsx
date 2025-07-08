@@ -487,6 +487,9 @@ export const updateApplicantComplianceStatus = async (jobApplicationId, itemId, 
   }
 };
 
+
+
+
 export const deleteComplianceItem = async (jobRequisitionId, itemId) => {
     try {
         const response =  await apiClient.delete(
