@@ -20,7 +20,7 @@ const SuccessAlert = ({ message, show }) => (
           backgroundColor: '#38a169',
           color: '#fff',
           padding: '10px 20px',
-          fontSize: 12,
+          fontSize: 11,
           borderRadius: 6,
           boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
           zIndex: 9999,

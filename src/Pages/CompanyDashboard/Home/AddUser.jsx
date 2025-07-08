@@ -1,6 +1,16 @@
-import React, { useState, useRef } from 'react';
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  ArrowLeftIcon,
+  PlusIcon,
+  XMarkIcon,
+  EyeIcon,
+  EyeSlashIcon,
+  ArrowUturnLeftIcon,
+  ArrowPathIcon,
+  CloudArrowUpIcon,
+} from '@heroicons/react/24/outline';
 import DefaulUser from '../../../assets/Img/memberIcon.png';
+import pdfIcon from '../../../assets/icons/pdf.png';
 import { motion, useInView } from 'framer-motion';
 
 const steps = [
@@ -10,7 +20,7 @@ const steps = [
   { key: 'Set Login Credentials', title: 'Set Login Credentials' },
 ];
 
-// Framer Motion variants for staggered animation
+// Framer Motion animation variants for list items
 const listVariants = {
   hidden: {},
   visible: {
@@ -21,18 +31,47 @@ const listVariants = {
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0.3, y: 5 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.4, // smooth duration
-      ease: 'easeOut', // natural easing
+      duration: 0.4,
+      ease: 'easeOut',
     },
   },
 };
 
-// Animated ul that animates every time it enters viewport
+// Error and success alert variants
+const alertVariants = {
+  hidden: { opacity: 0, y: -20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.3, ease: 'easeOut' }
+  },
+  exit: {
+    opacity: 0,
+    y: -20,
+    transition: { duration: 0.2, ease: 'easeIn' }
+  },
+};
+
+// Slide-in variants for sections
+const sectionVariants = {
+  hidden: { opacity: 0, x: 100 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.4, ease: 'easeOut' }
+  },
+  exit: {
+    opacity: 0,
+    x: 100,
+    transition: { duration: 0.3, ease: 'easeIn' }
+  },
+};
+
 const SectionList = ({ children }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { margin: '-100px 0px -100px 0px' });
@@ -45,32 +84,93 @@ const SectionList = ({ children }) => {
       animate={isInView ? 'visible' : 'hidden'}
     >
       {React.Children.map(children, (child) =>
-        React.cloneElement(child, { variants: itemVariants })
+        child ? React.cloneElement(child, { variants: itemVariants }) : null
       )}
     </motion.ul>
   );
 };
 
+function formatFileSize(bytes) {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  const size = bytes / Math.pow(k, i);
+  return `${size.toFixed(2)} ${sizes[i]}`;
+}
+
 const AddUser = () => {
   const [activeKey, setActiveKey] = useState('Details');
+  const [errorMessage, setErrorMessage] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({}); // New state for field-specific errors
+  const [permissions, setPermissions] = useState({
+    'Access Recruitment': false,
+    'Access Compliance': false,
+    'Access Training': false,
+    'Access Assets management': false,
+    'Access Rostering': false,
+    'Access HR': false,
+    'Access Payroll': false,
+  });
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    gender: '',
+    dob: '',
+    street: '',
+    city: '',
+    state: '',
+    zip: '',
+    role: '',
+    department: '',
+    dashboard: '',
+    accessLevel: '',
+    username: '',
+    password: '',
+    status: '',
+    twoFactor: '',
+  });
+  const [showPassword, setShowPassword] = useState(false);
 
-  // Refs for each section container
+  const titleInputRefs = useRef({});
+  const fileInputRefs = useRef({});
   const sectionRefs = {
     Details: useRef(null),
     'Role Assignment': useRef(null),
     Permissions: useRef(null),
     'Set Login Credentials': useRef(null),
   };
-
-  // Ref for scroll container
   const mainContentRef = useRef(null);
+  const containerRef = useRef(null);
 
-  // Drag-to-scroll state refs
+  const [uploadCards, setUploadCards] = useState([
+    {
+      id: Date.now(),
+      selectedFile: null,
+      previewUrl: null,
+      fileSize: '0 B',
+      fileName: '',
+    },
+  ]);
+
   const isDragging = useRef(false);
   const startY = useRef(0);
   const scrollTop = useRef(0);
 
-  // Mouse event handlers for drag scroll
+  useEffect(() => {
+    if (errorMessage || successMessage) {
+      const timer = setTimeout(() => {
+        setErrorMessage(null);
+        setSuccessMessage(null);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [errorMessage, successMessage]);
+
   const onMouseDown = (e) => {
     isDragging.current = true;
     startY.current = e.pageY - mainContentRef.current.offsetTop;
@@ -103,69 +203,617 @@ const AddUser = () => {
     mainContentRef.current.scrollTop = scrollTop.current + walk;
   };
 
-  // Handle clicking step to scroll to section
   const handleStepClick = (key) => {
     setActiveKey(key);
-    const el = sectionRefs[key]?.current;
-    if (el && mainContentRef.current) {
-      mainContentRef.current.scrollTo({
-        top: el.offsetTop,
+    if (containerRef.current) {
+      containerRef.current.scrollIntoView({
         behavior: 'smooth',
+        block: 'start',
       });
+    }
+    setTimeout(() => {
+      const el = sectionRefs[key]?.current;
+      if (el && mainContentRef.current) {
+        mainContentRef.current.scrollTo({
+          top: el.offsetTop,
+          behavior: 'smooth',
+        });
+      }
+    }, 300);
+  };
+
+  const handleFileChange = (e, id) => {
+    const file = e.target.files[0];
+    if (file && (file.type.includes('pdf') || file.type.includes('image'))) {
+      setUploadCards((prev) =>
+        prev.map((card) =>
+          card.id === id
+            ? {
+                ...card,
+                selectedFile: file,
+                fileSize: formatFileSize(file.size),
+                fileName: file.name,
+                previewUrl: file.type.includes('image')
+                  ? URL.createObjectURL(file)
+                  : null,
+              }
+            : card
+        )
+      );
+      setTimeout(() => {
+        titleInputRefs.current[id]?.focus();
+      }, 100);
+      setErrorMessage(null);
+    } else {
+      setErrorMessage('Please select a valid PDF or image file');
+      setUploadCards((prev) =>
+        prev.map((card) =>
+          card.id === id
+            ? {
+                ...card,
+                selectedFile: null,
+                fileSize: '0 B',
+                fileName: '',
+                previewUrl: null,
+              }
+            : card
+        )
+      );
     }
   };
 
-  // Content per step
+  const handlePreviewClick = (card) => {
+    if (card.selectedFile) {
+      if (card.selectedFile.type.includes('pdf')) {
+        const url = URL.createObjectURL(card.selectedFile);
+        window.open(url, '_blank');
+      } else if (card.previewUrl) {
+        window.open(card.previewUrl, '_blank');
+      }
+    }
+  };
+
+  const handleClearFile = (id) => {
+    setUploadCards((prev) =>
+      prev.map((card) =>
+        card.id === id
+          ? {
+              ...card,
+              selectedFile: null,
+              fileSize: '0 B',
+              fileName: '',
+              previewUrl: null,
+            }
+          : card
+      )
+    );
+    if (fileInputRefs.current[id]) {
+      fileInputRefs.current[id].value = '';
+    }
+  };
+
+  const handleRemoveCard = (id) => {
+    if (uploadCards.length <= 1) return;
+    setUploadCards((prev) => prev.filter((card) => card.id !== id));
+  };
+
+  const handleAddCard = () => {
+    const newId = Date.now();
+    setUploadCards((prev) => [
+      ...prev,
+      { id: newId, selectedFile: null, previewUrl: null, fileSize: '0 B', fileName: '' },
+    ]);
+  };
+
+  const handleFileNameChange = (id, value) => {
+    setUploadCards((prev) =>
+      prev.map((card) =>
+        card.id === id ? { ...card, fileName: value } : card
+      )
+    );
+  };
+
+  const handlePermissionToggle = (permission) => {
+    setPermissions((prev) => ({
+      ...prev,
+      [permission]: !prev[permission],
+    }));
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+    // Clear error for the field when user types
+    if (value) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        [name]: '',
+      }));
+    }
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword((prev) => !prev);
+  };
+
+  const resetForm = () => {
+    setFormData({
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      gender: '',
+      dob: '',
+      street: '',
+      city: '',
+      state: '',
+      zip: '',
+      role: '',
+      department: '',
+      dashboard: '',
+      accessLevel: '',
+      username: '',
+      password: '',
+      status: '',
+      twoFactor: '',
+    });
+    setUploadCards([
+      {
+        id: Date.now(),
+        selectedFile: null,
+        previewUrl: null,
+        fileSize: '0 B',
+        fileName: '',
+      },
+    ]);
+    setPermissions({
+      'Access Recruitment': false,
+      'Access Compliance': false,
+      'Access Training': false,
+      'Access Assets management': false,
+      'Access Rostering': false,
+      'Access HR': false,
+      'Access Payroll': false,
+    });
+    setShowPassword(false);
+    setFieldErrors({}); // Clear all field errors
+    Object.values(fileInputRefs.current).forEach((input) => {
+      if (input) input.value = '';
+    });
+  };
+
+  // Validation functions for each step
+  const validateDetailsStep = () => {
+    const requiredFields = {
+      firstName: 'First Name is required',
+      lastName: 'Last Name is required',
+      email: 'Email is required',
+      phone: 'Phone is required',
+      gender: 'Gender is required',
+      dob: 'Date of Birth is required',
+      street: 'Street is required',
+      city: 'City is required',
+      state: 'State is required',
+      zip: 'Zip Code is required',
+    };
+    const errors = {};
+    let isValid = true;
+
+    Object.keys(requiredFields).forEach((field) => {
+      if (!formData[field]) {
+        errors[field] = requiredFields[field];
+        isValid = false;
+      }
+    });
+
+    setFieldErrors(errors);
+    if (!isValid) {
+      setErrorMessage('Please fill in all required fields.');
+    }
+    return isValid;
+  };
+
+  const validateRoleAssignmentStep = () => {
+    if (!formData.dashboard) {
+      setFieldErrors({ dashboard: 'Dashboard selection is required' });
+      setErrorMessage('Please select a dashboard type.');
+      return false;
+    }
+    setFieldErrors({});
+    return true;
+  };
+
+  const validateLoginCredentialsStep = () => {
+    const requiredFields = {
+      username: 'Username is required',
+      password: 'Password is required',
+      status: 'Status is required',
+      twoFactor: 'Two-Factor Auth selection is required',
+    };
+    const errors = {};
+    let isValid = true;
+
+    Object.keys(requiredFields).forEach((field) => {
+      if (!formData[field]) {
+        errors[field] = requiredFields[field];
+        isValid = false;
+      }
+    });
+
+    setFieldErrors(errors);
+    if (!isValid) {
+      setErrorMessage('Please fill in all required fields.');
+    }
+    return isValid;
+  };
+
+  const handleContinue = () => {
+    const currentIndex = steps.findIndex((step) => step.key === activeKey);
+
+    // Validate current step before proceeding
+    let isValid = false;
+    switch (activeKey) {
+      case 'Details':
+        isValid = validateDetailsStep();
+        break;
+      case 'Role Assignment':
+        isValid = validateRoleAssignmentStep();
+        break;
+      case 'Set Login Credentials':
+        isValid = validateLoginCredentialsStep();
+        break;
+      default:
+        isValid = true; // Permissions step has no required fields
+    }
+
+    if (!isValid) {
+      return; // Stop if validation fails
+    }
+
+    // Clear any existing error message and field errors
+    setErrorMessage(null);
+    setFieldErrors({});
+
+    // Proceed to the next step or create user
+    if (currentIndex < steps.length - 1) {
+      const nextKey = steps[currentIndex + 1].key;
+      handleStepClick(nextKey);
+    } else if (currentIndex === steps.length - 1) {
+      setIsLoading(true);
+      setTimeout(() => {
+        setIsLoading(false);
+        setSuccessMessage('User successfully created!');
+        resetForm();
+        handleStepClick(steps[0].key);
+      }, 3000);
+    }
+  };
+
+  const handleGoBack = () => {
+    const currentIndex = steps.findIndex((step) => step.key === activeKey);
+    if (currentIndex > 0) {
+      const prevKey = steps[currentIndex - 1].key;
+      handleStepClick(prevKey);
+      setFieldErrors({}); // Clear field errors when going back
+    }
+  };
+
+  const renderUploadCards = () =>
+    uploadCards.map((card, index) => (
+      <div key={card.id} className="Uppol-CCard-Card">
+        <div
+          className="Uppol-CCard-Card-Uploads"
+          onClick={() => fileInputRefs.current[card.id]?.click()}
+          style={{ cursor: 'pointer' }}
+        >
+          {card.selectedFile && <p>{card.fileSize}</p>}
+          <span>
+            {card.selectedFile ? (
+              card.selectedFile.type.includes('pdf') ? (
+                <img src={pdfIcon} alt="PDF Icon" />
+              ) : null
+            ) : (
+              <b>
+                <PlusIcon className="w-6 h-6" />
+              </b>
+            )}
+          </span>
+          {card.selectedFile && (
+            <input
+              type="text"
+              placeholder="Document Title"
+              value={card.fileName}
+              onChange={(e) => handleFileNameChange(card.id, e.target.value)}
+              title="Edit File Title"
+              style={{ cursor: 'text' }}
+              onClick={(e) => e.stopPropagation()}
+              ref={(el) => (titleInputRefs.current[card.id] = el)}
+            />
+          )}
+          <input
+            type="file"
+            ref={(el) => (fileInputRefs.current[card.id] = el)}
+            style={{ display: 'none' }}
+            accept="image/*,application/pdf"
+            onChange={(e) => handleFileChange(e, card.id)}
+          />
+          {card.previewUrl && (
+            <div className="Uppol-CCard-Preview">
+              <img src={card.previewUrl} alt="File Preview" />
+            </div>
+          )}
+        </div>
+        <div className="Uppol-CCard-Card-BBtna">
+          {card.selectedFile && (
+            <span
+              onClick={() => handlePreviewClick(card)}
+              style={{ cursor: 'pointer' }}
+            >
+              <EyeIcon /> View
+            </span>
+          )}
+          <span
+            onClick={() => fileInputRefs.current[card.id]?.click()}
+            style={{ cursor: 'pointer' }}
+          >
+            {card.selectedFile ? (
+              <>
+                <ArrowPathIcon />
+                Reupload
+              </>
+            ) : (
+              <>
+                <CloudArrowUpIcon />
+                Upload
+              </>
+            )}
+          </span>
+          {card.selectedFile && (
+            <span
+              onClick={() => handleClearFile(card.id)}
+              style={{ cursor: 'pointer' }}
+            >
+              <ArrowUturnLeftIcon />
+              Clear
+            </span>
+          )}
+          {index !== 0 && (
+            <span
+              onClick={() => handleRemoveCard(card.id)}
+              style={{ cursor: card.selectedFile ? 'pointer' : 'not-allowed' }}
+            >
+              <XMarkIcon /> Remove
+            </span>
+          )}
+        </div>
+      </div>
+    ));
+
   const renderStepContent = (key) => {
+    const children = [];
+
     switch (key) {
       case 'Details':
-        return (
-          <SectionList>
-            <motion.li><span>First Name</span><p>Emily</p></motion.li>
-            <motion.li><span>Last Name</span><p>Watson</p></motion.li>
-            <motion.li><span>Email</span><p>emily.watson@example.co.uk</p></motion.li>
-            <motion.li><span>Phone</span><p>+44 7700 900123</p></motion.li>
-            <motion.li><span>Gender</span><p>Female</p></motion.li>
-            <motion.li><span>Date of Birth</span><p>Jan 22, 1990</p></motion.li>
-            <motion.li><span>Street</span><p>221B Baker Street</p></motion.li>
-            <motion.li><span>City</span><p>London</p></motion.li>
-            <motion.li><span>State</span><p>Greater London</p></motion.li>
-            <motion.li><span>Zip Code</span><p>NW1 6XE</p></motion.li>
-          </SectionList>
-        );
+        if (formData.firstName) {
+          children.push(
+            <motion.li key="firstName">
+              <span>First Name</span>
+              <p>{formData.firstName}</p>
+            </motion.li>
+          );
+        }
+        if (formData.lastName) {
+          children.push(
+            <motion.li key="lastName">
+              <span>Last Name</span>
+              <p>{formData.lastName}</p>
+            </motion.li>
+          );
+        }
+        if (formData.email) {
+          children.push(
+            <motion.li key="email">
+              <span>Email</span>
+              <p>{formData.email}</p>
+            </motion.li>
+          );
+        }
+        if (formData.phone) {
+          children.push(
+            <motion.li key="phone">
+              <span>Phone</span>
+              <p>{formData.phone}</p>
+            </motion.li>
+          );
+        }
+        if (formData.gender) {
+          children.push(
+            <motion.li key="gender">
+              <span>Gender</span>
+              <p>{formData.gender}</p>
+            </motion.li>
+          );
+        }
+        if (formData.dob) {
+          children.push(
+            <motion.li key="dob">
+              <span>Date of Birth</span>
+              <p>{formData.dob}</p>
+            </motion.li>
+          );
+        }
+        if (formData.street) {
+          children.push(
+            <motion.li key="street">
+              <span>Street</span>
+              <p>{formData.street}</p>
+            </motion.li>
+          );
+        }
+        if (formData.city) {
+          children.push(
+            <motion.li key="city">
+              <span>City</span>
+              <p>{formData.city}</p>
+            </motion.li>
+          );
+        }
+        if (formData.state) {
+          children.push(
+            <motion.li key="state">
+              <span>State</span>
+              <p>{formData.state}</p>
+            </motion.li>
+          );
+        }
+        if (formData.zip) {
+          children.push(
+            <motion.li key="zip">
+              <span>Zip Code</span>
+              <p>{formData.zip}</p>
+            </motion.li>
+          );
+        }
+        return <SectionList>{children}</SectionList>;
+
       case 'Role Assignment':
-        return (
-          <SectionList>
-            <motion.li><span>Assigned Role</span><p>Project Manager</p></motion.li>
-            <motion.li><span>Department</span><p>Operations</p></motion.li>
-            <motion.li><span>Access Level</span><p>Full Access</p></motion.li>
-          </SectionList>
-        );
+        if (formData.role) {
+          children.push(
+            <motion.li key="role">
+              <span>Assigned Role</span>
+              <p>{formData.role}</p>
+            </motion.li>
+          );
+        }
+        if (formData.department) {
+          children.push(
+            <motion.li key="department">
+              <span>Department</span>
+              <p>{formData.department}</p>
+            </motion.li>
+          );
+        }
+        if (formData.dashboard) {
+          children.push(
+            <motion.li key="dashboard">
+              <span>Dashboard</span>
+              <p>{formData.dashboard}</p>
+            </motion.li>
+          );
+        }
+        if (formData.accessLevel) {
+          children.push(
+            <motion.li key="accessLevel">
+              <span>Access Level</span>
+              <p>{formData.accessLevel}</p>
+            </motion.li>
+          );
+        }
+        return <SectionList>{children}</SectionList>;
+
       case 'Permissions':
-        return (
-          <SectionList>
-            <motion.li><span>View Reports</span><p>Granted</p></motion.li>
-            <motion.li><span>Edit Users</span><p>Granted</p></motion.li>
-            <motion.li><span>Manage Settings</span><p>Restricted</p></motion.li>
-            <motion.li><span>Approve Transactions</span><p>Granted</p></motion.li>
-          </SectionList>
-        );
+        Object.keys(permissions).forEach((permission) => {
+          children.push(
+            <motion.li key={permission}>
+              <span>{permission.replace('Access ', '')}</span>
+              <p>{permissions[permission] ? 'Yes' : 'No'}</p>
+            </motion.li>
+          );
+        });
+        return <SectionList>{children}</SectionList>;
+
       case 'Set Login Credentials':
-        return (
-          <SectionList>
-            <motion.li><span>Username</span><p>emily.watson</p></motion.li>
-            <motion.li><span>Temporary Password</span><p>••••••••</p></motion.li>
-            <motion.li><span>Status</span><p>Active</p></motion.li>
-            <motion.li><span>Two-Factor Auth</span><p>Enabled</p></motion.li>
-          </SectionList>
-        );
+        if (formData.username) {
+          children.push(
+            <motion.li key="username">
+              <span>Username</span>
+              <p>{formData.username}</p>
+            </motion.li>
+          );
+        }
+        if (formData.password) {
+          children.push(
+            <motion.li key="password">
+              <span>Password</span>
+              <p>••••••••</p>
+            </motion.li>
+          );
+        }
+        if (formData.status) {
+          children.push(
+            <motion.li key="status">
+              <span>Status</span>
+              <p>{formData.status}</p>
+            </motion.li>
+          );
+        }
+        if (formData.twoFactor) {
+          children.push(
+            <motion.li key="twoFactor">
+              <span>Two-Factor Auth</span>
+              <p>{formData.twoFactor}</p>
+            </motion.li>
+          );
+        }
+        return <SectionList>{children}</SectionList>;
+
       default:
         return null;
     }
   };
 
+  const isLastStep = activeKey === steps[steps.length - 1].key;
+
   return (
     <div className="Gllols-AddUser">
+      {errorMessage && (
+        <motion.div
+          className="error-alert"
+          style={{
+            position: 'fixed',
+            top: 10,
+            backgroundColor: 'rgba(229, 62, 62, 0.9)',
+            color: '#fff',
+            padding: '10px 20px',
+            fontSize: 11,
+            borderRadius: 6,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+            zIndex: 9999,
+          }}
+          variants={alertVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+        >
+          {errorMessage}
+        </motion.div>
+      )}
+      {successMessage && (
+        <motion.div
+          className="success-alert ool-ayhs-Succees"
+          style={{
+            position: 'fixed',
+            top: 10,
+            backgroundColor: '#38a169',
+            color: '#fff',
+            padding: '10px 20px',
+            fontSize: 11,
+            borderRadius: 6,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+            zIndex: 9999,
+          }}
+          variants={alertVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+        >
+          {successMessage}
+        </motion.div>
+      )}
+
       <div className="Top-Gllols-AddUser Simp-Boxshadow">
         <h3>Add a User</h3>
         <ul>
@@ -182,12 +830,42 @@ const AddUser = () => {
         </ul>
       </div>
 
-      <div className="Gllols-AddUser-MMMmains Simp-Boxshadow">
+      <div className="Gllols-AddUser-MMMmains Simp-Boxshadow" ref={containerRef}>
         <div className="Gllols-AddUser-MMMmainsTop">
           <h4>{activeKey}</h4>
           <ul>
-            <li><ArrowLeftIcon className="w-4 h-4 inline-block mr-1" /> Go Back</li>
-            <li className="continue-BTn">Continue</li>
+            <li
+              style={{ display: activeKey === steps[0].key ? 'none' : 'flex', cursor: 'pointer' }}
+              onClick={handleGoBack}
+            >
+              <ArrowLeftIcon /> Go Back
+            </li>
+            <li
+              className={`continue-BTn ${isLastStep ? 'btn-primary-bg' : ''}`}
+              onClick={handleContinue}
+              style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+            >
+              {isLoading ? (
+                <>
+                  <motion.div
+                    initial={{ rotate: 0 }}
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                    style={{
+                      width: 13,
+                      height: 13,
+                      borderRadius: '50%',
+                      border: '3px solid #fff',
+                      borderTopColor: 'transparent',
+                      display: 'inline-block',
+                    }}
+                  />
+                  Creating User...
+                </>
+              ) : (
+                isLastStep ? 'Create User' : 'Continue'
+              )}
+            </li>
           </ul>
         </div>
 
@@ -226,7 +904,387 @@ const AddUser = () => {
             </div>
           </div>
 
-          <div className="oikujuj-stha-2"></div>
+          <div className="oikujuj-stha-2">
+            <motion.div
+              className={`UKiakks-Part custom-scroll-bar ${activeKey === 'Details' ? 'Active-CChgba' : ''}`}
+              style={{ display: activeKey === 'Details' ? 'block' : 'none' }}
+              variants={sectionVariants}
+              initial="hidden"
+              animate={activeKey === 'Details' ? 'visible' : 'hidden'}
+              exit="exit"
+            >
+              <div className="UKiakks-Part-Box">
+                <div className="UKiakks-Part-Header">
+                  <h3>Basic Details</h3>
+                </div>
+                <div className='UKiakks-Part-Main'>
+                  <div className="Grga-INpu-Grid">
+                    <div className="GHuh-Form-Input">
+                      <label>First Name</label>
+                      <input
+                        type='text'
+                        name="firstName"
+                        placeholder='Enter first name (e.g., Olivia)'
+                        value={formData.firstName}
+                        onChange={handleInputChange}
+                      />
+                      {fieldErrors.firstName && (
+                        <p className='erro-message-Txt'>
+                          {fieldErrors.firstName}
+                        </p>
+                      )}
+                    </div>
+                    <div className="GHuh-Form-Input">
+                      <label>Last Name</label>
+                      <input
+                        type='text'
+                        name="lastName"
+                        placeholder='Enter last name (e.g., Bennett)'
+                        value={formData.lastName}
+                        onChange={handleInputChange}
+                      />
+                      {fieldErrors.lastName && (
+                        <p className='erro-message-Txt'>
+                          {fieldErrors.lastName}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="GHuh-Form-Input">
+                    <label>Email</label>
+                    <input
+                      type='email'
+                      name="email"
+                      placeholder='Enter email (e.g., olivia.bennett@email.com)'
+                      value={formData.email}
+                      onChange={handleInputChange}
+                    />
+                    {fieldErrors.email && (
+                      <p className='erro-message-Txt'>
+                        {fieldErrors.email}
+                      </p>
+                    )}
+                  </div>
+                  <div className="Grga-INpu-Grid">
+                    <div className="GHuh-Form-Input">
+                      <label>Phone</label>
+                      <input
+                        type='tel'
+                        name="phone"
+                        placeholder='Enter phone number (e.g., +1 415 555 2671)'
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                      />
+                      {fieldErrors.phone && (
+                        <p className='erro-message-Txt'>
+                          {fieldErrors.phone}
+                        </p>
+                      )}
+                    </div>
+                    <div className="GHuh-Form-Input">
+                      <label>Gender</label>
+                      <select
+                        name="gender"
+                        value={formData.gender}
+                        onChange={handleInputChange}
+                      >
+                        <option value="">Select gender</option>
+                        <option value="Female">Female</option>
+                        <option value="Male">Male</option>
+                        <option value="Other">Other</option>
+                      </select>
+                      {fieldErrors.gender && (
+                        <p className='erro-message-Txt'>
+                          {fieldErrors.gender}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="GHuh-Form-Input">
+                    <label>Date of Birth</label>
+                    <input
+                      type='date'
+                      name="dob"
+                      value={formData.dob}
+                      onChange={handleInputChange}
+                    />
+                    {fieldErrors.dob && (
+                      <p className='erro-message-Txt'>
+                        {fieldErrors.dob}
+                      </p>
+                    )}
+                  </div>
+                  <div className="GHuh-Form-Input">
+                    <label>Street</label>
+                    <input
+                      type='text'
+                      name="street"
+                      placeholder='Enter street address (e.g., 742 Evergreen Terrace)'
+                      value={formData.street}
+                      onChange={handleInputChange}
+                    />
+                    {fieldErrors.street && (
+                      <p className='erro-message-Txt'>
+                        {fieldErrors.street}
+                      </p>
+                    )}
+                  </div>
+                  <div className="GHuh-Form-Input">
+                    <label>City</label>
+                    <input
+                      type='text'
+                      name="city"
+                      placeholder='Type your city (e.g., Springfield)'
+                      value={formData.city}
+                      onChange={handleInputChange}
+                    />
+                    {fieldErrors.city && (
+                      <p className='erro-message-Txt'>
+                        {fieldErrors.city}
+                      </p>
+                    )}
+                  </div>
+                  <div className="GHuh-Form-Input">
+                    <label>State</label>
+                    <input
+                      type='text'
+                      name="state"
+                      placeholder='Type your state (e.g., Illinois)'
+                      value={formData.state}
+                      onChange={handleInputChange}
+                    />
+                    {fieldErrors.state && (
+                      <p className='erro-message-Txt'>
+                        {fieldErrors.state}
+                      </p>
+                    )}
+                  </div>
+                  <div className="GHuh-Form-Input">
+                    <label>Zip Code</label>
+                    <input
+                      type='text'
+                      name="zip"
+                      placeholder='Enter zip code (e.g., 62704)'
+                      value={formData.zip}
+                      onChange={handleInputChange}
+                    />
+                    {fieldErrors.zip && (
+                      <p className='erro-message-Txt'>
+                        {fieldErrors.zip}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className="UKiakks-Part-Box">
+                <div className="UKiakks-Part-Header GGtg-Dah">
+                  <h3>Document Uploads</h3>
+                  <span onClick={handleAddCard} style={{ cursor: 'pointer' }}>
+                    <PlusIcon /> Add
+                  </span>
+                </div>
+                <div className="UKiakks-Part-Main" style={{ position: 'relative' }}>
+                  <div className="Uppol-CCards">{renderUploadCards()}</div>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              className={`UKiakks-Part custom-scroll-bar ${activeKey === 'Role Assignment' ? 'Active-CChgba' : ''}`}
+              style={{ display: activeKey === 'Role Assignment' ? 'block' : 'none' }}
+              variants={sectionVariants}
+              initial="hidden"
+              animate={activeKey === 'Role Assignment' ? 'visible' : 'hidden'}
+              exit="exit"
+            >
+              <div className="UKiakks-Part-Box">
+                <div className="UKiakks-Part-Header">
+                  <h3>Role Settings</h3>
+                </div>
+                <div className='UKiakks-Part-Main'>
+                  <div className="GHuh-Form-Input">
+                    <label>Assign Role</label>
+                    <input
+                      type='text'
+                      name="role"
+                      placeholder='Enter role (e.g., Project Manager)'
+                      value={formData.role}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="GHuh-Form-Input">
+                    <label>Department</label>
+                    <input
+                      type='text'
+                      name="department"
+                      placeholder='Enter department (e.g., Operations)'
+                      value={formData.department}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="Grga-INpu-Grid">
+                    <div className="GHuh-Form-Input">
+                      <label>Dashboard</label>
+                      <select
+                        name="dashboard"
+                        value={formData.dashboard}
+                        onChange={handleInputChange}
+                      >
+                        <option value="">Select dashboard</option>
+                        <option value="Admin">Admin</option>
+                        <option value="Staff">Staff</option>
+                        <option value="User">User</option>
+                      </select>
+                      {fieldErrors.dashboard && (
+                        <p className='erro-message-Txt'>
+                          {fieldErrors.dashboard}
+                        </p>
+                      )}
+                    </div>
+                    <div className="GHuh-Form-Input">
+                      <label>Access Level</label>
+                      <select
+                        name="accessLevel"
+                        value={formData.accessLevel}
+                        onChange={handleInputChange}
+                      >
+                        <option value="">Select access level</option>
+                        <option value="Full Access">Full Access</option>
+                        <option value="Limited Access">Limited Access</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              className={`UKiakks-Part custom-scroll-bar ${activeKey === 'Permissions' ? 'Active-CChgba' : ''}`}
+              style={{ display: activeKey === 'Permissions' ? 'block' : 'none' }}
+              variants={sectionVariants}
+              initial="hidden"
+              animate={activeKey === 'Permissions' ? 'visible' : 'hidden'}
+              exit="exit"
+            >
+              <div className="UKiakks-Part-Box">
+                <div className="UKiakks-Part-Header">
+                  <h3>Permission Settings</h3>
+                </div>
+                <div className="UKiakks-Part-Main">
+                  <ul className='checcck-lissT ouka-UUUkol'>
+                    {Object.keys(permissions).map((permission) => (
+                      <li
+                        key={permission}
+                        className={permissions[permission] ? 'active-Li-Check' : ''}
+                        onClick={() => handlePermissionToggle(permission)}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        {permission}
+                        <span></span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              className={`UKiakks-Part custom-scroll-bar ${activeKey === 'Set Login Credentials' ? 'Active-CChgba' : ''}`}
+              style={{ display: activeKey === 'Set Login Credentials' ? 'block' : 'none' }}
+              variants={sectionVariants}
+              initial="hidden"
+              animate={activeKey === 'Set Login Credentials' ? 'visible' : 'hidden'}
+              exit="exit"
+            >
+              <div className="UKiakks-Part-Box">
+                <div className="UKiakks-Part-Header">
+                  <h3>Login Settings</h3>
+                </div>
+                <div className='UKiakks-Part-Main'>
+                  <div className="GHuh-Form-Input">
+                    <label>Username</label>
+                    <input
+                      type='text'
+                      name="username"
+                      placeholder='Enter username (e.g., Olivia09)'
+                      value={formData.username}
+                      onChange={handleInputChange}
+                    />
+                    {fieldErrors.username && (
+                      <p className='erro-message-Txt'>
+                        {fieldErrors.username}
+                      </p>
+                    )}
+                  </div>
+                  <div className="GHuh-Form-Input">
+                    <label>Password</label>
+                    <div className='ool-IINpa'>
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        name="password"
+                        placeholder='Enter Password'
+                        value={formData.password}
+                        onChange={handleInputChange}
+                      />
+                      <button
+                        type="button"
+                        className="password-toggle-btn"
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                        onClick={togglePasswordVisibility}
+                      >
+                        {showPassword ? (
+                          <EyeSlashIcon className='icon' />
+                        ) : (
+                          <EyeIcon className='icon' />
+                        )}
+                      </button>
+                    </div>
+                    {fieldErrors.password && (
+                      <p className='erro-message-Txt'>
+                        {fieldErrors.password}
+                      </p>
+                    )}
+                  </div>
+                  <div className="Grga-INpu-Grid">
+                    <div className="GHuh-Form-Input">
+                      <label>Status</label>
+                      <select
+                        name="status"
+                        value={formData.status}
+                        onChange={handleInputChange}
+                      >
+                        <option value="">Select status</option>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                      </select>
+                      {fieldErrors.status && (
+                        <p className='erro-message-Txt'>
+                          {fieldErrors.status}
+                        </p>
+                      )}
+                    </div>
+                    <div className="GHuh-Form-Input">
+                      <label>Two-Factor Auth</label>
+                      <select
+                        name="twoFactor"
+                        value={formData.twoFactor}
+                        onChange={handleInputChange}
+                      >
+                        <option value="">Select option</option>
+                        <option value="Enable">Enable</option>
+                        <option value="Disable">Disable</option>
+                      </select>
+                      {fieldErrors.twoFactor && (
+                        <p className='erro-message-Txt'>
+                          {fieldErrors.twoFactor}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
         </div>
       </div>
     </div>
