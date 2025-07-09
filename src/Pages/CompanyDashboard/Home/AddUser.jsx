@@ -1272,6 +1272,7 @@ const AddUser = () => {
                     <p className="erro-message-Txt ook-rra">{fieldErrors.accountType}</p>
                   )}
                 </div>
+                
               </div>
             </motion.div>
 
