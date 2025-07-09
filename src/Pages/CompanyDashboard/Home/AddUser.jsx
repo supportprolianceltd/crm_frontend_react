@@ -9,10 +9,9 @@ import {
   ArrowPathIcon,
   CloudArrowUpIcon,
 } from '@heroicons/react/24/outline';
-import { motion, useInView } from 'framer-motion';
 import DefaulUser from '../../../assets/Img/memberIcon.png';
 import pdfIcon from '../../../assets/icons/pdf.png';
-import { fetchModules, fetchTenant, createUser } from './HomeService';
+import { motion, useInView } from 'framer-motion';
 import AccountSelctClient from '../../../assets/img/account-selct-client.svg';
 import AccountSelctStaff from '../../../assets/img/account-selct-staff.svg';
 
@@ -112,7 +111,7 @@ const AddUser = () => {
     'Access Recruitment': false,
     'Access Compliance': false,
     'Access Training': false,
-    'Access Assets Management': false,
+    'Access Assets management': false,
     'Access Rostering': false,
     'Access HR': false,
     'Access Payroll': false,
@@ -121,6 +120,7 @@ const AddUser = () => {
     accountType: '',
     firstName: '',
     lastName: '',
+    email: '',
     phone: '',
     gender: '',
     dob: '',
@@ -182,31 +182,6 @@ const AddUser = () => {
   const isDragging = useRef(false);
   const startY = useRef(0);
   const scrollTop = useRef(0);
-
-  // Fetch modules and tenant data on component mount
-  // useEffect(() => {
-  //   const loadData = async () => {
-  //     try {
-  //       // Fetch modules
-  //       const moduleData = await fetchModules();
-  //       setModules(moduleData);
-
-  //       // Fetch tenant data
-  //       const tenantData = await fetchTenant();
-  //       const tenant = tenantData.find((t) => t.schema_name === 'proliance');
-  //       if (tenant) {
-  //         const primaryDomain = tenant.domains.find((d) => d.is_primary)?.domain || '';
-  //         setTenantDomain(primaryDomain);
-  //       } else {
-  //         throw new Error('Proliance tenant not found');
-  //       }
-  //     } catch (error) {
-  //       setErrorMessage(error.message);
-  //       console.error('Error fetching data:', error);
-  //     }
-  //   };
-  //   loadData();
-  // }, []);
 
   useEffect(() => {
     if (errorMessage || successMessage) {
@@ -335,6 +310,10 @@ const AddUser = () => {
         [name]: file,
       }));
       setErrorMessage(null);
+      setFieldErrors((prev) => ({
+        ...prev,
+        [name]: '',
+      }));
     } else {
       setErrorMessage('Please select a valid PDF or image file');
       setFormData((prev) => ({
@@ -402,10 +381,23 @@ const AddUser = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => {
+      const updatedFormData = {
+        ...prev,
+        [name]: value,
+      };
+      // Clear associated file if selecting "No" for specific fields
+      if (name === 'rightToWorkUK' && value === 'No') {
+        updatedFormData.proofRightToWork = null;
+      }
+      if (name === 'careCertificate' && value === 'No') {
+        updatedFormData.careCertificateFile = null;
+      }
+      if (name === 'professionalRegistration' && value === 'No') {
+        updatedFormData.proofRegistration = null;
+      }
+      return updatedFormData;
+    });
     if (value) {
       setFieldErrors((prev) => ({
         ...prev,
@@ -510,13 +502,12 @@ const AddUser = () => {
       'Access Recruitment': false,
       'Access Compliance': false,
       'Access Training': false,
-      'Access Assets Management': false,
+      'Access Assets management': false,
       'Access Rostering': false,
       'Access HR': false,
       'Access Payroll': false,
     });
     setShowPassword(false);
-    setFieldErrors({});
     setFieldErrors({});
     Object.values(fileInputRefs.current).forEach((input) => {
       if (input) input.value = '';
@@ -534,9 +525,9 @@ const AddUser = () => {
 
   const validateDetailsStep = () => {
     const requiredFields = {
-      emailUsername: 'Email username is required',
       firstName: 'First Name is required',
       lastName: 'Last Name is required',
+      email: 'Email is required',
       phone: 'Phone is required',
       gender: 'Gender is required',
       dob: 'Date of Birth is required',
@@ -547,7 +538,6 @@ const AddUser = () => {
     };
     const staffRequiredFields = {
       rightToWorkUK: 'Right to work in the UK is required',
-      proofRightToWork: 'Proof of right to work is required',
       photoID: 'Valid photo ID is required',
       jobRole: 'Job role/position is required',
       employmentType: 'Employment type is required',
@@ -562,6 +552,17 @@ const AddUser = () => {
       careCertificate: 'Care certificate status is required',
       professionalRegistration: 'Professional registration status is required',
     };
+    // Conditionally add file upload requirements based on Yes/No selections
+    if (formData.rightToWorkUK === 'Yes') {
+      staffRequiredFields.proofRightToWork = 'Proof of right to work is required';
+    }
+    if (formData.careCertificate === 'Yes') {
+      staffRequiredFields.careCertificateFile = 'Care certificate file is required';
+    }
+    if (formData.professionalRegistration === 'Yes') {
+      staffRequiredFields.proofRegistration = 'Proof of registration is required';
+    }
+
     const errors = {};
     let isValid = true;
 
@@ -611,12 +612,6 @@ const AddUser = () => {
       }
     });
 
-    // Additional password validation
-    if (formData.password && formData.password.length < 8) {
-      errors.password = 'Password must be at least 8 characters long';
-      isValid = false;
-    }
-
     setFieldErrors(errors);
     if (!isValid) {
       setErrorMessage('Please fill in all required fields.');
@@ -624,7 +619,7 @@ const AddUser = () => {
     return isValid;
   };
 
-  const handleContinue = async () => {
+  const handleContinue = () => {
     const currentIndex = steps.findIndex((step) => step.key === activeKey);
     let isValid = false;
     switch (activeKey) {
@@ -653,210 +648,20 @@ const AddUser = () => {
       handleStepClick(nextKey);
     } else if (currentIndex === steps.length - 1) {
       setIsLoading(true);
-      try {
-        // Map permissions to module IDs
-        const permissionToModule = {
-          'Access Recruitment': 'Talent Engine',
-          'Access Compliance': 'Compliance',
-          'Access Training': 'Training',
-          'Access Assets Management': 'Assets Management',
-          'Access Rostering': 'Workforce',
-          'Access HR': 'Workforce',
-          'Access Payroll': 'Payroll',
-        };
-
-        const selectedModules = Object.keys(permissions)
-          .filter((key) => permissions[key])
-          .map((key) => {
-            const moduleName = permissionToModule[key];
-            const module = modules.find((m) => m.name === moduleName);
-            return module ? module.id : null;
-          })
-          .filter(Boolean);
-
-        // Prepare FormData for API request
-        const formDataToSend = new FormData();
-        // Combine emailUsername and tenantDomain for the email field
-        const fullEmail = formData.emailUsername && tenantDomain ? `${formData.emailUsername}@${tenantDomain}` : '';
-        formDataToSend.append('email', fullEmail);
-        formDataToSend.append('password', formData.password);
-        formDataToSend.append('username', formData.username);
-        formDataToSend.append('first_name', formData.firstName);
-        formDataToSend.append('last_name', formData.lastName);
-        formDataToSend.append('role', formData.role.toLowerCase());
-        formDataToSend.append('job_role', formData.department); // Map department to job_role
-        formDataToSend.append('dashboard', formData.dashboard.toLowerCase());
-        formDataToSend.append('access_level', formData.accessLevel.toLowerCase().replace(' ', '_'));
-        formDataToSend.append('status', formData.status.toLowerCase());
-        formDataToSend.append('two_factor', formData.twoFactor.toLowerCase());
-
-    // Append profile fields
-// In handleContinue function:
-const profile = {
-  phone: formData.phone,
-  gender: formData.gender,
-  dob: formData.dob,
-  street: formData.street,
-  city: formData.city,
-  state: formData.state,
-  zip_code: formData.zipCode,  // Changed from zipCode to zip_code
-  department: formData.department,
-};
-    Object.keys(profile).forEach(key => {
-      formDataToSend.append(`profile[${key}]`, profile[key] || '');
-    });
-
-    // Append modules
-    const selectedModuleIds = Object.keys(permissions)
-      .filter(key => permissions[key])
-      .map(key => {
-        const module = modules.find(m => m.name === key.replace('Access ', ''));
-        return module ? module.id : null;
-      })
-      .filter(id => id !== null);
-      
-    selectedModuleIds.forEach((moduleId, index) => {
-      formDataToSend.append(`modules[${index}]`, moduleId);
-    });
-
-    // Validate and append documents
-    const validDocuments = uploadCards.filter(card => card.selectedFile && card.fileName);
-    validDocuments.forEach((card, index) => {
-      if (!(card.selectedFile instanceof File)) {
-        console.error(`Document ${index} is not a valid File object:`, card.selectedFile);
-        setFieldErrors(prev => ({
-          ...prev,
-          documents: `Document ${card.fileName} is not a valid file.`,
-        }));
-        setErrorMessage(`Document ${card.fileName} is not a valid file.`);
+      setTimeout(() => {
         setIsLoading(false);
-        return false;
-      }
-      formDataToSend.append(`documents[${index}][title]`, card.fileName);
-      formDataToSend.append(`documents[${index}][file]`, card.selectedFile);
-    });
-
-    if (validDocuments.length === 0 && uploadCards.some(card => card.selectedFile || card.fileName)) {
-      setFieldErrors(prev => ({
-        ...prev,
-        documents: 'All documents must have a valid file and title.',
-      }));
-      setErrorMessage('All documents must have a valid file and title.');
-      setIsLoading(false);
-      return false;
+        setSuccessMessage('User successfully created!');
+        resetForm();
+        handleStepClick(steps[0].key);
+      }, 3000);
     }
-
-    // Log FormData for debugging
-    const formDataEntries = {};
-    for (let [key, value] of formDataToSend.entries()) {
-      formDataEntries[key] = value instanceof File ? `${value.name} (${value.size} bytes)` : value;
-    }
-    console.log('FormData being sent:', formDataEntries);
-
-    // Additional logging for files
-    console.log('Files in FormData:', Array.from(formDataToSend.entries())
-      .filter(([key]) => key.includes('[file]'))
-      .map(([key, value]) => ({
-        key,
-        name: value.name,
-        size: value.size,
-        type: value instanceof File ? 'File' : typeof value,
-      }))
-    );
-
-    // Send request
-    const response = await createUser(formDataToSend);
-    setSuccessMessage(response.message || `User ${fullEmail} created successfully.`);
-    resetForm();
-    handleStepClick(steps[0].key);
-  } catch (error) {
-    console.error('handleContinue error:', {
-      message: error.message,
-      stack: error.stack,
-    });
-    const errorDetails = error.response?.data?.message || error.message;
-    const fieldErrors = {};
-
-    if (typeof errorDetails === 'string') {
-      if (errorDetails.includes('email:')) {
-        fieldErrors.emailUsername = errorDetails.match(/email: ([^;]+)/)?.[1] || 'Invalid email';
-      }
-      if (errorDetails.includes('username:')) {
-        fieldErrors.username = errorDetails.match(/username: ([^;]+)/)?.[1] || 'Invalid username';
-      }
-      if (errorDetails.includes('profile:')) {
-        const profileError = errorDetails.match(/profile: ([^;]+)/)?.[1] || 'Invalid profile data';
-        fieldErrors.profile = profileError;
-        const profileFieldErrors = errorDetails.match(/profile\[([^\]]+)\]: ([^;]+)/g);
-        if (profileFieldErrors) {
-          profileFieldErrors.forEach(err => {
-            const [, field, message] = err.match(/profile\[([^\]]+)\]: ([^;]+)/);
-            const fieldMap = { zip_code: 'zipCode' };
-            fieldErrors[fieldMap[field] || field] = message;
-          });
-        }
-      }
-      if (errorDetails.includes('documents:')) {
-        const docErrors = errorDetails.match(/documents\[(\d+)\]\[([^\]]+)\]: ([^;]+)/g);
-        if (docErrors) {
-          const formattedErrors = docErrors.map(err => {
-            const [, index, field, message] = err.match(/documents\[(\d+)\]\[([^\]]+)\]: ([^;]+)/);
-            const fileName = uploadCards[index]?.fileName || `Document ${parseInt(index) + 1}`;
-            return `${fileName}: ${field} ${message}`;
-          });
-          fieldErrors.documents = formattedErrors.join('; ');
-        } else {
-          fieldErrors.documents = errorDetails.match(/documents: ([^;]+)/)?.[1] || 'Invalid document data';
-        }
-      }
-    } else if (typeof errorDetails === 'object') {
-      // Handle structured errors from the backend
-      if (errorDetails.profile) {
-        Object.entries(errorDetails.profile).forEach(([field, errors]) => {
-          const fieldMap = { zip_code: 'zipCode' };
-          fieldErrors[fieldMap[field] || field] = Array.isArray(errors) ? errors.join(', ') : errors;
-        });
-      }
-      if (errorDetails.documents) {
-        const docErrors = errorDetails.documents.map((doc, index) => {
-          const fileName = uploadCards[index]?.fileName || `Document ${index + 1}`;
-          if (typeof doc === 'object') {
-            return Object.entries(doc).map(([field, errors]) => 
-              `${fileName}: ${field} ${Array.isArray(errors) ? errors.join(', ') : errors}`
-            ).join('; ');
-          }
-          return `${fileName}: ${doc}`;
-        });
-        fieldErrors.documents = docErrors.join('; ');
-      }
-      if (errorDetails.email) {
-        fieldErrors.emailUsername = Array.isArray(errorDetails.email) ? errorDetails.email.join(', ') : errorDetails.email;
-      }
-      if (errorDetails.username) {
-        fieldErrors.username = Array.isArray(errorDetails.username) ? errorDetails.username.join(', ') : errorDetails.username;
-      }
-    }
-
-    setFieldErrors(fieldErrors);
-    setErrorMessage(
-      Object.keys(fieldErrors).length > 0
-        ? `Please correct the following: ${Object.entries(fieldErrors)
-            .map(([field, err]) => `${field}: ${err}`)
-            .join(', ')}`
-        : errorDetails || 'Failed to create user.'
-    );
-  } finally {
-    setIsLoading(false);
-  }
-  return false;
-};
+  };
 
   const handleGoBack = () => {
     const currentIndex = steps.findIndex((step) => step.key === activeKey);
     if (currentIndex > 0) {
       const prevKey = steps[currentIndex - 1].key;
       handleStepClick(prevKey);
-      setFieldErrors({});
       setFieldErrors({});
     }
   };
@@ -977,11 +782,11 @@ const profile = {
             </motion.li>
           );
         }
-        if (formData.emailUsername && tenantDomain) {
+        if (formData.email) {
           children.push(
             <motion.li key="email" variants={itemVariants}>
               <span>Email</span>
-              <p>{`${formData.emailUsername}@${tenantDomain}`}</p>
+              <p>{formData.email}</p>
             </motion.li>
           );
         }
@@ -1033,11 +838,11 @@ const profile = {
             </motion.li>
           );
         }
-        if (formData.zipCode) {
+        if (formData.zip) {
           children.push(
             <motion.li key="zip" variants={itemVariants}>
               <span>Zip Code</span>
-              <p>{formData.zipCode}</p>
+              <p>{formData.zip}</p>
             </motion.li>
           );
         }
@@ -1050,7 +855,7 @@ const profile = {
               </motion.li>
             );
           }
-          if (formData.proofRightToWork) {
+          if (formData.proofRightToWork && formData.rightToWorkUK === 'Yes') {
             children.push(
               <motion.li key="proofRightToWork" variants={itemVariants}>
                 <span>Proof of Right to Work</span>
@@ -1154,7 +959,7 @@ const profile = {
               </motion.li>
             );
           }
-          if (formData.careCertificateFile) {
+          if (formData.careCertificateFile && formData.careCertificate === 'Yes') {
             children.push(
               <motion.li key="careCertificateFile" variants={itemVariants}>
                 <span>Care Certificate File</span>
@@ -1178,7 +983,7 @@ const profile = {
               </motion.li>
             );
           }
-          if (formData.proofRegistration) {
+          if (formData.proofRegistration && formData.professionalRegistration === 'Yes') {
             children.push(
               <motion.li key="proofRegistration" variants={itemVariants}>
                 <span>Proof of Registration</span>
@@ -1230,14 +1035,6 @@ const profile = {
             </motion.li>
           );
         });
-        if (fieldErrors.modules) {
-          children.push(
-            <motion.li key="modulesError" className="error">
-              <span>Modules</span>
-              <p style={{ color: '#e53e3e' }}>{fieldErrors.modules}</p>
-            </motion.li>
-          );
-        }
         return <SectionList>{children}</SectionList>;
 
       case 'Set Login Credentials':
@@ -1466,7 +1263,7 @@ const profile = {
                       }`}
                       onClick={() => handleAccountTypeSelect('Staff')}
                     >
-                      <img src={AccountSelctStaff} />
+                       <img src={AccountSelctStaff} />
                       Staff Account
                     </button>
                   </div>
@@ -1650,18 +1447,20 @@ const profile = {
                       <p className="erro-message-Txt">{fieldErrors.rightToWorkUK}</p>
                     )}
                   </div>
-                  <div className="GHuh-Form-Input">
-                    <label>Upload Proof of Right to Work (e.g., Passport, BRP, Visa)</label>
-                    <input
-                      type="file"
-                      name="proofRightToWork"
-                      accept="image/*,application/pdf"
-                      onChange={(e) => handleFormFileChange(e, 'proofRightToWork')}
-                    />
-                    {fieldErrors.proofRightToWork && (
-                      <p className="erro-message-Txt">{fieldErrors.proofRightToWork}</p>
-                    )}
-                  </div>
+                  {formData.rightToWorkUK === 'Yes' && (
+                    <div className="GHuh-Form-Input">
+                      <label>Upload Proof of Right to Work (e.g., Passport, BRP, Visa)</label>
+                      <input
+                        type="file"
+                        name="proofRightToWork"
+                        accept="image/*,application/pdf"
+                        onChange={(e) => handleFormFileChange(e, 'proofRightToWork')}
+                      />
+                      {fieldErrors.proofRightToWork && (
+                        <p className="erro-message-Txt">{fieldErrors.proofRightToWork}</p>
+                      )}
+                    </div>
+                  )}
                   <div className="GHuh-Form-Input">
                     <label>Upload Valid Photo ID (e.g., Driving Licence, Passport)</label>
                     <input
@@ -1857,34 +1656,35 @@ const profile = {
                     </select>
                     {fieldErrors.hoursPerWeek && (
                       <p className="erro-message-Txt">{fieldErrors.hoursPerWeek}</p>
-                      )}
-                    </div>
+                    )}
                   </div>
                 </div>
+              </div>
 
-                <div
-                  className="UKiakks-Part-Box for-Stafff-Onlyy"
-                  style={{ display: formData.accountType === 'Staff' ? 'block' : 'none' }}
-                >
-                  <div className="UKiakks-Part-Header">
-                    <h3>Qualifications & Training</h3>
+              <div
+                className="UKiakks-Part-Box for-Stafff-Onlyy"
+                style={{ display: formData.accountType === 'Staff' ? 'block' : 'none' }}
+              >
+                <div className="UKiakks-Part-Header">
+                  <h3>Qualifications & Training</h3>
+                </div>
+                <div className="UKiakks-Part-Main">
+                  <div className="GHuh-Form-Input">
+                    <label>Do you have Care Certificate or NVQ?</label>
+                    <select
+                      name="careCertificate"
+                      value={formData.careCertificate}
+                      onChange={handleInputChange}
+                    >
+                      <option value="">Select option</option>
+                      <option value="Yes">Yes</option>
+                      <option value="No">No</option>
+                    </select>
+                    {fieldErrors.careCertificate && (
+                      <p className="erro-message-Txt">{fieldErrors.careCertificate}</p>
+                    )}
                   </div>
-                  <div className="UKiakks-Part-Main">
-                    <div className="GHuh-Form-Input">
-                      <label>Do you have Care Certificate or NVQ?</label>
-                      <select
-                        name="careCertificate"
-                        value={formData.careCertificate}
-                        onChange={handleInputChange}
-                      >
-                        <option value="">Select option</option>
-                        <option value="Yes">Yes</option>
-                        <option value="No">No</option>
-                      </select>
-                      {fieldErrors.careCertificate && (
-                        <p className="erro-message-Txt">{fieldErrors.careCertificate}</p>
-                      )}
-                    </div>
+                  {formData.careCertificate === 'Yes' && (
                     <div className="GHuh-Form-Input">
                       <label>Upload Care Certificate</label>
                       <input
@@ -1897,33 +1697,36 @@ const profile = {
                         <p className="erro-message-Txt">{fieldErrors.careCertificateFile}</p>
                       )}
                     </div>
-                    <div className="GHuh-Form-Input">
-                      <label>Upload Mandatory Training Certificates</label>
-                      <input
-                        type="file"
-                        name="trainingCertificates"
-                        accept="image/*,application/pdf"
-                        onChange={(e) => handleFormFileChange(e, 'trainingCertificates')}
-                      />
-                      {fieldErrors.trainingCertificates && (
-                        <p className="erro-message-Txt">{fieldErrors.trainingCertificates}</p>
-                      )}
-                    </div>
-                    <div className="GHuh-Form-Input">
-                      <label>Do you have any professional registration (e.g., NMC Pin for nurses)?</label>
-                      <select
-                        name="professionalRegistration"
-                        value={formData.professionalRegistration}
-                        onChange={handleInputChange}
-                      >
-                        <option value="">Select option</option>
-                        <option value="Yes">Yes</option>
-                        <option value="No">No</option>
-                      </select>
-                      {fieldErrors.professionalRegistration && (
-                        <p className="erro-message-Txt">{fieldErrors.professionalRegistration}</p>
-                      )}
-                    </div>
+                  )}
+                  <div className="GHuh-Form-Input">
+                    <label>Upload Mandatory Training Certificates</label>
+                    <input
+                      type="file"
+                      name="trainingCertificates"
+                      accept="image/*,application/pdf"
+                      onChange={(e) => handleFormFileChange(e, 'trainingCertificates')}
+                      multiple
+                    />
+                    {fieldErrors.trainingCertificates && (
+                      <p className="erro-message-Txt">{fieldErrors.trainingCertificates}</p>
+                    )}
+                  </div>
+                  <div className="GHuh-Form-Input">
+                    <label>Do you have any professional registration (e.g., NMC Pin for nurses)?</label>
+                    <select
+                      name="professionalRegistration"
+                      value={formData.professionalRegistration}
+                      onChange={handleInputChange}
+                    >
+                      <option value="">Select option</option>
+                      <option value="Yes">Yes</option>
+                      <option value="No">No</option>
+                    </select>
+                    {fieldErrors.professionalRegistration && (
+                      <p className="erro-message-Txt">{fieldErrors.professionalRegistration}</p>
+                    )}
+                  </div>
+                  {formData.professionalRegistration === 'Yes' && (
                     <div className="GHuh-Form-Input">
                       <label>Upload Proof of Registration</label>
                       <input
@@ -1936,150 +1739,148 @@ const profile = {
                         <p className="erro-message-Txt">{fieldErrors.proofRegistration}</p>
                       )}
                     </div>
-                  </div>
+                  )}
                 </div>
+              </div>
 
-                <div
-                  className="UKiakks-Part-Box for-Stafff-Onlyy"
-                  style={{ display: formData.accountType === 'Staff' ? 'block' : 'none' }}
-                >
-                  <div className="UKiakks-Part-Header">
-                    <h3>Bank Details (for Payroll)</h3>
-                  </div>
-                  <div className="UKiakks-Part-Main">
-                    <div className="GHuh-Form-Input">
-                      <label>Bank Name</label>
-                      <input
-                        type="text"
-                        name="bankName"
-                        placeholder="Enter bank name"
-                        value={formData.bankName}
-                        onChange={handleInputChange}
-                      />
-                      {fieldErrors.bankName && (
-                        <p className="erro-message-Txt">{fieldErrors.bankName}</p>
-                      )}
-                    </div>
-                    <div className="GHuh-Form-Input">
-                      <label>Account Holder Name</label>
-                      <input
-                        type="text"
-                        name="accountHolder"
-                        placeholder="Enter account holder name"
-                        value={formData.accountHolder}
-                        onChange={handleInputChange}
-                      />
-                      {fieldErrors.accountHolder && (
-                        <p className="erro-message-Txt">{fieldErrors.accountHolder}</p>
-                      )}
-                    </div>
-                    <div className="GHuh-Form-Input">
-                      <label>Sort Code</label>
-                      <input
-                        type="text"
-                        name="sortCode"
-                        placeholder="Enter sort code"
-                        value={formData.sortCode}
-                        onChange={handleInputChange}
-                      />
-                      {fieldErrors.sortCode && (
-                        <p className="erro-message-Txt">{fieldErrors.sortCode}</p>
-                      )}
-                    </div>
-                    <div className="GHuh-Form-Input">
-                      <label>Account Number</label>
-                      <input
-                        type="text"
-                        name="accountNumber"
-                        placeholder="Enter account number"
-                        value={formData.accountNumber}
-                        onChange={handleInputChange}
-                      />
-                      {fieldErrors.accountNumber && (
-                        <p className="erro-message-Txt">{fieldErrors.accountNumber}</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="UKiakks-Part-Box">
-                  <div className="UKiakks-Part-Header GGtg-Dah">
-                    <h3>Document Uploads</h3>
-                    <span onClick={handleAddCard} style={{ cursor: 'pointer' }}>
-                      <PlusIcon /> Add
-                    </span>
-                  </div>
-                  <div className="UKiakks-Part-Main" style={{ position: 'relative' }}>
-                    <div className="Uppol-CCards">{renderUploadCards()}</div>
-                  </div>
-                </div>
-              </motion.div>
-
-              <motion.div
-                className={`UKiakks-Part custom-scroll-bar ${
-                  activeKey === 'Permissions' ? 'Active-CChgba' : ''
-                }`}
-                style={{ display: activeKey === 'Permissions' ? 'block' : 'none' }}
-                variants={sectionVariants}
-                initial="hidden"
-                animate={activeKey === 'Permissions' ? 'visible' : 'hidden'}
-                exit="exit"
+              <div
+                className="UKiakks-Part-Box for-Stafff-Onlyy"
+                style={{ display: formData.accountType === 'Staff' ? 'block' : 'none' }}
               >
-                <div className="UKiakks-Part-Box">
-                  <div className="UKiakks-Part-Header">
-                    <h3>Permission Settings</h3>
+                <div className="UKiakks-Part-Header">
+                  <h3>Bank Details (for Payroll)</h3>
+                </div>
+                <div className="UKiakks-Part-Main">
+                  <div className="GHuh-Form-Input">
+                    <label>Bank Name</label>
+                    <input
+                      type="text"
+                      name="bankName"
+                      placeholder="Enter bank name"
+                      value={formData.bankName}
+                      onChange={handleInputChange}
+                    />
+                    {fieldErrors.bankName && (
+                      <p className="erro-message-Txt">{fieldErrors.bankName}</p>
+                    )}
                   </div>
-                  <div className="UKiakks-Part-Main">
-                    <ul className="checcck-lissT ouka-UUUkol">
-                      {Object.keys(permissions).map((permission) => (
-                        <li
-                          key={permission}
-                          className={permissions[permission] ? 'active-Li-Check' : ''}
-                          onClick={() => handlePermissionToggle(permission)}
-                          style={{ cursor: 'pointer' }}
-                        >
-                          {permission}
-                          <span></span>
-                        </li>
-                      ))}
-                    </ul>
+                  <div className="GHuh-Form-Input">
+                    <label>Account Holder Name</label>
+                    <input
+                      type="text"
+                      name="accountHolder"
+                      placeholder="Enter account holder name"
+                      value={formData.accountHolder}
+                      onChange={handleInputChange}
+                    />
+                    {fieldErrors.accountHolder && (
+                      <p className="erro-message-Txt">{fieldErrors.accountHolder}</p>
+                    )}
+                  </div>
+                  <div className="GHuh-Form-Input">
+                    <label>Sort Code</label>
+                    <input
+                      type="text"
+                      name="sortCode"
+                      placeholder="Enter sort code"
+                      value={formData.sortCode}
+                      onChange={handleInputChange}
+                    />
+                    {fieldErrors.sortCode && (
+                      <p className="erro-message-Txt">{fieldErrors.sortCode}</p>
+                    )}
+                  </div>
+                  <div className="GHuh-Form-Input">
+                    <label>Account Number</label>
+                    <input
+                      type="text"
+                      name="accountNumber"
+                      placeholder="Enter account number"
+                      value={formData.accountNumber}
+                      onChange={handleInputChange}
+                    />
+                    {fieldErrors.accountNumber && (
+                      <p className="erro-message-Txt">{fieldErrors.accountNumber}</p>
+                    )}
                   </div>
                 </div>
-              </motion.div>
+              </div>
 
-              <motion.div
-                className={`UKiakks-Part custom-scroll-bar ${
-                  activeKey === 'Set Login Credentials' ? 'Active-CChgba' : ''
-                }`}
-                style={{ display: activeKey === 'Set Login Credentials' ? 'block' : 'none' }}
-                variants={sectionVariants}
-                initial="hidden"
-                animate={activeKey === 'Set Login Credentials' ? 'visible' : 'hidden'}
-                exit="exit"
-              >
-                <div className="UKiakks-Part-Box">
-                  <div className="UKiakks-Part-Header">
-                    <h3>Login Settings</h3>
-                  </div>
-                  <div className="UKiakks-Part-Main">
-                    <div className="Grga-INpu-Grid">
-                
-                      <div className="GHuh-Form-Input">
-                        <label>Username</label>
-                        <input
-                          type="text"
-                          name="username"
-                          placeholder="Enter username (e.g., Olivia09)"
-                          value={formData.username}
-                          onChange={handleInputChange}
-                        />
-                        {fieldErrors.username && (
-                          <p className="erro-message-Txt">{fieldErrors.username}</p>
-                        )}
-                      </div>
+              <div className="UKiakks-Part-Box">
+                <div className="UKiakks-Part-Header GGtg-Dah">
+                  <h3>Document Uploads</h3>
+                  <span onClick={handleAddCard} style={{ cursor: 'pointer' }}>
+                    <PlusIcon /> Add
+                  </span>
+                </div>
+                <div className="UKiakks-Part-Main" style={{ position: 'relative' }}>
+                  <div className="Uppol-CCards">{renderUploadCards()}</div>
+                </div>
+              </div>
+            </motion.div>
 
+            <motion.div
+              className={`UKiakks-Part custom-scroll-bar ${
+                activeKey === 'Permissions' ? 'Active-CChgba' : ''
+              }`}
+              style={{ display: activeKey === 'Permissions' ? 'block' : 'none' }}
+              variants={sectionVariants}
+              initial="hidden"
+              animate={activeKey === 'Permissions' ? 'visible' : 'hidden'}
+              exit="exit"
+            >
+              <div className="UKiakks-Part-Box">
+                <div className="UKiakks-Part-Header">
+                  <h3>Permission Settings</h3>
+                </div>
+                <div className="UKiakks-Part-Main">
+                  <ul className="checcck-lissT ouka-UUUkol">
+                    {Object.keys(permissions).map((permission) => (
+                      <li
+                        key={permission}
+                        className={permissions[permission] ? 'active-Li-Check' : ''}
+                        onClick={() => handlePermissionToggle(permission)}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        {permission}
+                        <span></span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </motion.div>
 
-                            <div className="GHuh-Form-Input">
+            <motion.div
+              className={`UKiakks-Part custom-scroll-bar ${
+                activeKey === 'Set Login Credentials' ? 'Active-CChgba' : ''
+              }`}
+              style={{ display: activeKey === 'Set Login Credentials' ? 'block' : 'none' }}
+              variants={sectionVariants}
+              initial="hidden"
+              animate={activeKey === 'Set Login Credentials' ? 'visible' : 'hidden'}
+              exit="exit"
+            >
+              <div className="UKiakks-Part-Box">
+                <div className="UKiakks-Part-Header">
+                  <h3>Login Settings</h3>
+                </div>
+                <div className="UKiakks-Part-Main">
+                  <div className="Grga-INpu-Grid">
+                    <div className="GHuh-Form-Input">
+                      <label>Username</label>
+                      <input
+                        type="text"
+                        name="username"
+                        placeholder="Enter username (e.g., Olivia09)"
+                        value={formData.username}
+                        onChange={handleInputChange}
+                      />
+                      {fieldErrors.username && (
+                        <p className="erro-message-Txt">{fieldErrors.username}</p>
+                      )}
+                    </div>
+                    <div className="GHuh-Form-Input">
                       <label>Password</label>
                       <div className="ool-IINpa">
                         <input
@@ -2106,70 +1907,64 @@ const profile = {
                         <p className="erro-message-Txt">{fieldErrors.password}</p>
                       )}
                     </div>
-
+                  </div>
+                  <div className="GHuh-Form-Input">
+                    <label>Two-Factor Auth</label>
+                    <select
+                      name="twoFactor"
+                      value={formData.twoFactor}
+                      onChange={handleInputChange}
+                    >
+                      <option value="">Select option</option>
+                      <option value="Enable">Enable</option>
+                      <option value="Disable">Disable</option>
+                    </select>
+                    {fieldErrors.twoFactor && (
+                      <p className="erro-message-Txt">{fieldErrors.twoFactor}</p>
+                    )}
+                  </div>
+                  <div className="Grga-INpu-Grid">
+                    <div className="GHuh-Form-Input">
+                      <label>Dashboard</label>
+                      <select
+                        name="dashboard"
+                        value={formData.dashboard}
+                        onChange={handleInputChange}
+                      >
+                        <option value="">Select dashboard</option>
+                        <option value="Client">Client</option>
+                        <option value="Staff">Staff</option>
+                        <option value="Admin">Admin</option>
+                        <option value="Sub Admin">Sub Admin</option>
+                      </select>
+                      {fieldErrors.dashboard && (
+                        <p className="erro-message-Txt">{fieldErrors.dashboard}</p>
+                      )}
                     </div>
-
-                       <div className="GHuh-Form-Input">
-                        <label>Two-Factor Auth</label>
-                        <select
-                          name="twoFactor"
-                          value={formData.twoFactor}
-                          onChange={handleInputChange}
-                        >
-                          <option value="">Select option</option>
-                          <option value="Enable">Enable</option>
-                          <option value="Disable">Disable</option>
-                        </select>
-                        {fieldErrors.twoFactor && (
-                          <p className="erro-message-Txt">{fieldErrors.twoFactor}</p>
-                        )}
-                      </div>
-              
-                    <div className="Grga-INpu-Grid">
-                      
-                            <div className="GHuh-Form-Input">
-                        <label>Dashboard</label>
-                        <select
-                          name="dashboard"
-                          value={formData.dashboard}
-                          onChange={handleInputChange}
-                        >
-                          <option value="">Select dashboard</option>
-                          <option value="Client">Client</option>
-                          <option value="Staff">Staff</option>
-                          <option value="Admin">Admin</option>
-                          <option value="Sub Admin">Sub Admin</option>
-                        </select>
-                        {fieldErrors.dashboard && (
-                          <p className="erro-message-Txt">{fieldErrors.dashboard}</p>
-                        )}
-                      </div>
-
-                      <div className="GHuh-Form-Input">
-                        <label>Status</label>
-                        <select
-                          name="status"
-                          value={formData.status}
-                          onChange={handleInputChange}
-                        >
-                          <option value="">Select status</option>
-                          <option value="Active">Active</option>
-                          <option value="Inactive">Inactive</option>
-                        </select>
-                        {fieldErrors.status && (
-                          <p className="erro-message-Txt">{fieldErrors.status}</p>
-                        )}
-                      </div>
-
+                    <div className="GHuh-Form-Input">
+                      <label>Status</label>
+                      <select
+                        name="status"
+                        value={formData.status}
+                        onChange={handleInputChange}
+                      >
+                        <option value="">Select status</option>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                      </select>
+                      {fieldErrors.status && (
+                        <p className="erro-message-Txt">{fieldErrors.status}</p>
+                      )}
                     </div>
                   </div>
                 </div>
-              </motion.div>
-            </div>
+              </div>
+            </motion.div>
           </div>
         </div>
       </div>
-    );
-  };
+    </div>
+  );
+};
 
 export default AddUser;
