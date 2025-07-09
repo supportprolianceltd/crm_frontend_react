@@ -117,26 +117,55 @@ const AddUser = () => {
     'Access HR': false,
     'Access Payroll': false,
   });
-  const [formData, setFormData] = useState({
-    emailUsername: '',
-    firstName: '',
-    lastName: '',
-    phone: '',
-    gender: '',
-    dob: '',
-    street: '',
-    city: '',
-    state: '',
-    zip: '',
-    role: '',
-    department: '',
-    dashboard: '',
-    accessLevel: '',
-    username: '',
-    password: '',
-    status: '',
-    twoFactor: '',
-  });
+
+const [formData, setFormData] = useState({
+  emailUsername: '',
+  firstName: '',
+  lastName: '',
+  phone: '',
+  gender: '',
+  dob: '',
+  street: '',
+  city: '',
+  state: '',
+  zipCode: '', // Correct
+  role: '',
+  department: '',
+  dashboard: '',
+  accessLevel: '',
+  username: '',
+  password: '',
+  status: '',
+  twoFactor: '',
+  emailDomain: '',
+});
+
+// Update useEffect to set emailDomain
+useEffect(() => {
+  const loadData = async () => {
+    try {
+      // Fetch modules
+      const moduleData = await fetchModules();
+      setModules(moduleData);
+
+      // Fetch tenant data
+      const tenantData = await fetchTenant();
+      const tenant = tenantData.find((t) => t.schema_name === 'proliance');
+      if (tenant) {
+        const primaryDomain = tenant.domains.find((d) => d.is_primary)?.domain || '';
+        setTenantDomain(primaryDomain);
+        setFormData(prev => ({ ...prev, emailDomain: primaryDomain }));
+      } else {
+        throw new Error('Proliance tenant not found');
+      }
+    } catch (error) {
+      setErrorMessage(error.message);
+      console.error('Error fetching data:', error);
+    }
+  };
+  loadData();
+}, []);
+
   const [showPassword, setShowPassword] = useState(false);
 
   const titleInputRefs = useRef({});
@@ -165,29 +194,29 @@ const AddUser = () => {
   const scrollTop = useRef(0);
 
   // Fetch modules and tenant data on component mount
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        // Fetch modules
-        const moduleData = await fetchModules();
-        setModules(moduleData);
+  // useEffect(() => {
+  //   const loadData = async () => {
+  //     try {
+  //       // Fetch modules
+  //       const moduleData = await fetchModules();
+  //       setModules(moduleData);
 
-        // Fetch tenant data
-        const tenantData = await fetchTenant();
-        const tenant = tenantData.find((t) => t.schema_name === 'proliance');
-        if (tenant) {
-          const primaryDomain = tenant.domains.find((d) => d.is_primary)?.domain || '';
-          setTenantDomain(primaryDomain);
-        } else {
-          throw new Error('Proliance tenant not found');
-        }
-      } catch (error) {
-        setErrorMessage(error.message);
-        console.error('Error fetching data:', error);
-      }
-    };
-    loadData();
-  }, []);
+  //       // Fetch tenant data
+  //       const tenantData = await fetchTenant();
+  //       const tenant = tenantData.find((t) => t.schema_name === 'proliance');
+  //       if (tenant) {
+  //         const primaryDomain = tenant.domains.find((d) => d.is_primary)?.domain || '';
+  //         setTenantDomain(primaryDomain);
+  //       } else {
+  //         throw new Error('Proliance tenant not found');
+  //       }
+  //     } catch (error) {
+  //       setErrorMessage(error.message);
+  //       console.error('Error fetching data:', error);
+  //     }
+  //   };
+  //   loadData();
+  // }, []);
 
   useEffect(() => {
     if (errorMessage || successMessage) {
@@ -366,51 +395,52 @@ const AddUser = () => {
     setShowPassword((prev) => !prev);
   };
 
-  const resetForm = () => {
-    setFormData({
-      emailUsername: '',
-      firstName: '',
-      lastName: '',
-      phone: '',
-      gender: '',
-      dob: '',
-      street: '',
-      city: '',
-      state: '',
-      zip: '',
-      role: '',
-      department: '',
-      dashboard: '',
-      accessLevel: '',
-      username: '',
-      password: '',
-      status: '',
-      twoFactor: '',
-    });
-    setUploadCards([
-      {
-        id: Date.now(),
-        selectedFile: null,
-        previewUrl: null,
-        fileSize: '0 B',
-        fileName: '',
-      },
-    ]);
-    setPermissions({
-      'Access Recruitment': false,
-      'Access Compliance': false,
-      'Access Training': false,
-      'Access Assets Management': false,
-      'Access Rostering': false,
-      'Access HR': false,
-      'Access Payroll': false,
-    });
-    setShowPassword(false);
-    setFieldErrors({});
-    Object.values(fileInputRefs.current).forEach((input) => {
-      if (input) input.value = '';
-    });
-  };
+ const resetForm = () => {
+  setFormData({
+    emailUsername: '',
+    firstName: '',
+    lastName: '',
+    phone: '',
+    gender: '',
+    dob: '',
+    street: '',
+    city: '',
+    state: '',
+    zipCode: '', // Fixed
+    role: '',
+    department: '',
+    dashboard: '',
+    accessLevel: '',
+    username: '',
+    password: '',
+    status: '',
+    twoFactor: '',
+    emailDomain: tenantDomain,
+  });
+  setUploadCards([
+    {
+      id: Date.now(),
+      selectedFile: null,
+      previewUrl: null,
+      fileSize: '0 B',
+      fileName: '',
+    },
+  ]);
+  setPermissions({
+    'Access Recruitment': false,
+    'Access Compliance': false,
+    'Access Training': false,
+    'Access Assets Management': false,
+    'Access Rostering': false,
+    'Access HR': false,
+    'Access Payroll': false,
+  });
+  setShowPassword(false);
+  setFieldErrors({});
+  Object.values(fileInputRefs.current).forEach((input) => {
+    if (input) input.value = '';
+  });
+};
 
   // Validation functions for each step
   const validateDetailsStep = () => {
@@ -424,7 +454,7 @@ const AddUser = () => {
       street: 'Street is required',
       city: 'City is required',
       state: 'State is required',
-      zip: 'Zip Code is required',
+      zipCode: 'Zip Code is required',
     };
     const errors = {};
     let isValid = true;
@@ -503,145 +533,269 @@ const AddUser = () => {
     return isValid;
   };
 
-  const handleContinue = async () => {
-    const currentIndex = steps.findIndex((step) => step.key === activeKey);
-
-    // Validate current step before proceeding
-    let isValid = false;
-    switch (activeKey) {
-      case 'Details':
-        isValid = validateDetailsStep();
-        break;
-      case 'Role Assignment':
-        isValid = validateRoleAssignmentStep();
-        break;
-      case 'Set Login Credentials':
-        isValid = validateLoginCredentialsStep();
-        break;
-      default:
-        isValid = true; // Permissions step has no required fields
-    }
-
-    if (!isValid) {
-      return; // Stop if validation fails
-    }
-
-    // Clear any existing error message and field errors
-    setErrorMessage(null);
+// AddUser.jsx (only update the handleContinue function; rest remains unchanged)
+const handleContinue = async () => {
+  try {
+    setIsLoading(true);
+    setErrorMessage('');
     setFieldErrors({});
 
-    // Proceed to the next step or create user
-    if (currentIndex < steps.length - 1) {
-      const nextKey = steps[currentIndex + 1].key;
-      handleStepClick(nextKey);
-    } else if (currentIndex === steps.length - 1) {
-      setIsLoading(true);
-      try {
-        // Map permissions to module IDs
-        const permissionToModule = {
-          'Access Recruitment': 'Talent Engine',
-          'Access Compliance': 'Compliance',
-          'Access Training': 'Training',
-          'Access Assets Management': 'Assets Management',
-          'Access Rostering': 'Workforce',
-          'Access HR': 'Workforce',
-          'Access Payroll': 'Payroll',
-        };
+    // Define required fields per step
+    const stepFields = {
+      Details: [
+        { key: 'emailUsername', value: formData.emailUsername, label: 'Email username' },
+        { key: 'firstName', value: formData.firstName, label: 'First name' },
+        { key: 'lastName', value: formData.lastName, label: 'Last name' },
+        { key: 'phone', value: formData.phone, label: 'Phone' },
+        { key: 'gender', value: formData.gender, label: 'Gender' },
+        { key: 'dob', value: formData.dob, label: 'Date of birth' },
+        { key: 'street', value: formData.street, label: 'Street' },
+        { key: 'city', value: formData.city, label: 'City' },
+        { key: 'state', value: formData.state, label: 'State' },
+        { key: 'zipCode', value: formData.zipCode, label: 'Zip code' },
+      ],
+      'Role Assignment': [
+        { key: 'role', value: formData.role, label: 'Role' },
+        { key: 'department', value: formData.department, label: 'Department' },
+        { key: 'dashboard', value: formData.dashboard, label: 'Dashboard' },
+        { key: 'accessLevel', value: formData.accessLevel, label: 'Access level' },
+      ],
+      Permissions: [],
+      'Set Login Credentials': [
+        { key: 'username', value: formData.username, label: 'Username' },
+        { key: 'password', value: formData.password, label: 'Password' },
+        { key: 'status', value: formData.status, label: 'Status' },
+        { key: 'twoFactor', value: formData.twoFactor, label: 'Two-factor authentication' },
+      ],
+    };
 
-        const selectedModules = Object.keys(permissions)
-          .filter((key) => permissions[key])
-          .map((key) => {
-            const moduleName = permissionToModule[key];
-            const module = modules.find((m) => m.name === moduleName);
-            return module ? module.id : null;
-          })
-          .filter(Boolean);
+    // Determine which steps to validate based on current activeKey
+    const currentIndex = steps.findIndex(step => step.key === activeKey);
+    const stepsToValidate = steps.slice(0, currentIndex + 1).map(step => step.key);
 
-        // Prepare FormData for API request
-        const formDataToSend = new FormData();
-        // Combine emailUsername and tenantDomain for the email field
-        const fullEmail = formData.emailUsername && tenantDomain ? `${formData.emailUsername}@${tenantDomain}` : '';
-        formDataToSend.append('email', fullEmail);
-        formDataToSend.append('password', formData.password);
-        formDataToSend.append('username', formData.username);
-        formDataToSend.append('first_name', formData.firstName);
-        formDataToSend.append('last_name', formData.lastName);
-        formDataToSend.append('role', formData.role.toLowerCase());
-        formDataToSend.append('job_role', formData.department); // Map department to job_role
-        formDataToSend.append('dashboard', formData.dashboard.toLowerCase());
-        formDataToSend.append('access_level', formData.accessLevel.toLowerCase().replace(' ', '_'));
-        formDataToSend.append('status', formData.status.toLowerCase());
-        formDataToSend.append('two_factor', formData.twoFactor.toLowerCase());
+    // Collect all required fields for the steps to validate
+    let missingFields = [];
+    const errors = {};
+    stepsToValidate.forEach(stepKey => {
+      const fields = stepFields[stepKey] || [];
+      const stepMissing = fields.filter(field => !field.value);
+      stepMissing.forEach(field => {
+        errors[field.key] = `${field.label} is required.`;
+      });
+      missingFields = [...missingFields, ...stepMissing];
+    });
 
-        // Send profile fields individually
-        const profile = {
-          phone: formData.phone,
-          gender: formData.gender,
-          dob: formData.dob,
-          street: formData.street,
-          city: formData.city,
-          state: formData.state,
-          zip_code: formData.zip,
-          department: formData.department,
-        };
-        Object.keys(profile).forEach((key) => {
-          if (profile[key]) {
-            formDataToSend.append(`profile[${key}]`, profile[key]);
-          }
-        });
+    // Validate email username format
+    if (formData.emailUsername && !/^[a-zA-Z0-9._-]+$/i.test(formData.emailUsername)) {
+      errors.emailUsername = 'Email username can only contain letters, numbers, dots, underscores, or hyphens.';
+      missingFields.push({ key: 'emailUsername', label: 'Email username' });
+    }
 
-        // Send modules as individual fields
-        selectedModules.forEach((moduleId, index) => {
-          formDataToSend.append(`modules[${index}]`, moduleId);
-        });
+    // Validate password length (only if on Set Login Credentials)
+    if (activeKey === 'Set Login Credentials' && formData.password && formData.password.length < 8) {
+      errors.password = 'Password must be at least 8 characters long.';
+      missingFields.push({ key: 'password', label: 'Password' });
+    }
 
-        // Append documents
-        uploadCards.forEach((card, index) => {
-          if (card.selectedFile && card.fileName) {
-            formDataToSend.append(`documents[${index}][title]`, card.fileName);
-            formDataToSend.append(`documents[${index}][file]`, card.selectedFile);
-          }
-        });
+    if (missingFields.length > 0) {
+      setFieldErrors(errors);
+      setErrorMessage(
+        `Please fill in the following required fields: ${missingFields.map(field => field.label).join(', ')}.`
+      );
+      setIsLoading(false);
+      return false;
+    }
 
-        // Log the FormData for debugging
-        const formDataEntries = {};
-        for (let [key, value] of formDataToSend.entries()) {
-          formDataEntries[key] = value instanceof File ? `${value.name} (${value.size} bytes)` : value;
-        }
-        console.log('FormData being sent:', formDataEntries);
+    // Proceed to next step if not the last step
+    const isLastStep = currentIndex === steps.length - 1;
+    if (!isLastStep) {
+      const nextIndex = currentIndex + 1;
+      handleStepClick(steps[nextIndex].key);
+      setIsLoading(false);
+      return false;
+    }
 
-        const response = await createUser(formDataToSend);
-        setSuccessMessage(response.message || `User ${fullEmail} created successfully.`);
-        resetForm();
-        handleStepClick(steps[0].key);
-      } catch (error) {
-        console.error('handleContinue error:', {
-          message: error.message,
-          stack: error.stack,
-        });
-        setErrorMessage(error.message);
-        // Map backend validation errors to form fields
-        if (error.message.includes('email:')) {
-          const emailError = error.message.match(/email: ([^;]+)/)?.[1] || 'Invalid email';
-          setFieldErrors((prev) => ({ ...prev, emailUsername: emailError }));
-        }
-        if (error.message.includes('username:')) {
-          const usernameError = error.message.match(/username: ([^;]+)/)?.[1] || 'Invalid username';
-          setFieldErrors((prev) => ({ ...prev, username: usernameError }));
-        }
-        if (error.message.includes('profile:')) {
-          const profileError = error.message.match(/profile: ([^;]+)/)?.[1] || 'Invalid profile data';
-          setFieldErrors((prev) => ({ ...prev, profile: profileError }));
-        }
-        if (error.message.includes('modules:')) {
-          const modulesError = error.message.match(/modules: ([^;]+)/)?.[1] || 'Invalid modules data';
-          setFieldErrors((prev) => ({ ...prev, modules: modulesError }));
-        }
-      } finally {
+    // Construct full email
+    const fullEmail = tenantDomain
+      ? `${formData.emailUsername}@${tenantDomain}`.toLowerCase()
+      : formData.emailUsername;
+
+    // Construct FormData (only sent on last step)
+    const formDataToSend = new FormData();
+
+    // Append top-level fields
+    formDataToSend.append('email', fullEmail);
+    formDataToSend.append('password', formData.password);
+    formDataToSend.append('username', formData.username);
+    formDataToSend.append('first_name', formData.firstName);
+    formDataToSend.append('last_name', formData.lastName);
+    formDataToSend.append('role', formData.role);
+    formDataToSend.append('job_role', formData.department);
+    formDataToSend.append('dashboard', formData.dashboard);
+    formDataToSend.append('access_level', formData.accessLevel);
+    formDataToSend.append('status', formData.status);
+    formDataToSend.append('two_factor', formData.twoFactor);
+
+    // Append profile fields
+// In handleContinue function:
+const profile = {
+  phone: formData.phone,
+  gender: formData.gender,
+  dob: formData.dob,
+  street: formData.street,
+  city: formData.city,
+  state: formData.state,
+  zip_code: formData.zipCode,  // Changed from zipCode to zip_code
+  department: formData.department,
+};
+    Object.keys(profile).forEach(key => {
+      formDataToSend.append(`profile[${key}]`, profile[key] || '');
+    });
+
+    // Append modules
+    const selectedModuleIds = Object.keys(permissions)
+      .filter(key => permissions[key])
+      .map(key => {
+        const module = modules.find(m => m.name === key.replace('Access ', ''));
+        return module ? module.id : null;
+      })
+      .filter(id => id !== null);
+      
+    selectedModuleIds.forEach((moduleId, index) => {
+      formDataToSend.append(`modules[${index}]`, moduleId);
+    });
+
+    // Validate and append documents
+    const validDocuments = uploadCards.filter(card => card.selectedFile && card.fileName);
+    validDocuments.forEach((card, index) => {
+      if (!(card.selectedFile instanceof File)) {
+        console.error(`Document ${index} is not a valid File object:`, card.selectedFile);
+        setFieldErrors(prev => ({
+          ...prev,
+          documents: `Document ${card.fileName} is not a valid file.`,
+        }));
+        setErrorMessage(`Document ${card.fileName} is not a valid file.`);
         setIsLoading(false);
+        return false;
+      }
+      formDataToSend.append(`documents[${index}][title]`, card.fileName);
+      formDataToSend.append(`documents[${index}][file]`, card.selectedFile);
+    });
+
+    if (validDocuments.length === 0 && uploadCards.some(card => card.selectedFile || card.fileName)) {
+      setFieldErrors(prev => ({
+        ...prev,
+        documents: 'All documents must have a valid file and title.',
+      }));
+      setErrorMessage('All documents must have a valid file and title.');
+      setIsLoading(false);
+      return false;
+    }
+
+    // Log FormData for debugging
+    const formDataEntries = {};
+    for (let [key, value] of formDataToSend.entries()) {
+      formDataEntries[key] = value instanceof File ? `${value.name} (${value.size} bytes)` : value;
+    }
+    console.log('FormData being sent:', formDataEntries);
+
+    // Additional logging for files
+    console.log('Files in FormData:', Array.from(formDataToSend.entries())
+      .filter(([key]) => key.includes('[file]'))
+      .map(([key, value]) => ({
+        key,
+        name: value.name,
+        size: value.size,
+        type: value instanceof File ? 'File' : typeof value,
+      }))
+    );
+
+    // Send request
+    const response = await createUser(formDataToSend);
+    setSuccessMessage(response.message || `User ${fullEmail} created successfully.`);
+    resetForm();
+    handleStepClick(steps[0].key);
+  } catch (error) {
+    console.error('handleContinue error:', {
+      message: error.message,
+      stack: error.stack,
+    });
+    const errorDetails = error.response?.data?.message || error.message;
+    const fieldErrors = {};
+
+    if (typeof errorDetails === 'string') {
+      if (errorDetails.includes('email:')) {
+        fieldErrors.emailUsername = errorDetails.match(/email: ([^;]+)/)?.[1] || 'Invalid email';
+      }
+      if (errorDetails.includes('username:')) {
+        fieldErrors.username = errorDetails.match(/username: ([^;]+)/)?.[1] || 'Invalid username';
+      }
+      if (errorDetails.includes('profile:')) {
+        const profileError = errorDetails.match(/profile: ([^;]+)/)?.[1] || 'Invalid profile data';
+        fieldErrors.profile = profileError;
+        const profileFieldErrors = errorDetails.match(/profile\[([^\]]+)\]: ([^;]+)/g);
+        if (profileFieldErrors) {
+          profileFieldErrors.forEach(err => {
+            const [, field, message] = err.match(/profile\[([^\]]+)\]: ([^;]+)/);
+            const fieldMap = { zip_code: 'zipCode' };
+            fieldErrors[fieldMap[field] || field] = message;
+          });
+        }
+      }
+      if (errorDetails.includes('documents:')) {
+        const docErrors = errorDetails.match(/documents\[(\d+)\]\[([^\]]+)\]: ([^;]+)/g);
+        if (docErrors) {
+          const formattedErrors = docErrors.map(err => {
+            const [, index, field, message] = err.match(/documents\[(\d+)\]\[([^\]]+)\]: ([^;]+)/);
+            const fileName = uploadCards[index]?.fileName || `Document ${parseInt(index) + 1}`;
+            return `${fileName}: ${field} ${message}`;
+          });
+          fieldErrors.documents = formattedErrors.join('; ');
+        } else {
+          fieldErrors.documents = errorDetails.match(/documents: ([^;]+)/)?.[1] || 'Invalid document data';
+        }
+      }
+    } else if (typeof errorDetails === 'object') {
+      // Handle structured errors from the backend
+      if (errorDetails.profile) {
+        Object.entries(errorDetails.profile).forEach(([field, errors]) => {
+          const fieldMap = { zip_code: 'zipCode' };
+          fieldErrors[fieldMap[field] || field] = Array.isArray(errors) ? errors.join(', ') : errors;
+        });
+      }
+      if (errorDetails.documents) {
+        const docErrors = errorDetails.documents.map((doc, index) => {
+          const fileName = uploadCards[index]?.fileName || `Document ${index + 1}`;
+          if (typeof doc === 'object') {
+            return Object.entries(doc).map(([field, errors]) => 
+              `${fileName}: ${field} ${Array.isArray(errors) ? errors.join(', ') : errors}`
+            ).join('; ');
+          }
+          return `${fileName}: ${doc}`;
+        });
+        fieldErrors.documents = docErrors.join('; ');
+      }
+      if (errorDetails.email) {
+        fieldErrors.emailUsername = Array.isArray(errorDetails.email) ? errorDetails.email.join(', ') : errorDetails.email;
+      }
+      if (errorDetails.username) {
+        fieldErrors.username = Array.isArray(errorDetails.username) ? errorDetails.username.join(', ') : errorDetails.username;
       }
     }
-  };
+
+    setFieldErrors(fieldErrors);
+    setErrorMessage(
+      Object.keys(fieldErrors).length > 0
+        ? `Please correct the following: ${Object.entries(fieldErrors)
+            .map(([field, err]) => `${field}: ${err}`)
+            .join(', ')}`
+        : errorDetails || 'Failed to create user.'
+    );
+  } finally {
+    setIsLoading(false);
+  }
+  return false;
+};
 
   const handleGoBack = () => {
     const currentIndex = steps.findIndex((step) => step.key === activeKey);
@@ -820,11 +974,11 @@ const AddUser = () => {
             </motion.li>
           );
         }
-        if (formData.zip) {
+        if (formData.zipCode) {
           children.push(
-            <motion.li key="zip">
+            <motion.li key="zipCode">
               <span>Zip Code</span>
-              <p>{formData.zip}</p>
+              <p>{formData.zipCode}</p>
             </motion.li>
           );
         }
@@ -1153,21 +1307,22 @@ const AddUser = () => {
                     )}
                   </div>
                   <div className="Grga-INpu-Grid">
-                    <div className="GHuh-Form-Input">
-                      <label>Phone</label>
-                      <input
-                        type='tel'
-                        name="phone"
-                        placeholder='Enter phone number (e.g., +1 415 555 2671)'
-                        value={formData.phone}
-                        onChange={handleInputChange}
-                      />
-                      {fieldErrors.phone && (
-                        <p className='erro-message-Txt'>
-                          {fieldErrors.phone}
-                        </p>
-                      )}
-                    </div>
+                  <div className="GHuh-Form-Input">
+                    <label>Phone</label>
+                    <input
+                      type='tel'
+                      name="phone"
+                      placeholder='Enter phone number (e.g., +1 415 555 2671)'
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                    />
+                    {fieldErrors.phone && (
+                      <p className='erro-message-Txt'>
+                        {fieldErrors.phone}
+                      </p>
+                    )}
+                  </div>
+
                     <div className="GHuh-Form-Input">
                       <label>Gender</label>
                       <select
@@ -1250,14 +1405,14 @@ const AddUser = () => {
                     <label>Zip Code</label>
                     <input
                       type='text'
-                      name="zip"
+                      name="zipCode"
                       placeholder='Enter zip code (e.g., 12345)'
-                      value={formData.zip}
+                      value={formData.zipCode}
                       onChange={handleInputChange}
                     />
-                    {fieldErrors.zip && (
+                    {fieldErrors.zipCode && (
                       <p className='erro-message-Txt'>
-                        {fieldErrors.zip}
+                        {fieldErrors.zipCode}
                       </p>
                     )}
                   </div>
@@ -1272,6 +1427,11 @@ const AddUser = () => {
                 </div>
                 <div className="UKiakks-Part-Main" style={{ position: 'relative' }}>
                   <div className="Uppol-CCards">{renderUploadCards()}</div>
+                  {fieldErrors.documents && (
+                    <p className='erro-message-Txt' style={{ color: '#e53e3e', marginTop: '10px' }}>
+                      {fieldErrors.documents}
+                    </p>
+                  )}
                 </div>
               </div>
             </motion.div>
