@@ -9,9 +9,10 @@ import {
   ArrowPathIcon,
   CloudArrowUpIcon,
 } from '@heroicons/react/24/outline';
+import { motion, useInView } from 'framer-motion';
 import DefaulUser from '../../../assets/Img/memberIcon.png';
 import pdfIcon from '../../../assets/icons/pdf.png';
-import { motion, useInView } from 'framer-motion';
+import { fetchModules, fetchTenant, createUser } from './HomeService';
 
 const steps = [
   { key: 'Details', title: 'Details' },
@@ -104,20 +105,22 @@ const AddUser = () => {
   const [errorMessage, setErrorMessage] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [fieldErrors, setFieldErrors] = useState({}); // New state for field-specific errors
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [modules, setModules] = useState([]);
+  const [tenantDomain, setTenantDomain] = useState('');
   const [permissions, setPermissions] = useState({
     'Access Recruitment': false,
     'Access Compliance': false,
     'Access Training': false,
-    'Access Assets management': false,
+    'Access Assets Management': false,
     'Access Rostering': false,
     'Access HR': false,
     'Access Payroll': false,
   });
   const [formData, setFormData] = useState({
+    emailUsername: '',
     firstName: '',
     lastName: '',
-    email: '',
     phone: '',
     gender: '',
     dob: '',
@@ -160,6 +163,31 @@ const AddUser = () => {
   const isDragging = useRef(false);
   const startY = useRef(0);
   const scrollTop = useRef(0);
+
+  // Fetch modules and tenant data on component mount
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        // Fetch modules
+        const moduleData = await fetchModules();
+        setModules(moduleData);
+
+        // Fetch tenant data
+        const tenantData = await fetchTenant();
+        const tenant = tenantData.find((t) => t.schema_name === 'proliance');
+        if (tenant) {
+          const primaryDomain = tenant.domains.find((d) => d.is_primary)?.domain || '';
+          setTenantDomain(primaryDomain);
+        } else {
+          throw new Error('Proliance tenant not found');
+        }
+      } catch (error) {
+        setErrorMessage(error.message);
+        console.error('Error fetching data:', error);
+      }
+    };
+    loadData();
+  }, []);
 
   useEffect(() => {
     if (errorMessage || successMessage) {
@@ -326,7 +354,6 @@ const AddUser = () => {
       ...prev,
       [name]: value,
     }));
-    // Clear error for the field when user types
     if (value) {
       setFieldErrors((prev) => ({
         ...prev,
@@ -341,9 +368,9 @@ const AddUser = () => {
 
   const resetForm = () => {
     setFormData({
+      emailUsername: '',
       firstName: '',
       lastName: '',
-      email: '',
       phone: '',
       gender: '',
       dob: '',
@@ -373,13 +400,13 @@ const AddUser = () => {
       'Access Recruitment': false,
       'Access Compliance': false,
       'Access Training': false,
-      'Access Assets management': false,
+      'Access Assets Management': false,
       'Access Rostering': false,
       'Access HR': false,
       'Access Payroll': false,
     });
     setShowPassword(false);
-    setFieldErrors({}); // Clear all field errors
+    setFieldErrors({});
     Object.values(fileInputRefs.current).forEach((input) => {
       if (input) input.value = '';
     });
@@ -388,9 +415,9 @@ const AddUser = () => {
   // Validation functions for each step
   const validateDetailsStep = () => {
     const requiredFields = {
+      emailUsername: 'Email username is required',
       firstName: 'First Name is required',
       lastName: 'Last Name is required',
-      email: 'Email is required',
       phone: 'Phone is required',
       gender: 'Gender is required',
       dob: 'Date of Birth is required',
@@ -409,6 +436,12 @@ const AddUser = () => {
       }
     });
 
+    // Validate email username format
+    if (formData.emailUsername && !/^[a-zA-Z0-9._-]+$/i.test(formData.emailUsername)) {
+      errors.emailUsername = 'Email username can only contain letters, numbers, dots, underscores, or hyphens';
+      isValid = false;
+    }
+
     setFieldErrors(errors);
     if (!isValid) {
       setErrorMessage('Please fill in all required fields.');
@@ -417,13 +450,27 @@ const AddUser = () => {
   };
 
   const validateRoleAssignmentStep = () => {
-    if (!formData.dashboard) {
-      setFieldErrors({ dashboard: 'Dashboard selection is required' });
-      setErrorMessage('Please select a dashboard type.');
-      return false;
+    const requiredFields = {
+      role: 'Role is required',
+      department: 'Department is required',
+      dashboard: 'Dashboard selection is required',
+      accessLevel: 'Access Level is required',
+    };
+    const errors = {};
+    let isValid = true;
+
+    Object.keys(requiredFields).forEach((field) => {
+      if (!formData[field]) {
+        errors[field] = requiredFields[field];
+        isValid = false;
+      }
+    });
+
+    setFieldErrors(errors);
+    if (!isValid) {
+      setErrorMessage('Please fill in all required fields.');
     }
-    setFieldErrors({});
-    return true;
+    return isValid;
   };
 
   const validateLoginCredentialsStep = () => {
@@ -443,6 +490,12 @@ const AddUser = () => {
       }
     });
 
+    // Additional password validation
+    if (formData.password && formData.password.length < 8) {
+      errors.password = 'Password must be at least 8 characters long';
+      isValid = false;
+    }
+
     setFieldErrors(errors);
     if (!isValid) {
       setErrorMessage('Please fill in all required fields.');
@@ -450,7 +503,7 @@ const AddUser = () => {
     return isValid;
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     const currentIndex = steps.findIndex((step) => step.key === activeKey);
 
     // Validate current step before proceeding
@@ -483,12 +536,110 @@ const AddUser = () => {
       handleStepClick(nextKey);
     } else if (currentIndex === steps.length - 1) {
       setIsLoading(true);
-      setTimeout(() => {
-        setIsLoading(false);
-        setSuccessMessage('User successfully created!');
+      try {
+        // Map permissions to module IDs
+        const permissionToModule = {
+          'Access Recruitment': 'Talent Engine',
+          'Access Compliance': 'Compliance',
+          'Access Training': 'Training',
+          'Access Assets Management': 'Assets Management',
+          'Access Rostering': 'Workforce',
+          'Access HR': 'Workforce',
+          'Access Payroll': 'Payroll',
+        };
+
+        const selectedModules = Object.keys(permissions)
+          .filter((key) => permissions[key])
+          .map((key) => {
+            const moduleName = permissionToModule[key];
+            const module = modules.find((m) => m.name === moduleName);
+            return module ? module.id : null;
+          })
+          .filter(Boolean);
+
+        // Prepare FormData for API request
+        const formDataToSend = new FormData();
+        // Combine emailUsername and tenantDomain for the email field
+        const fullEmail = formData.emailUsername && tenantDomain ? `${formData.emailUsername}@${tenantDomain}` : '';
+        formDataToSend.append('email', fullEmail);
+        formDataToSend.append('password', formData.password);
+        formDataToSend.append('username', formData.username);
+        formDataToSend.append('first_name', formData.firstName);
+        formDataToSend.append('last_name', formData.lastName);
+        formDataToSend.append('role', formData.role.toLowerCase());
+        formDataToSend.append('job_role', formData.department); // Map department to job_role
+        formDataToSend.append('dashboard', formData.dashboard.toLowerCase());
+        formDataToSend.append('access_level', formData.accessLevel.toLowerCase().replace(' ', '_'));
+        formDataToSend.append('status', formData.status.toLowerCase());
+        formDataToSend.append('two_factor', formData.twoFactor.toLowerCase());
+
+        // Send profile fields individually
+        const profile = {
+          phone: formData.phone,
+          gender: formData.gender,
+          dob: formData.dob,
+          street: formData.street,
+          city: formData.city,
+          state: formData.state,
+          zip_code: formData.zip,
+          department: formData.department,
+        };
+        Object.keys(profile).forEach((key) => {
+          if (profile[key]) {
+            formDataToSend.append(`profile[${key}]`, profile[key]);
+          }
+        });
+
+        // Send modules as individual fields
+        selectedModules.forEach((moduleId, index) => {
+          formDataToSend.append(`modules[${index}]`, moduleId);
+        });
+
+        // Append documents
+        uploadCards.forEach((card, index) => {
+          if (card.selectedFile && card.fileName) {
+            formDataToSend.append(`documents[${index}][title]`, card.fileName);
+            formDataToSend.append(`documents[${index}][file]`, card.selectedFile);
+          }
+        });
+
+        // Log the FormData for debugging
+        const formDataEntries = {};
+        for (let [key, value] of formDataToSend.entries()) {
+          formDataEntries[key] = value instanceof File ? `${value.name} (${value.size} bytes)` : value;
+        }
+        console.log('FormData being sent:', formDataEntries);
+
+        const response = await createUser(formDataToSend);
+        setSuccessMessage(response.message || `User ${fullEmail} created successfully.`);
         resetForm();
         handleStepClick(steps[0].key);
-      }, 3000);
+      } catch (error) {
+        console.error('handleContinue error:', {
+          message: error.message,
+          stack: error.stack,
+        });
+        setErrorMessage(error.message);
+        // Map backend validation errors to form fields
+        if (error.message.includes('email:')) {
+          const emailError = error.message.match(/email: ([^;]+)/)?.[1] || 'Invalid email';
+          setFieldErrors((prev) => ({ ...prev, emailUsername: emailError }));
+        }
+        if (error.message.includes('username:')) {
+          const usernameError = error.message.match(/username: ([^;]+)/)?.[1] || 'Invalid username';
+          setFieldErrors((prev) => ({ ...prev, username: usernameError }));
+        }
+        if (error.message.includes('profile:')) {
+          const profileError = error.message.match(/profile: ([^;]+)/)?.[1] || 'Invalid profile data';
+          setFieldErrors((prev) => ({ ...prev, profile: profileError }));
+        }
+        if (error.message.includes('modules:')) {
+          const modulesError = error.message.match(/modules: ([^;]+)/)?.[1] || 'Invalid modules data';
+          setFieldErrors((prev) => ({ ...prev, modules: modulesError }));
+        }
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -497,7 +648,7 @@ const AddUser = () => {
     if (currentIndex > 0) {
       const prevKey = steps[currentIndex - 1].key;
       handleStepClick(prevKey);
-      setFieldErrors({}); // Clear field errors when going back
+      setFieldErrors({});
     }
   };
 
@@ -613,11 +764,11 @@ const AddUser = () => {
             </motion.li>
           );
         }
-        if (formData.email) {
+        if (formData.emailUsername && tenantDomain) {
           children.push(
             <motion.li key="email">
               <span>Email</span>
-              <p>{formData.email}</p>
+              <p>{`${formData.emailUsername}@${tenantDomain}`}</p>
             </motion.li>
           );
         }
@@ -677,6 +828,14 @@ const AddUser = () => {
             </motion.li>
           );
         }
+        if (fieldErrors.profile) {
+          children.push(
+            <motion.li key="profileError" className="error">
+              <span>Profile</span>
+              <p style={{ color: '#e53e3e' }}>{fieldErrors.profile}</p>
+            </motion.li>
+          );
+        }
         return <SectionList>{children}</SectionList>;
 
       case 'Role Assignment':
@@ -723,6 +882,14 @@ const AddUser = () => {
             </motion.li>
           );
         });
+        if (fieldErrors.modules) {
+          children.push(
+            <motion.li key="modulesError" className="error">
+              <span>Modules</span>
+              <p style={{ color: '#e53e3e' }}>{fieldErrors.modules}</p>
+            </motion.li>
+          );
+        }
         return <SectionList>{children}</SectionList>;
 
       case 'Set Login Credentials':
@@ -952,16 +1119,36 @@ const AddUser = () => {
                   </div>
                   <div className="GHuh-Form-Input">
                     <label>Email</label>
-                    <input
-                      type='email'
-                      name="email"
-                      placeholder='Enter email (e.g., olivia.bennett@email.com)'
-                      value={formData.email}
-                      onChange={handleInputChange}
-                    />
-                    {fieldErrors.email && (
+                    <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
+                      <input
+                        type='text'
+                        name="emailUsername"
+                        placeholder='Enter email username (e.g., olivia.bennett)'
+                        value={formData.emailUsername}
+                        onChange={handleInputChange}
+                        style={{ paddingRight: tenantDomain ? `${tenantDomain.length * 8 + 20}px` : '10px' }}
+                      />
+                      {tenantDomain && (
+                        <span
+                          style={{
+                            position: 'absolute',
+                            right: '10px',
+                            color: '#888',
+                            userSelect: 'none',
+                          }}
+                        >
+                          @{tenantDomain}
+                        </span>
+                      )}
+                    </div>
+                    {fieldErrors.emailUsername && (
                       <p className='erro-message-Txt'>
-                        {fieldErrors.email}
+                        {fieldErrors.emailUsername}
+                      </p>
+                    )}
+                    {fieldErrors.profile && (
+                      <p className='erro-message-Txt'>
+                        {fieldErrors.profile}
                       </p>
                     )}
                   </div>
@@ -1049,7 +1236,7 @@ const AddUser = () => {
                     <input
                       type='text'
                       name="state"
-                      placeholder='Type your state (e.g., Illinois)'
+                      placeholder='Type your state (e.g., Rivers)'
                       value={formData.state}
                       onChange={handleInputChange}
                     />
@@ -1064,7 +1251,7 @@ const AddUser = () => {
                     <input
                       type='text'
                       name="zip"
-                      placeholder='Enter zip code (e.g., 62704)'
+                      placeholder='Enter zip code (e.g., 12345)'
                       value={formData.zip}
                       onChange={handleInputChange}
                     />
@@ -1104,23 +1291,43 @@ const AddUser = () => {
                 <div className='UKiakks-Part-Main'>
                   <div className="GHuh-Form-Input">
                     <label>Assign Role</label>
-                    <input
-                      type='text'
+                    <select
                       name="role"
-                      placeholder='Enter role (e.g., Project Manager)'
                       value={formData.role}
                       onChange={handleInputChange}
-                    />
+                    >
+                      <option value="">Select role</option>
+                      <option value="admin">Admin</option>
+                      <option value="hr">HR</option>
+                      <option value="carer">Carer</option>
+                      <option value="client">Client</option>
+                      <option value="family">Family</option>
+                      <option value="auditor">Auditor</option>
+                      <option value="tutor">Tutor</option>
+                      <option value="assessor">Assessor</option>
+                      <option value="iqa">IQA</option>
+                      <option value="eqa">EQA</option>
+                    </select>
+                    {fieldErrors.role && (
+                      <p className='erro-message-Txt'>
+                        {fieldErrors.role}
+                      </p>
+                    )}
                   </div>
                   <div className="GHuh-Form-Input">
                     <label>Department</label>
                     <input
                       type='text'
                       name="department"
-                      placeholder='Enter department (e.g., Operations)'
+                      placeholder='Enter department (e.g., Nursing and Adult Care)'
                       value={formData.department}
                       onChange={handleInputChange}
                     />
+                    {fieldErrors.department && (
+                      <p className='erro-message-Txt'>
+                        {fieldErrors.department}
+                      </p>
+                    )}
                   </div>
                   <div className="Grga-INpu-Grid">
                     <div className="GHuh-Form-Input">
@@ -1131,9 +1338,9 @@ const AddUser = () => {
                         onChange={handleInputChange}
                       >
                         <option value="">Select dashboard</option>
-                        <option value="Admin">Admin</option>
-                        <option value="Staff">Staff</option>
-                        <option value="User">User</option>
+                        <option value="admin">Admin</option>
+                        <option value="staff">Staff</option>
+                        <option value="user">User</option>
                       </select>
                       {fieldErrors.dashboard && (
                         <p className='erro-message-Txt'>
@@ -1149,9 +1356,14 @@ const AddUser = () => {
                         onChange={handleInputChange}
                       >
                         <option value="">Select access level</option>
-                        <option value="Full Access">Full Access</option>
-                        <option value="Limited Access">Limited Access</option>
+                        <option value="full">Full Access</option>
+                        <option value="view_only">Limited Access</option>
                       </select>
+                      {fieldErrors.accessLevel && (
+                        <p className='erro-message-Txt'>
+                          {fieldErrors.accessLevel}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1184,6 +1396,11 @@ const AddUser = () => {
                       </li>
                     ))}
                   </ul>
+                  {fieldErrors.modules && (
+                    <p className='erro-message-Txt'>
+                      {fieldErrors.modules}
+                    </p>
+                  )}
                 </div>
               </div>
             </motion.div>
@@ -1254,8 +1471,8 @@ const AddUser = () => {
                         onChange={handleInputChange}
                       >
                         <option value="">Select status</option>
-                        <option value="Active">Active</option>
-                        <option value="Inactive">Inactive</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
                       </select>
                       {fieldErrors.status && (
                         <p className='erro-message-Txt'>
@@ -1271,8 +1488,8 @@ const AddUser = () => {
                         onChange={handleInputChange}
                       >
                         <option value="">Select option</option>
-                        <option value="Enable">Enable</option>
-                        <option value="Disable">Disable</option>
+                        <option value="enable">Enable</option>
+                        <option value="disable">Disable</option>
                       </select>
                       {fieldErrors.twoFactor && (
                         <p className='erro-message-Txt'>
