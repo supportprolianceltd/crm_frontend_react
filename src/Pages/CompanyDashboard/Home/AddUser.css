@@ -1,0 +1,22 @@
+/* Ensure the email input and domain suffix align properly */
+.GHuh-Form-Input {
+  position: relative;
+}
+
+.GHuh-Form-Input input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.GHuh-Form-Input input:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.erro-message-Txt {
+  color: #e53e3e;
+  font-size: 12px;
+  margin-top: 4px;
+}

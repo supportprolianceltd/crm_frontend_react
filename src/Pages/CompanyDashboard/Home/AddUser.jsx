@@ -9,8 +9,10 @@ import {
   ArrowPathIcon,
   CloudArrowUpIcon,
 } from '@heroicons/react/24/outline';
+import { motion, useInView } from 'framer-motion';
 import DefaulUser from '../../../assets/Img/memberIcon.png';
 import pdfIcon from '../../../assets/icons/pdf.png';
+import { fetchModules, fetchTenant, createUser } from './HomeService';
 import AccountSelctClient from '../../../assets/img/account-selct-client.svg';
 import AccountSelctStaff from '../../../assets/img/account-selct-staff.svg';
 import { motion, useInView } from 'framer-motion';
@@ -111,7 +113,7 @@ const AddUser = () => {
     'Access Recruitment': false,
     'Access Compliance': false,
     'Access Training': false,
-    'Access Assets management': false,
+    'Access Assets Management': false,
     'Access Rostering': false,
     'Access HR': false,
     'Access Payroll': false,
@@ -120,7 +122,6 @@ const AddUser = () => {
     accountType: '',
     firstName: '',
     lastName: '',
-    email: '',
     phone: '',
     gender: '',
     dob: '',
@@ -182,6 +183,31 @@ const AddUser = () => {
   const isDragging = useRef(false);
   const startY = useRef(0);
   const scrollTop = useRef(0);
+
+  // Fetch modules and tenant data on component mount
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        // Fetch modules
+        const moduleData = await fetchModules();
+        setModules(moduleData);
+
+        // Fetch tenant data
+        const tenantData = await fetchTenant();
+        const tenant = tenantData.find((t) => t.schema_name === 'proliance');
+        if (tenant) {
+          const primaryDomain = tenant.domains.find((d) => d.is_primary)?.domain || '';
+          setTenantDomain(primaryDomain);
+        } else {
+          throw new Error('Proliance tenant not found');
+        }
+      } catch (error) {
+        setErrorMessage(error.message);
+        console.error('Error fetching data:', error);
+      }
+    };
+    loadData();
+  }, []);
 
   useEffect(() => {
     if (errorMessage || successMessage) {
@@ -485,12 +511,13 @@ const AddUser = () => {
       'Access Recruitment': false,
       'Access Compliance': false,
       'Access Training': false,
-      'Access Assets management': false,
+      'Access Assets Management': false,
       'Access Rostering': false,
       'Access HR': false,
       'Access Payroll': false,
     });
     setShowPassword(false);
+    setFieldErrors({});
     setFieldErrors({});
     Object.values(fileInputRefs.current).forEach((input) => {
       if (input) input.value = '';
@@ -508,9 +535,9 @@ const AddUser = () => {
 
   const validateDetailsStep = () => {
     const requiredFields = {
+      emailUsername: 'Email username is required',
       firstName: 'First Name is required',
       lastName: 'Last Name is required',
-      email: 'Email is required',
       phone: 'Phone is required',
       gender: 'Gender is required',
       dob: 'Date of Birth is required',
@@ -585,6 +612,12 @@ const AddUser = () => {
       }
     });
 
+    // Additional password validation
+    if (formData.password && formData.password.length < 8) {
+      errors.password = 'Password must be at least 8 characters long';
+      isValid = false;
+    }
+
     setFieldErrors(errors);
     if (!isValid) {
       setErrorMessage('Please fill in all required fields.');
@@ -592,7 +625,7 @@ const AddUser = () => {
     return isValid;
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     const currentIndex = steps.findIndex((step) => step.key === activeKey);
     let isValid = false;
     switch (activeKey) {
@@ -621,12 +654,110 @@ const AddUser = () => {
       handleStepClick(nextKey);
     } else if (currentIndex === steps.length - 1) {
       setIsLoading(true);
-      setTimeout(() => {
-        setIsLoading(false);
-        setSuccessMessage('User successfully created!');
+      try {
+        // Map permissions to module IDs
+        const permissionToModule = {
+          'Access Recruitment': 'Talent Engine',
+          'Access Compliance': 'Compliance',
+          'Access Training': 'Training',
+          'Access Assets Management': 'Assets Management',
+          'Access Rostering': 'Workforce',
+          'Access HR': 'Workforce',
+          'Access Payroll': 'Payroll',
+        };
+
+        const selectedModules = Object.keys(permissions)
+          .filter((key) => permissions[key])
+          .map((key) => {
+            const moduleName = permissionToModule[key];
+            const module = modules.find((m) => m.name === moduleName);
+            return module ? module.id : null;
+          })
+          .filter(Boolean);
+
+        // Prepare FormData for API request
+        const formDataToSend = new FormData();
+        // Combine emailUsername and tenantDomain for the email field
+        const fullEmail = formData.emailUsername && tenantDomain ? `${formData.emailUsername}@${tenantDomain}` : '';
+        formDataToSend.append('email', fullEmail);
+        formDataToSend.append('password', formData.password);
+        formDataToSend.append('username', formData.username);
+        formDataToSend.append('first_name', formData.firstName);
+        formDataToSend.append('last_name', formData.lastName);
+        formDataToSend.append('role', formData.role.toLowerCase());
+        formDataToSend.append('job_role', formData.department); // Map department to job_role
+        formDataToSend.append('dashboard', formData.dashboard.toLowerCase());
+        formDataToSend.append('access_level', formData.accessLevel.toLowerCase().replace(' ', '_'));
+        formDataToSend.append('status', formData.status.toLowerCase());
+        formDataToSend.append('two_factor', formData.twoFactor.toLowerCase());
+
+        // Send profile fields individually
+        const profile = {
+          phone: formData.phone,
+          gender: formData.gender,
+          dob: formData.dob,
+          street: formData.street,
+          city: formData.city,
+          state: formData.state,
+          zip_code: formData.zip,
+          department: formData.department,
+        };
+        Object.keys(profile).forEach((key) => {
+          if (profile[key]) {
+            formDataToSend.append(`profile[${key}]`, profile[key]);
+          }
+        });
+
+        // Send modules as individual fields
+        selectedModules.forEach((moduleId, index) => {
+          formDataToSend.append(`modules[${index}]`, moduleId);
+        });
+
+        // Append documents
+        uploadCards.forEach((card, index) => {
+          if (card.selectedFile && card.fileName) {
+            formDataToSend.append(`documents[${index}][title]`, card.fileName);
+            formDataToSend.append(`documents[${index}][file]`, card.selectedFile);
+          }
+        });
+
+        // Log the FormData for debugging
+        const formDataEntries = {};
+        for (let [key, value] of formDataToSend.entries()) {
+          formDataEntries[key] = value instanceof File ? `${value.name} (${value.size} bytes)` : value;
+        }
+        console.log('FormData being sent:', formDataEntries);
+
+        const response = await createUser(formDataToSend);
+        setSuccessMessage(response.message || `User ${fullEmail} created successfully.`);
         resetForm();
         handleStepClick(steps[0].key);
-      }, 3000);
+      } catch (error) {
+        console.error('handleContinue error:', {
+          message: error.message,
+          stack: error.stack,
+        });
+        setErrorMessage(error.message);
+        // Map backend validation errors to form fields
+        if (error.message.includes('email:')) {
+          const emailError = error.message.match(/email: ([^;]+)/)?.[1] || 'Invalid email';
+          setFieldErrors((prev) => ({ ...prev, emailUsername: emailError }));
+        }
+        if (error.message.includes('username:')) {
+          const usernameError = error.message.match(/username: ([^;]+)/)?.[1] || 'Invalid username';
+          setFieldErrors((prev) => ({ ...prev, username: usernameError }));
+        }
+        if (error.message.includes('profile:')) {
+          const profileError = error.message.match(/profile: ([^;]+)/)?.[1] || 'Invalid profile data';
+          setFieldErrors((prev) => ({ ...prev, profile: profileError }));
+        }
+        if (error.message.includes('modules:')) {
+          const modulesError = error.message.match(/modules: ([^;]+)/)?.[1] || 'Invalid modules data';
+          setFieldErrors((prev) => ({ ...prev, modules: modulesError }));
+        }
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -635,6 +766,7 @@ const AddUser = () => {
     if (currentIndex > 0) {
       const prevKey = steps[currentIndex - 1].key;
       handleStepClick(prevKey);
+      setFieldErrors({});
       setFieldErrors({});
     }
   };
@@ -755,11 +887,11 @@ const AddUser = () => {
             </motion.li>
           );
         }
-        if (formData.email) {
+        if (formData.emailUsername && tenantDomain) {
           children.push(
             <motion.li key="email" variants={itemVariants}>
               <span>Email</span>
-              <p>{formData.email}</p>
+              <p>{`${formData.emailUsername}@${tenantDomain}`}</p>
             </motion.li>
           );
         }
@@ -1008,6 +1140,14 @@ const AddUser = () => {
             </motion.li>
           );
         });
+        if (fieldErrors.modules) {
+          children.push(
+            <motion.li key="modulesError" className="error">
+              <span>Modules</span>
+              <p style={{ color: '#e53e3e' }}>{fieldErrors.modules}</p>
+            </motion.li>
+          );
+        }
         return <SectionList>{children}</SectionList>;
 
       case 'Set Login Credentials':

@@ -524,3 +524,6 @@ export const updateComplianceItem = async (jobRequisitionId, itemId, data) => {
         throw error;
     }
 };
+
+// Add this line to export apiClient
+export { apiClient };
