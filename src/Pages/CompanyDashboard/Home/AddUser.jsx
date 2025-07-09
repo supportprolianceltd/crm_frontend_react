@@ -184,29 +184,29 @@ const AddUser = () => {
   const scrollTop = useRef(0);
 
   // Fetch modules and tenant data on component mount
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        // Fetch modules
-        const moduleData = await fetchModules();
-        setModules(moduleData);
+  // useEffect(() => {
+  //   const loadData = async () => {
+  //     try {
+  //       // Fetch modules
+  //       const moduleData = await fetchModules();
+  //       setModules(moduleData);
 
-        // Fetch tenant data
-        const tenantData = await fetchTenant();
-        const tenant = tenantData.find((t) => t.schema_name === 'proliance');
-        if (tenant) {
-          const primaryDomain = tenant.domains.find((d) => d.is_primary)?.domain || '';
-          setTenantDomain(primaryDomain);
-        } else {
-          throw new Error('Proliance tenant not found');
-        }
-      } catch (error) {
-        setErrorMessage(error.message);
-        console.error('Error fetching data:', error);
-      }
-    };
-    loadData();
-  }, []);
+  //       // Fetch tenant data
+  //       const tenantData = await fetchTenant();
+  //       const tenant = tenantData.find((t) => t.schema_name === 'proliance');
+  //       if (tenant) {
+  //         const primaryDomain = tenant.domains.find((d) => d.is_primary)?.domain || '';
+  //         setTenantDomain(primaryDomain);
+  //       } else {
+  //         throw new Error('Proliance tenant not found');
+  //       }
+  //     } catch (error) {
+  //       setErrorMessage(error.message);
+  //       console.error('Error fetching data:', error);
+  //     }
+  //   };
+  //   loadData();
+  // }, []);
 
   useEffect(() => {
     if (errorMessage || successMessage) {
@@ -690,75 +690,166 @@ const AddUser = () => {
         formDataToSend.append('status', formData.status.toLowerCase());
         formDataToSend.append('two_factor', formData.twoFactor.toLowerCase());
 
-        // Send profile fields individually
-        const profile = {
-          phone: formData.phone,
-          gender: formData.gender,
-          dob: formData.dob,
-          street: formData.street,
-          city: formData.city,
-          state: formData.state,
-          zip_code: formData.zip,
-          department: formData.department,
-        };
-        Object.keys(profile).forEach((key) => {
-          if (profile[key]) {
-            formDataToSend.append(`profile[${key}]`, profile[key]);
-          }
-        });
+    // Append profile fields
+// In handleContinue function:
+const profile = {
+  phone: formData.phone,
+  gender: formData.gender,
+  dob: formData.dob,
+  street: formData.street,
+  city: formData.city,
+  state: formData.state,
+  zip_code: formData.zipCode,  // Changed from zipCode to zip_code
+  department: formData.department,
+};
+    Object.keys(profile).forEach(key => {
+      formDataToSend.append(`profile[${key}]`, profile[key] || '');
+    });
 
-        // Send modules as individual fields
-        selectedModules.forEach((moduleId, index) => {
-          formDataToSend.append(`modules[${index}]`, moduleId);
-        });
+    // Append modules
+    const selectedModuleIds = Object.keys(permissions)
+      .filter(key => permissions[key])
+      .map(key => {
+        const module = modules.find(m => m.name === key.replace('Access ', ''));
+        return module ? module.id : null;
+      })
+      .filter(id => id !== null);
+      
+    selectedModuleIds.forEach((moduleId, index) => {
+      formDataToSend.append(`modules[${index}]`, moduleId);
+    });
 
-        // Append documents
-        uploadCards.forEach((card, index) => {
-          if (card.selectedFile && card.fileName) {
-            formDataToSend.append(`documents[${index}][title]`, card.fileName);
-            formDataToSend.append(`documents[${index}][file]`, card.selectedFile);
-          }
-        });
-
-        // Log the FormData for debugging
-        const formDataEntries = {};
-        for (let [key, value] of formDataToSend.entries()) {
-          formDataEntries[key] = value instanceof File ? `${value.name} (${value.size} bytes)` : value;
-        }
-        console.log('FormData being sent:', formDataEntries);
-
-        const response = await createUser(formDataToSend);
-        setSuccessMessage(response.message || `User ${fullEmail} created successfully.`);
-        resetForm();
-        handleStepClick(steps[0].key);
-      } catch (error) {
-        console.error('handleContinue error:', {
-          message: error.message,
-          stack: error.stack,
-        });
-        setErrorMessage(error.message);
-        // Map backend validation errors to form fields
-        if (error.message.includes('email:')) {
-          const emailError = error.message.match(/email: ([^;]+)/)?.[1] || 'Invalid email';
-          setFieldErrors((prev) => ({ ...prev, emailUsername: emailError }));
-        }
-        if (error.message.includes('username:')) {
-          const usernameError = error.message.match(/username: ([^;]+)/)?.[1] || 'Invalid username';
-          setFieldErrors((prev) => ({ ...prev, username: usernameError }));
-        }
-        if (error.message.includes('profile:')) {
-          const profileError = error.message.match(/profile: ([^;]+)/)?.[1] || 'Invalid profile data';
-          setFieldErrors((prev) => ({ ...prev, profile: profileError }));
-        }
-        if (error.message.includes('modules:')) {
-          const modulesError = error.message.match(/modules: ([^;]+)/)?.[1] || 'Invalid modules data';
-          setFieldErrors((prev) => ({ ...prev, modules: modulesError }));
-        }
-      } finally {
+    // Validate and append documents
+    const validDocuments = uploadCards.filter(card => card.selectedFile && card.fileName);
+    validDocuments.forEach((card, index) => {
+      if (!(card.selectedFile instanceof File)) {
+        console.error(`Document ${index} is not a valid File object:`, card.selectedFile);
+        setFieldErrors(prev => ({
+          ...prev,
+          documents: `Document ${card.fileName} is not a valid file.`,
+        }));
+        setErrorMessage(`Document ${card.fileName} is not a valid file.`);
         setIsLoading(false);
+        return false;
+      }
+      formDataToSend.append(`documents[${index}][title]`, card.fileName);
+      formDataToSend.append(`documents[${index}][file]`, card.selectedFile);
+    });
+
+    if (validDocuments.length === 0 && uploadCards.some(card => card.selectedFile || card.fileName)) {
+      setFieldErrors(prev => ({
+        ...prev,
+        documents: 'All documents must have a valid file and title.',
+      }));
+      setErrorMessage('All documents must have a valid file and title.');
+      setIsLoading(false);
+      return false;
+    }
+
+    // Log FormData for debugging
+    const formDataEntries = {};
+    for (let [key, value] of formDataToSend.entries()) {
+      formDataEntries[key] = value instanceof File ? `${value.name} (${value.size} bytes)` : value;
+    }
+    console.log('FormData being sent:', formDataEntries);
+
+    // Additional logging for files
+    console.log('Files in FormData:', Array.from(formDataToSend.entries())
+      .filter(([key]) => key.includes('[file]'))
+      .map(([key, value]) => ({
+        key,
+        name: value.name,
+        size: value.size,
+        type: value instanceof File ? 'File' : typeof value,
+      }))
+    );
+
+    // Send request
+    const response = await createUser(formDataToSend);
+    setSuccessMessage(response.message || `User ${fullEmail} created successfully.`);
+    resetForm();
+    handleStepClick(steps[0].key);
+  } catch (error) {
+    console.error('handleContinue error:', {
+      message: error.message,
+      stack: error.stack,
+    });
+    const errorDetails = error.response?.data?.message || error.message;
+    const fieldErrors = {};
+
+    if (typeof errorDetails === 'string') {
+      if (errorDetails.includes('email:')) {
+        fieldErrors.emailUsername = errorDetails.match(/email: ([^;]+)/)?.[1] || 'Invalid email';
+      }
+      if (errorDetails.includes('username:')) {
+        fieldErrors.username = errorDetails.match(/username: ([^;]+)/)?.[1] || 'Invalid username';
+      }
+      if (errorDetails.includes('profile:')) {
+        const profileError = errorDetails.match(/profile: ([^;]+)/)?.[1] || 'Invalid profile data';
+        fieldErrors.profile = profileError;
+        const profileFieldErrors = errorDetails.match(/profile\[([^\]]+)\]: ([^;]+)/g);
+        if (profileFieldErrors) {
+          profileFieldErrors.forEach(err => {
+            const [, field, message] = err.match(/profile\[([^\]]+)\]: ([^;]+)/);
+            const fieldMap = { zip_code: 'zipCode' };
+            fieldErrors[fieldMap[field] || field] = message;
+          });
+        }
+      }
+      if (errorDetails.includes('documents:')) {
+        const docErrors = errorDetails.match(/documents\[(\d+)\]\[([^\]]+)\]: ([^;]+)/g);
+        if (docErrors) {
+          const formattedErrors = docErrors.map(err => {
+            const [, index, field, message] = err.match(/documents\[(\d+)\]\[([^\]]+)\]: ([^;]+)/);
+            const fileName = uploadCards[index]?.fileName || `Document ${parseInt(index) + 1}`;
+            return `${fileName}: ${field} ${message}`;
+          });
+          fieldErrors.documents = formattedErrors.join('; ');
+        } else {
+          fieldErrors.documents = errorDetails.match(/documents: ([^;]+)/)?.[1] || 'Invalid document data';
+        }
+      }
+    } else if (typeof errorDetails === 'object') {
+      // Handle structured errors from the backend
+      if (errorDetails.profile) {
+        Object.entries(errorDetails.profile).forEach(([field, errors]) => {
+          const fieldMap = { zip_code: 'zipCode' };
+          fieldErrors[fieldMap[field] || field] = Array.isArray(errors) ? errors.join(', ') : errors;
+        });
+      }
+      if (errorDetails.documents) {
+        const docErrors = errorDetails.documents.map((doc, index) => {
+          const fileName = uploadCards[index]?.fileName || `Document ${index + 1}`;
+          if (typeof doc === 'object') {
+            return Object.entries(doc).map(([field, errors]) => 
+              `${fileName}: ${field} ${Array.isArray(errors) ? errors.join(', ') : errors}`
+            ).join('; ');
+          }
+          return `${fileName}: ${doc}`;
+        });
+        fieldErrors.documents = docErrors.join('; ');
+      }
+      if (errorDetails.email) {
+        fieldErrors.emailUsername = Array.isArray(errorDetails.email) ? errorDetails.email.join(', ') : errorDetails.email;
+      }
+      if (errorDetails.username) {
+        fieldErrors.username = Array.isArray(errorDetails.username) ? errorDetails.username.join(', ') : errorDetails.username;
       }
     }
-  };
+
+    setFieldErrors(fieldErrors);
+    setErrorMessage(
+      Object.keys(fieldErrors).length > 0
+        ? `Please correct the following: ${Object.entries(fieldErrors)
+            .map(([field, err]) => `${field}: ${err}`)
+            .join(', ')}`
+        : errorDetails || 'Failed to create user.'
+    );
+  } finally {
+    setIsLoading(false);
+  }
+  return false;
+};
 
   const handleGoBack = () => {
     const currentIndex = steps.findIndex((step) => step.key === activeKey);
@@ -942,11 +1033,11 @@ const AddUser = () => {
             </motion.li>
           );
         }
-        if (formData.zip) {
+        if (formData.zipCode) {
           children.push(
             <motion.li key="zip" variants={itemVariants}>
               <span>Zip Code</span>
-              <p>{formData.zip}</p>
+              <p>{formData.zipCode}</p>
             </motion.li>
           );
         }
