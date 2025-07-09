@@ -12,8 +12,8 @@ import {
 import DefaulUser from '../../../assets/Img/memberIcon.png';
 import pdfIcon from '../../../assets/icons/pdf.png';
 import { motion, useInView } from 'framer-motion';
-import AccountSelctClient from './img/account-selct-client.png';
-import AccountSelctStaff from './img/account-selct-staff.png';
+import AccountSelctClient from './img/accountselctclient.png';
+import AccountSelctStaff from './img/accountselctstaff.png';
 
 const steps = [
   { key: 'Account Selection', title: 'Account Selection' },
