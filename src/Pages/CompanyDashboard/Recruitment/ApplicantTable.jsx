@@ -10,7 +10,11 @@ import {
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 import ApplicantDocumentCheck from './ApplicantDocumentCheck';
-import { fetchPublishedRequisitionsWithShortlisted, bulkDeleteJobApplications, updateApplicantComplianceStatus } from './ApiService';
+import {
+  fetchPublishedRequisitionsWithShortlisted,
+  bulkDeleteJobApplications,
+  updateApplicantComplianceStatus,
+} from './ApiService';
 
 const ApplicantTable = ({ jobId, complianceChecklist }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -24,22 +28,14 @@ const ApplicantTable = ({ jobId, complianceChecklist }) => {
   const [error, setError] = useState(null);
   const masterCheckboxRef = useRef(null);
 
-  // Fetch applicants for the selected job
   useEffect(() => {
     const fetchData = async () => {
       if (!jobId) return;
       try {
         setLoading(true);
         const data = await fetchPublishedRequisitionsWithShortlisted();
-
-        // console.log("data")
-        // console.log(data)
-        // console.log("data")
-
         const selectedJob = data.find((job) => job.job_requisition.id === jobId);
         const applicantsWithCompliance = selectedJob?.shortlisted_applications || [];
-
-        //applicantsWithCompliance.forEach(app => console.log('Applicant compliance_status:', app.compliance_status));
         setApplicants(applicantsWithCompliance);
       } catch (err) {
         setError(err.message || 'Failed to load applicants. Please try again later.');
@@ -50,7 +46,6 @@ const ApplicantTable = ({ jobId, complianceChecklist }) => {
     fetchData();
   }, [jobId]);
 
-  // Track applicants with failed compliance items for warning icon
   const checkedWithWarningIds = applicants
     .filter((app) =>
       app.compliance_status?.some((status) => status.status === 'failed')
@@ -96,78 +91,67 @@ const ApplicantTable = ({ jobId, complianceChecklist }) => {
     }
   };
 
-const handleViewClick = (applicant) => {
-  console.log('Selected applicant:', applicant); // Verify id and compliance_status
-  if (!applicant?.id) {
-    console.warn('Applicant ID is missing');
-    alert('Cannot view applicant: Missing ID');
-    return;
-  }
-  setSelectedApplicant(applicant);
-  setShowApplicantDocumentCheck(true);
-};
+  const handleViewClick = (applicant) => {
+    if (!applicant?.id) return alert('Cannot view applicant: Missing ID');
+    setSelectedApplicant(applicant);
+    setShowApplicantDocumentCheck(true);
+  };
 
   const handleHideApplicantDocumentCheck = () => {
     setShowApplicantDocumentCheck(false);
     setSelectedApplicant(null);
   };
 
-const handleComplianceStatusChange = async (applicationId, itemId, data) => {
-  console.log("applicationId:", applicationId);
-  console.log("itemId:", itemId);
-  console.log("data:", data);
-
-  if (!applicationId || !itemId || !data) {
-    console.error('Missing required parameters:', { applicationId, itemId, data });
-    alert('Failed to update compliance status: Missing application ID, item ID, or data.');
-    return;
-  }
-
-  try {
-    const user = JSON.parse(localStorage.getItem('user'));
-    const payload = {
-      name: data.name || '', // Ensure name is included
-      status: data.status === 'Accepted' ? 'completed' : data.status.toLowerCase() === 'rejected' ? 'failed' : 'pending',
-      checked_by: user?.id ? parseInt(user.id, 10) : null, // Ensure integer
-      notes: data.notes || '',
-      checked_at: user?.id ? new Date().toISOString() : null, // Add checked_at when checked_by is provided
-    };
-
-    await updateApplicantComplianceStatus(applicationId, itemId, payload);
-    setApplicants((prev) =>
-      prev.map((app) =>
-        app.id === applicationId
-          ? {
-              ...app,
-              compliance_status: app.compliance_status.map((item) =>
-                item.id === itemId
-                  ? { ...item, ...payload, checked_at: new Date().toISOString() }
-                  : item
-              ),
-            }
-          : app
-      )
-    );
-  } catch (error) {
-    console.error('Error updating compliance status:', error);
-    alert('Failed to update compliance status. Please try again.');
-  }
-};
-  useEffect(() => {
-    if (masterCheckboxRef.current) {
-      masterCheckboxRef.current.checked = false;
+  const handleComplianceStatusChange = async (applicationId, itemId, data) => {
+    if (!applicationId || !itemId || !data) {
+      alert('Missing required data.');
+      return;
     }
+    try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      const payload = {
+        name: data.name || '',
+        status:
+          data.status === 'Accepted'
+            ? 'completed'
+            : data.status.toLowerCase() === 'rejected'
+            ? 'failed'
+            : 'pending',
+        checked_by: user?.id ? parseInt(user.id, 10) : null,
+        notes: data.notes || '',
+        checked_at: user?.id ? new Date().toISOString() : null,
+      };
+
+      await updateApplicantComplianceStatus(applicationId, itemId, payload);
+      setApplicants((prev) =>
+        prev.map((app) =>
+          app.id === applicationId
+            ? {
+                ...app,
+                compliance_status: app.compliance_status.map((item) =>
+                  item.id === itemId ? { ...item, ...payload } : item
+                ),
+              }
+            : app
+        )
+      );
+    } catch (error) {
+      console.error('Error updating compliance status:', error);
+      alert('Failed to update compliance status.');
+    }
+  };
+
+  useEffect(() => {
+    if (masterCheckboxRef.current) masterCheckboxRef.current.checked = false;
     setSelectedIds([]);
   }, [currentPage, rowsPerPage]);
 
-  // Calculate total file size for display
   const calculateTotalFileSize = (documents) => {
     if (!documents || documents.length === 0) return '0 MB';
     const totalSize = documents.reduce((sum, doc) => sum + (doc.file_size || 0), 0);
-    return `${(totalSize / 1024 / 1024).toFixed(1)} MB`; // Convert bytes to MB
+    return `${(totalSize / 1024 / 1024).toFixed(1)} MB`;
   };
 
-  // Determine status based on compliance_status
   const getApplicantStatus = (complianceStatus) => {
     if (!complianceStatus || complianceStatus.length === 0) return 'Pending';
     const allCompleted = complianceStatus.every((item) => item.status === 'completed');
@@ -176,18 +160,21 @@ const handleComplianceStatusChange = async (applicationId, itemId, data) => {
 
   return (
     <div className="DocumentVerification-sec">
-      {loading && <div className="loading">Loading...</div>}
       {error && <div className="error">Error: {error}</div>}
-      {!loading && !error && (
+      {!error && (
         <>
-          <div className="Dash-OO-Boas OOOP-LOa OILUJ-Pla">
-            <div className="Dash-OO-Boas-Top ouka-OpOl">
+
+          <div className="Dash-OO-Boas Gen-Boxshadow">
+
+               <div className="Dash-OO-Boas-Top">
               <div className="Dash-OO-Boas-Top-1">
                 <h3>Applicants</h3>
               </div>
               <div className="Dash-OO-Boas-Top-2">
                 <div className="genn-Drop-Search">
-                  <span><MagnifyingGlassIcon className="h-6 w-6" /></span>
+                  <span>
+                    <MagnifyingGlassIcon className="h-6 w-6" />
+                  </span>
                   <input
                     type="text"
                     placeholder="Search applicants..."
@@ -197,9 +184,7 @@ const handleComplianceStatusChange = async (applicationId, itemId, data) => {
                 </div>
               </div>
             </div>
-          </div>
 
-          <div className="Dash-OO-Boas dOikpO-PPol oluja-PPPl">
             <div className="table-container">
               <table className="Gen-Sys-table">
                 <thead>
@@ -209,7 +194,10 @@ const handleComplianceStatusChange = async (applicationId, itemId, data) => {
                         type="checkbox"
                         ref={masterCheckboxRef}
                         onChange={handleSelectAllVisible}
-                        checked={currentApplicants.length > 0 && currentApplicants.every((app) => selectedIds.includes(app.id))}
+                        checked={
+                          currentApplicants.length > 0 &&
+                          currentApplicants.every((app) => selectedIds.includes(app.id))
+                        }
                       />
                     </th>
                     <th>Applicant Name</th>
@@ -222,7 +210,21 @@ const handleComplianceStatusChange = async (applicationId, itemId, data) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {currentApplicants.length === 0 ? (
+                  {loading ? (
+                    <tr>
+                       <td colSpan={8} style={{ textAlign: 'center', padding: '20px', fontStyle: 'italic' }}>
+                      <ul className='tab-Loadding-AniMMA'>
+                        <li></li>
+                        <li></li>
+                        <li></li>
+                        <li></li>
+                        <li></li>
+                        <li></li>
+                        <li></li>
+                      </ul>
+                    </td>
+                    </tr>
+                  ) : currentApplicants.length === 0 ? (
                     <tr>
                       <td colSpan={8} className="text-center py-4 italic">
                         No matching applicants found
@@ -264,10 +266,7 @@ const handleComplianceStatusChange = async (applicationId, itemId, data) => {
                         <td>
                           {getApplicantStatus(applicant.compliance_status) === 'Checked' ? (
                             <div className="gen-td-btns">
-                              <button
-                                className="view-btn inline-flex items-center"
-                                onClick={() => handleViewClick(applicant)}
-                              >
+                              <button className="view-btn inline-flex items-center" onClick={() => handleViewClick(applicant)}>
                                 <DocumentTextIcon className="h-5 w-5 mr-1" />
                                 View Report
                               </button>
@@ -278,10 +277,7 @@ const handleComplianceStatusChange = async (applicationId, itemId, data) => {
                         </td>
                         <td>
                           <div className="gen-td-btns">
-                            <button
-                              className="link-btn btn-primary-bg"
-                              onClick={() => handleViewClick(applicant)}
-                            >
+                            <button className="link-btn btn-primary-bg" onClick={() => handleViewClick(applicant)}>
                               <CheckCircleIcon className="h-5 w-5 mr-1" />
                               Check Documents
                             </button>
@@ -300,11 +296,7 @@ const handleComplianceStatusChange = async (applicationId, itemId, data) => {
                   <div className="Dash-OO-Boas-foot-1">
                     <div className="items-per-page">
                       <p>Number of rows:</p>
-                      <select
-                        className="form-select"
-                        value={rowsPerPage}
-                        onChange={(e) => setRowsPerPage(Number(e.target.value))}
-                      >
+                      <select value={rowsPerPage} onChange={(e) => setRowsPerPage(Number(e.target.value))}>
                         <option value={5}>5</option>
                         <option value={10}>10</option>
                         <option value={20}>20</option>
@@ -312,13 +304,8 @@ const handleComplianceStatusChange = async (applicationId, itemId, data) => {
                       </select>
                     </div>
                   </div>
-
                   <div className="Dash-OO-Boas-foot-2">
-                    <button
-                      onClick={handleBulkDelete}
-                      className="delete-marked-btn"
-                      disabled={selectedIds.length === 0}
-                    >
+                    <button onClick={handleBulkDelete} disabled={selectedIds.length === 0} className="delete-marked-btn">
                       <TrashIcon className="h-5 w-5 mr-1" />
                       Delete Selected
                     </button>
@@ -326,22 +313,12 @@ const handleComplianceStatusChange = async (applicationId, itemId, data) => {
                 </div>
 
                 <div className="page-navigation">
-                  <span className="page-info">
-                    Page {currentPage} of {totalPages}
-                  </span>
+                  <span className="page-info">Page {currentPage} of {totalPages}</span>
                   <div className="page-navigation-Btns">
-                    <button
-                      className="page-button"
-                      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                      disabled={currentPage === 1}
-                    >
+                    <button onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} disabled={currentPage === 1}>
                       <ChevronLeftIcon className="h-5 w-5" />
                     </button>
-                    <button
-                      className="page-button"
-                      onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                      disabled={currentPage === totalPages}
-                    >
+                    <button onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages}>
                       <ChevronRightIcon className="h-5 w-5" />
                     </button>
                   </div>

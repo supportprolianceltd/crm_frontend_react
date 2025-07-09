@@ -84,11 +84,13 @@
 
 
 
-
-
 import React, { useState, useEffect } from 'react';
 import './ComplianceCheckPage.css';
-import { UserGroupIcon, InformationCircleIcon, HandThumbUpIcon } from '@heroicons/react/24/outline';
+import {
+  UserGroupIcon,
+  InformationCircleIcon,
+  HandThumbUpIcon,
+} from '@heroicons/react/24/outline';
 import ApplicantTable from './ApplicantTable';
 import EmploymentDecision from './EmploymentDecision';
 import { fetchPublishedRequisitionsWithShortlisted } from './ApiService';
@@ -103,14 +105,13 @@ const ComplianceCheckPage = () => {
   const [lastComplianceCheck, setLastComplianceCheck] = useState(null);
   const [checkedBy, setCheckedBy] = useState('');
   const [showEmploymentDecision, setShowEmploymentDecision] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const fetchData = async () => {
     try {
-      setLoading(true);
       const data = await fetchPublishedRequisitionsWithShortlisted();
       setJobRequisitions(data);
+
       if (data.length > 0) {
         const firstJob = data[0];
         setSelectedJobId(firstJob.job_requisition.id);
@@ -120,19 +121,9 @@ const ComplianceCheckPage = () => {
         setComplianceChecklist(firstJob.job_requisition.compliance_checklist || []);
         setLastComplianceCheck(firstJob.job_requisition.last_compliance_check || null);
         setCheckedBy(firstJob.job_requisition.checked_by || '');
-      } else {
-        setSelectedJobId('');
-        setShortlistedApplications([]);
-        setTotalApplications(0);
-        setShortlistedCount(0);
-        setComplianceChecklist([]);
-        setLastComplianceCheck(null);
-        setCheckedBy('');
       }
     } catch (err) {
       setError(err.message || 'Failed to load job requisitions. Please try again later.');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -169,95 +160,92 @@ const ComplianceCheckPage = () => {
 
   return (
     <div className="ComplianceCheckPage">
-      {loading && <div className="loading">Loading...</div>}
       {error && <div className="error">Error: {error}</div>}
-      {!loading && !error && (
-        <div className="ComplianceCheckPage-TOop">
-          <div className="ComplianceCheckPage-TOop-Grid">
-            <div className="ComplianceCheckPage-TOop-1">
-              <h2>Compliance Check</h2>
-            </div>
-            <div className="ComplianceCheckPage-TOop-2">
-              <h4>Select Job Position:</h4>
-              <select
-                className="filter-select"
-                value={selectedJobId}
-                onChange={handleJobChange}
-                disabled={jobRequisitions.length === 0}
-              >
-                {jobRequisitions.length === 0 ? (
-                  <option value="">No jobs available</option>
-                ) : (
-                  jobRequisitions.map((job) => (
-                    <option key={job.job_requisition.id} value={job.job_requisition.id}>
-                      {job.job_requisition.title} - {job.job_requisition.job_application_code}
-                    </option>
-                  ))
-                )}
-              </select>
-            </div>
+
+      <div className="ComplianceCheckPage-TOop Gen-Boxshadow">
+        <div className="ComplianceCheckPage-TOop-Grid jjjh-filak">
+          <div className="ComplianceCheckPage-TOop-1">
+            <h2>Compliance Check</h2>
           </div>
-
-          <div className="Uijauj-UUplao">
-            <ul>
-              <li>
-                <span>
-                  <UserGroupIcon /> {shortlistedCount} shortlisted / {totalApplications} total applicants
-                </span>
-              </li>
-              <li>
-                <span>
-                  Posted on: {selectedJob?.job_requisition.requested_date
-                    ? new Date(selectedJob.job_requisition.requested_date).toLocaleDateString('en-US', {
-                        month: 'long',
-                        day: 'numeric',
-                        year: 'numeric',
-                        weekday: 'long',
-                      })
-                    : 'N/A'}
-                </span>
-              </li>
-              <li>
-                <span>Status: {selectedJob?.job_requisition.status || 'N/A'}</span>
-              </li>
-            </ul>
-
-            <button
-              className="Deecc-NNBYna"
-              onClick={() => setShowEmploymentDecision(true)}
-              disabled={!selectedJobId}
+          <div className="ComplianceCheckPage-TOop-2">
+            <h4>Select Job Position:</h4>
+            <select
+              className="filter-select"
+              value={selectedJobId}
+              onChange={handleJobChange}
+              disabled={jobRequisitions.length === 0}
             >
-              <HandThumbUpIcon /> Employment Decision
-            </button>
+              {jobRequisitions.length === 0 ? (
+                <option value="">No jobs available</option>
+              ) : (
+                jobRequisitions.map((job) => (
+                  <option key={job.job_requisition.id} value={job.job_requisition.id}>
+                    {job.job_requisition.title} - {job.job_requisition.job_application_code}
+                  </option>
+                ))
+              )}
+            </select>
           </div>
+        </div>
 
-          <div className="OUkas-POka">
-            <h2>{selectedJob?.job_requisition.title || 'Select a job'}</h2>
-            <p>
-              <InformationCircleIcon /> Last compliance check is{' '}
-              <b>
-                {lastComplianceCheck
-                  ? new Date(lastComplianceCheck).toLocaleDateString('en-US', {
+        <div className="Uijauj-UUplao">
+          <ul>
+            <li>
+              <span>
+                <UserGroupIcon /> {shortlistedCount} shortlisted / {totalApplications} total applicants
+              </span>
+            </li>
+            <li>
+              <span>
+                Posted on:{' '}
+                {selectedJob?.job_requisition.requested_date
+                  ? new Date(selectedJob.job_requisition.requested_date).toLocaleDateString('en-US', {
                       month: 'long',
                       day: 'numeric',
                       year: 'numeric',
                       weekday: 'long',
                     })
                   : 'N/A'}
-              </b>{' '}
-              by <b>{checkedBy || 'N/A'}</b>
-            </p>
-          </div>
-        </div>
-      )}
+              </span>
+            </li>
+            <li>
+              <span>Status: {selectedJob?.job_requisition.status || 'N/A'}</span>
+            </li>
+          </ul>
 
-      {!loading && !error && (
-        <ApplicantTable
-          jobId={selectedJobId}
-          complianceChecklist={complianceChecklist}
-          applications={shortlistedApplications}
-        />
-      )}
+          <button
+            className="Deecc-NNBYna"
+            onClick={() => setShowEmploymentDecision(true)}
+            disabled={!selectedJobId}
+          >
+            <HandThumbUpIcon /> Employment Decision
+          </button>
+        </div>
+
+        <div className="OUkas-POka">
+          <h2>{selectedJob?.job_requisition.title || 'Select a job'}</h2>
+          <p>
+            <InformationCircleIcon /> Last compliance check is{' '}
+            <b>
+              {lastComplianceCheck
+                ? new Date(lastComplianceCheck).toLocaleDateString('en-US', {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric',
+                    weekday: 'long',
+                  })
+                : 'N/A'}
+            </b>{' '}
+            by <b>{checkedBy || 'N/A'}</b>
+          </p>
+        </div>
+      </div>
+
+      <ApplicantTable
+        jobId={selectedJobId}
+        complianceChecklist={complianceChecklist}
+        applications={shortlistedApplications}
+      />
 
       {showEmploymentDecision && (
         <EmploymentDecision onClose={() => setShowEmploymentDecision(false)} />

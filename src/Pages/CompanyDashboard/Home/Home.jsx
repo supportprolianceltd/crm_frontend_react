@@ -1405,7 +1405,6 @@ const PaginationControls = ({
         </div>
       </div>
     </div>
-    
 
     <div className="page-navigation">
       <span className="page-info">
