@@ -903,6 +903,7 @@
   text-overflow: ellipsis;
   position: relative;
   width: 100%;
+  text-transform: capitalize;
 }
 
 .oikujuj-stha-1-Top-2 p{
@@ -1010,7 +1011,7 @@
     position: relative;
     width: 100%;
     padding: 0px 20px;
-    margin-top: 20px;
+    margin-top:40px;
 }
 
 .UKiakks-Part-Box:first-child{
@@ -1020,9 +1021,9 @@
 .UKiakks-Part-Header{
     position: relative;
     width: 100%;
-    height: auto;
     padding-bottom: 10px;
     border-bottom: 1px solid #eeebf9;
+    margin-bottom: 20px;
 }
 
 .UKiakks-Part-Header h3{
@@ -1260,4 +1261,100 @@
 
 .GHuh-Form-Input select{
     font-size: 12px !important;
+}
+
+
+.for-Stafff-Onlyy .GHuh-Form-Input input[type="file"]{
+    padding-top: 9px !important;
+}
+
+
+/* dddaa-assyhja-Ulaa */
+
+.dddaa-assyhja-Ulaa{
+    position: relative;
+    width: 100%;
+    height: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.dddaa-assyhja-Ulaa li{
+    flex-shrink: 0;
+    cursor: pointer;
+    user-select: none;
+    padding:5px 10px;
+    border-radius: 5px;
+    font-size: 10px;
+    border: 1px solid #eeebf9;
+    background-color: #f7f5ff;
+    transition: all 0.3s ease-in-out;
+}
+
+.dddaa-assyhja-Ulaa li:hover{
+     background: #ebe6ff;
+}
+.dddaa-assyhja-Ulaa li.active-UVVho{
+     background: #ebe6ff;
+    color: #7226FF;
+    border-color: #7226FF;
+    font-weight: 600;
+}
+
+
+
+
+/* HHyjauj-agh-BBNabs */
+
+.HHyjauj-agh-BBNabs{
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    margin-top: 70px;
+    margin-bottom: 10px;
+}
+
+.GHuh-Form-Button{
+    position: relative;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 20px;
+    padding:20px;
+    border-radius: 8px;
+    border: 1px solid #e1dafc;
+    background-color: #f6f5f9;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.3s ease-in-out;
+    user-select: none;
+    cursor: pointer;
+}
+
+.GHuh-Form-Button img{
+    width: 200px;
+    height: 100px;
+    object-fit: contain;
+}
+.GHuh-Form-Button:hover{
+    border-color: #7226FF;
+}
+.GHuh-Form-Button.IsActive-Oka{
+     color: #7226FF;
+    border-color: #7226FF;
+    border-width: 2px;
+     box-shadow: 0 0 20px rgb(74 45 197 / 0.3);
+    -webkit-box-shadow: 0 0 20px rgb(74 45 197 / 0.3);
+    -moz-box-shadow: 0 0 20px rgb(74 45 197 / 0.3);
+}
+
+.ook-rra{
+    text-align: center !important;
 }
