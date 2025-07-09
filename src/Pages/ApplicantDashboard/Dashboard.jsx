@@ -103,11 +103,12 @@ const stepTitles = [
 const Dashboard = () => {
   usePageTitle('Applicant Dashboard');
   const { job_application_code, email, unique_link } = useParams();
-  const [activeCard, setActiveCard] = useState(1);
+  const [activeCard, setActiveCard] = useState(3);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showAlert, setShowAlert] = useState(false);
+
 
   // Calculate step percentages based on data
   const getStepPercentages = (data) => {
@@ -472,7 +473,7 @@ const Dashboard = () => {
           >
             <div className="OL-Boxas-Top">
               <h3>
-                Interview{' '}
+                Interview{' '} 
                 <span>
                   Progress: {stepPercentages[2]}%{' '}
                   <b className={stepPercentages[2] === 50 ? 'pending' : 'not-started'}>

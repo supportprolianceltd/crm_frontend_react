@@ -190,7 +190,7 @@ const ComplianceCheckPage = () => {
                 ) : (
                   jobRequisitions.map((job) => (
                     <option key={job.job_requisition.id} value={job.job_requisition.id}>
-                      {job.job_requisition.title}
+                      {job.job_requisition.title} - {job.job_requisition.job_application_code}
                     </option>
                   ))
                 )}
