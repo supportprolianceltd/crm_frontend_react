@@ -15,7 +15,6 @@ import pdfIcon from '../../../assets/icons/pdf.png';
 import { fetchModules, fetchTenant, createUser } from './HomeService';
 import AccountSelctClient from '../../../assets/img/account-selct-client.svg';
 import AccountSelctStaff from '../../../assets/img/account-selct-staff.svg';
-import { motion, useInView } from 'framer-motion';
 
 const steps = [
   { key: 'Account Selection', title: 'Account Selection' },
