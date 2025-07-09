@@ -12,8 +12,8 @@ import {
 import DefaulUser from '../../../assets/Img/memberIcon.png';
 import pdfIcon from '../../../assets/icons/pdf.png';
 import { motion, useInView } from 'framer-motion';
-import AccountSelctClientIcon from '../../../assets/img/AccountSelctClient.svg';
-import AccountSelctStaffIcon from '../../../assets/img/AccountSelctStaff.svg';
+import AccountSelctClient from '../../../assets/img/account-selct-client.png';
+import AccountSelctStaff from '../../../assets/img/account-selct-staff.png';
 
 const steps = [
   { key: 'Account Selection', title: 'Account Selection' },
@@ -1255,7 +1255,7 @@ const AddUser = () => {
                       }`}
                       onClick={() => handleAccountTypeSelect('Client')}
                     >
-                      <img src={AccountSelctClientIcon} />
+                      <img src={AccountSelctClient} />
                       Client Account
                     </button>
                     <button
@@ -1264,7 +1264,7 @@ const AddUser = () => {
                       }`}
                       onClick={() => handleAccountTypeSelect('Staff')}
                     >
-                       <img src={AccountSelctStaffIcon} />
+                       <img src={AccountSelctStaff} />
                       Staff Account
                     </button>
                   </div>
@@ -1272,7 +1272,7 @@ const AddUser = () => {
                     <p className="erro-message-Txt ook-rra">{fieldErrors.accountType}</p>
                   )}
                 </div>
-
+                
               </div>
             </motion.div>
 
