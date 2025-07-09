@@ -533,7 +533,6 @@ useEffect(() => {
     return isValid;
   };
 
-// AddUser.jsx (only update the handleContinue function; rest remains unchanged)
 const handleContinue = async () => {
   try {
     setIsLoading(true);
@@ -616,11 +615,14 @@ const handleContinue = async () => {
     }
 
     // Construct full email
-    const fullEmail = tenantDomain
-      ? `${formData.emailUsername}@${tenantDomain}`.toLowerCase()
-      : formData.emailUsername;
+    if (!tenantDomain) {
+      setErrorMessage('Tenant domain is not available. Please try again later.');
+      setIsLoading(false);
+      return false;
+    }
+    const fullEmail = `${formData.emailUsername}@${tenantDomain}`.toLowerCase();
 
-    // Construct FormData (only sent on last step)
+    // Construct FormData to match the POST example
     const formDataToSend = new FormData();
 
     // Append top-level fields
@@ -630,28 +632,28 @@ const handleContinue = async () => {
     formDataToSend.append('first_name', formData.firstName);
     formDataToSend.append('last_name', formData.lastName);
     formDataToSend.append('role', formData.role);
-    formDataToSend.append('job_role', formData.department);
+    formDataToSend.append('job_role', formData.department); // Map department to job_role
     formDataToSend.append('dashboard', formData.dashboard);
     formDataToSend.append('access_level', formData.accessLevel);
     formDataToSend.append('status', formData.status);
     formDataToSend.append('two_factor', formData.twoFactor);
 
     // Append profile fields
-// In handleContinue function:
-const profile = {
-  phone: formData.phone,
-  gender: formData.gender,
-  dob: formData.dob,
-  street: formData.street,
-  city: formData.city,
-  state: formData.state,
-  zip_code: formData.zipCode,  // Changed from zipCode to zip_code
-  department: formData.department,
-};
-    Object.keys(profile).forEach(key => {
-      formDataToSend.append(`profile[${key}]`, profile[key] || '');
+    const profile = {
+      phone: formData.phone,
+      gender: formData.gender,
+      dob: formData.dob,
+      street: formData.street,
+      city: formData.city,
+      state: formData.state,
+      zip_code: formData.zipCode, // Map zipCode to zip_code
+      department: formData.department,
+    };
+    Object.entries(profile).forEach(([key, value]) => {
+      formDataToSend.append(`profile[${key}]`, value || '');
     });
 
+    // Append modules
     // Append modules
     const selectedModuleIds = Object.keys(permissions)
       .filter(key => permissions[key])
@@ -660,16 +662,14 @@ const profile = {
         return module ? module.id : null;
       })
       .filter(id => id !== null);
-      
     selectedModuleIds.forEach((moduleId, index) => {
-      formDataToSend.append(`modules[${index}]`, moduleId);
+      formDataToSend.append(`modules[${index}]`, moduleId.toString()); // Ensure scalar value
     });
-
-    // Validate and append documents
+    
+    // Append documents (optional)
     const validDocuments = uploadCards.filter(card => card.selectedFile && card.fileName);
     validDocuments.forEach((card, index) => {
       if (!(card.selectedFile instanceof File)) {
-        console.error(`Document ${index} is not a valid File object:`, card.selectedFile);
         setFieldErrors(prev => ({
           ...prev,
           documents: `Document ${card.fileName} is not a valid file.`,
@@ -682,33 +682,12 @@ const profile = {
       formDataToSend.append(`documents[${index}][file]`, card.selectedFile);
     });
 
-    if (validDocuments.length === 0 && uploadCards.some(card => card.selectedFile || card.fileName)) {
-      setFieldErrors(prev => ({
-        ...prev,
-        documents: 'All documents must have a valid file and title.',
-      }));
-      setErrorMessage('All documents must have a valid file and title.');
-      setIsLoading(false);
-      return false;
-    }
-
     // Log FormData for debugging
     const formDataEntries = {};
     for (let [key, value] of formDataToSend.entries()) {
       formDataEntries[key] = value instanceof File ? `${value.name} (${value.size} bytes)` : value;
     }
     console.log('FormData being sent:', formDataEntries);
-
-    // Additional logging for files
-    console.log('Files in FormData:', Array.from(formDataToSend.entries())
-      .filter(([key]) => key.includes('[file]'))
-      .map(([key, value]) => ({
-        key,
-        name: value.name,
-        size: value.size,
-        type: value instanceof File ? 'File' : typeof value,
-      }))
-    );
 
     // Send request
     const response = await createUser(formDataToSend);
@@ -718,12 +697,14 @@ const profile = {
   } catch (error) {
     console.error('handleContinue error:', {
       message: error.message,
+      response: error.response?.data,
       stack: error.stack,
     });
     const errorDetails = error.response?.data?.message || error.message;
     const fieldErrors = {};
 
     if (typeof errorDetails === 'string') {
+      // Handle string-based error messages
       if (errorDetails.includes('email:')) {
         fieldErrors.emailUsername = errorDetails.match(/email: ([^;]+)/)?.[1] || 'Invalid email';
       }
@@ -731,20 +712,16 @@ const profile = {
         fieldErrors.username = errorDetails.match(/username: ([^;]+)/)?.[1] || 'Invalid username';
       }
       if (errorDetails.includes('profile:')) {
-        const profileError = errorDetails.match(/profile: ([^;]+)/)?.[1] || 'Invalid profile data';
-        fieldErrors.profile = profileError;
-        const profileFieldErrors = errorDetails.match(/profile\[([^\]]+)\]: ([^;]+)/g);
-        if (profileFieldErrors) {
-          profileFieldErrors.forEach(err => {
-            const [, field, message] = err.match(/profile\[([^\]]+)\]: ([^;]+)/);
-            const fieldMap = { zip_code: 'zipCode' };
-            fieldErrors[fieldMap[field] || field] = message;
-          });
-        }
+        const profileFieldErrors = errorDetails.match(/profile\[([^\]]+)\]: ([^;]+)/g) || [];
+        profileFieldErrors.forEach(err => {
+          const [, field, message] = err.match(/profile\[([^\]]+)\]: ([^;]+)/);
+          const fieldMap = { zip_code: 'zipCode' }; // Map backend field to frontend
+          fieldErrors[fieldMap[field] || field] = message;
+        });
       }
       if (errorDetails.includes('documents:')) {
-        const docErrors = errorDetails.match(/documents\[(\d+)\]\[([^\]]+)\]: ([^;]+)/g);
-        if (docErrors) {
+        const docErrors = errorDetails.match(/documents\[(\d+)\]\[([^\]]+)\]: ([^;]+)/g) || [];
+        if (docErrors.length > 0) {
           const formattedErrors = docErrors.map(err => {
             const [, index, field, message] = err.match(/documents\[(\d+)\]\[([^\]]+)\]: ([^;]+)/);
             const fileName = uploadCards[index]?.fileName || `Document ${parseInt(index) + 1}`;
@@ -759,7 +736,7 @@ const profile = {
       // Handle structured errors from the backend
       if (errorDetails.profile) {
         Object.entries(errorDetails.profile).forEach(([field, errors]) => {
-          const fieldMap = { zip_code: 'zipCode' };
+          const fieldMap = { zip_code: 'zipCode' }; // Map backend field to frontend
           fieldErrors[fieldMap[field] || field] = Array.isArray(errors) ? errors.join(', ') : errors;
         });
       }
@@ -767,7 +744,7 @@ const profile = {
         const docErrors = errorDetails.documents.map((doc, index) => {
           const fileName = uploadCards[index]?.fileName || `Document ${index + 1}`;
           if (typeof doc === 'object') {
-            return Object.entries(doc).map(([field, errors]) => 
+            return Object.entries(doc).map(([field, errors]) =>
               `${fileName}: ${field} ${Array.isArray(errors) ? errors.join(', ') : errors}`
             ).join('; ');
           }
@@ -780,6 +757,9 @@ const profile = {
       }
       if (errorDetails.username) {
         fieldErrors.username = Array.isArray(errorDetails.username) ? errorDetails.username.join(', ') : errorDetails.username;
+      }
+      if (errorDetails.modules) {
+        fieldErrors.modules = Array.isArray(errorDetails.modules) ? errorDetails.modules.join(', ') : errorDetails.modules;
       }
     }
 
