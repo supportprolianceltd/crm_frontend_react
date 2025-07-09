@@ -12,8 +12,8 @@ import {
 import DefaulUser from '../../../assets/Img/memberIcon.png';
 import pdfIcon from '../../../assets/icons/pdf.png';
 import { motion, useInView } from 'framer-motion';
-import AccountSelctClient from '../../../assets/img/AccountSelctClient.svg';
-import AccountSelctStaff from '../../../assets/img/AccountSelctStaff.svg';
+import AccountSelctClientIcon from '../../../assets/img/AccountSelctClient.svg';
+import AccountSelctStaffIcon from '../../../assets/img/AccountSelctStaff.svg';
 
 const steps = [
   { key: 'Account Selection', title: 'Account Selection' },
@@ -1255,7 +1255,7 @@ const AddUser = () => {
                       }`}
                       onClick={() => handleAccountTypeSelect('Client')}
                     >
-                      <img src={AccountSelctClient} />
+                      <img src={AccountSelctClientIcon} />
                       Client Account
                     </button>
                     <button
@@ -1264,7 +1264,7 @@ const AddUser = () => {
                       }`}
                       onClick={() => handleAccountTypeSelect('Staff')}
                     >
-                       <img src={AccountSelctStaff} />
+                       <img src={AccountSelctStaffIcon} />
                       Staff Account
                     </button>
                   </div>
