@@ -62,7 +62,7 @@ const SuccessAlert = ({ message, show }) => (
 );
 
 /* ---------- Reusable Template Editor ---------- */
-const EmailTemplateEditor = ({ id, template, triggerGlobalSuccess }) => {
+const EmailTemplateEditor = ({ id, template, triggerGlobalSuccess, updateTemplate }) => {
   const [content, setContent] = useState(template.content);
   const [isAutoSent, setIsAutoSent] = useState(template.is_auto_sent);
   const [isDirty, setIsDirty] = useState(false);
@@ -70,7 +70,15 @@ const EmailTemplateEditor = ({ id, template, triggerGlobalSuccess }) => {
   const [isSaving, setIsSaving] = useState(false);
   const textareaRef = useRef(null);
 
-  /* autoresize on mount and content change */
+  /* Sync state with template prop changes */
+  useEffect(() => {
+    //console.log(`EmailTemplateEditor (${id}) received template:`, template);
+    setContent(template.content);
+    setIsAutoSent(template.is_auto_sent);
+    setIsDirty(false);
+  }, [template]);
+
+  /* Autoresize on mount and content change */
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -78,7 +86,7 @@ const EmailTemplateEditor = ({ id, template, triggerGlobalSuccess }) => {
     }
   }, [content]);
 
-  /* autoresize while typing */
+  /* Autoresize while typing */
   const handleInput = (e) => {
     const el = e.target;
     el.style.height = 'auto';
@@ -87,19 +95,21 @@ const EmailTemplateEditor = ({ id, template, triggerGlobalSuccess }) => {
     setIsDirty(el.value !== template.content || isAutoSent !== template.is_auto_sent);
   };
 
-  /* handle automation toggle */
+  /* Handle automation toggle */
   const handleAutoSendToggle = () => {
-    setIsAutoSent(!isAutoSent);
-    setIsDirty(content !== template.content || !isAutoSent !== template.is_auto_sent);
+    setIsAutoSent((prev) => !prev);
+    setIsDirty((prev) => content !== template.content || !isAutoSent !== template.is_auto_sent);
   };
 
-  /* save template via API */
+  /* Save template via API */
   const handleSave = async () => {
     setIsSaving(true);
     try {
       const updatedTemplate = { [id]: { content, is_auto_sent: isAutoSent } };
+      // console.log(`Saving template (${id}):`, updatedTemplate);
       await apiClient.patch('/api/tenant/config/', { email_templates: updatedTemplate });
       setIsDirty(false);
+      updateTemplate(id, { content, is_auto_sent: isAutoSent });
       triggerGlobalSuccess(
         `"${id.replace(/([a-z])([A-Z])/g, '$1 $2')}" notification updated successfully!`
       );
@@ -112,7 +122,7 @@ const EmailTemplateEditor = ({ id, template, triggerGlobalSuccess }) => {
     }
   };
 
-  /* slide-down bar animation variants */
+  /* Slide-down bar animation variants */
   const barVariants = {
     hidden: { opacity: 0, y: -10, height: 0, overflow: 'hidden' },
     shown: {
@@ -134,8 +144,8 @@ const EmailTemplateEditor = ({ id, template, triggerGlobalSuccess }) => {
         value={content}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
-        onInput={handleInput}
-        style={{ overflow: 'hidden' }}
+        onChange={handleInput}
+        style={{ overflow: 'hidden', whiteSpace: 'pre-wrap' }}
       />
       <div className="mt-2">
         <label className="inline-flex items-center">
@@ -178,7 +188,7 @@ const EmailTemplateEditor = ({ id, template, triggerGlobalSuccess }) => {
                   }}
                 />
               )}
-              {isSaving ? 'Saving…' : 'Save Update'}
+              {isSaving ? 'Saving...' : 'Save Update'}
             </button>
           </motion.div>
         )}
@@ -193,12 +203,14 @@ const NotificationSettings = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [templates, setTemplates] = useState(defaultTemplates);
 
-  /* fetch or create templates on mount */
+  /* Fetch or create templates on mount */
   useEffect(() => {
     const fetchOrCreateTemplates = async () => {
       try {
         const response = await apiClient.get('/api/tenant/config/');
         const fetchedTemplates = response.data.email_templates || {};
+        //console.log('Fetched templates:', fetchedTemplates);
+
         // Merge fetched templates with defaults
         const mergedTemplates = { ...defaultTemplates };
         Object.keys(defaultTemplates).forEach((key) => {
@@ -207,23 +219,50 @@ const NotificationSettings = () => {
             is_auto_sent: fetchedTemplates[key]?.is_auto_sent ?? defaultTemplates[key].is_auto_sent,
           };
         });
+       // console.log('Merged templates:', mergedTemplates);
         setTemplates(mergedTemplates);
       } catch (error) {
-        console.error('Error fetching tenant config:', error);
-        setGlobalSuccess({ show: true, message: 'Failed to load tenant configuration. Using defaults.' });
-        setTimeout(() => setGlobalSuccess({ show: false, message: '' }), 2000);
-        setTemplates(defaultTemplates);
+        if (error.response?.status === 404 && error.response?.data?.message === 'Tenant config not found') {
+          try {
+            // Create TenantConfig with default templates
+            await apiClient.post('/api/tenant/config/', { email_templates: defaultTemplates });
+           // console.log('Created TenantConfig with default templates');
+            setTemplates(defaultTemplates);
+            setGlobalSuccess({ show: true, message: 'Tenant configuration created with default notifications.' });
+            setTimeout(() => setGlobalSuccess({ show: false, message: '' }), 2000);
+          } catch (createError) {
+            console.error('Error creating tenant config:', createError);
+            setGlobalSuccess({ show: true, message: 'Failed to create tenant configuration. Using default notifications.' });
+            setTimeout(() => setGlobalSuccess({ show: false, message: '' }), 2000);
+            setTemplates(defaultTemplates);
+          }
+        } else {
+          console.error('Error fetching tenant config:', error);
+          setGlobalSuccess({ show: true, message: 'Failed to load notifications. Using defaults.' });
+          setTimeout(() => setGlobalSuccess({ show: false, message: '' }), 2000);
+          setTemplates(defaultTemplates);
+        }
       }
     };
     fetchOrCreateTemplates();
   }, []);
 
+  /* Update template state after save */
+  const updateTemplate = (id, updatedTemplate) => {
+    setTemplates((prevTemplates) => {
+      const newTemplates = { ...prevTemplates, [id]: updatedTemplate };
+      //console.log('Updated templates:', newTemplates);
+      return newTemplates;
+    });
+  };
+
+  /* Trigger success/error messages */
   const triggerGlobalSuccess = (msg) => {
     setGlobalSuccess({ show: true, message: msg });
     setTimeout(() => setGlobalSuccess({ show: false, message: '' }), 2000);
   };
 
-  /* search filter */
+  /* Search filter */
   const filteredTemplates = Object.entries(templates).filter(([key, value]) => {
     if (!searchTerm.trim()) return true;
     const readableKey = key.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase();
@@ -237,7 +276,7 @@ const NotificationSettings = () => {
     <>
       <SuccessAlert message={globalSuccess.message} show={globalSuccess.show} />
       <div className="EmailNotifications">
-        {/* ---------- Top Bar ---------- */}
+        {/* Top Bar */}
         <div className="Dash-OO-Boas OOOP-LOa">
           <div className="Dash-OO-Boas-Top">
             <div className="Dash-OO-Boas-Top-1">
@@ -259,7 +298,7 @@ const NotificationSettings = () => {
             </div>
           </div>
         </div>
-        {/* ---------- Templates List ---------- */}
+        {/* Templates List */}
         <div className="Dash-OO-Boas Gen-Boxshadow">
           {filteredTemplates.length ? (
             filteredTemplates.map(([key, value]) => (
@@ -272,12 +311,13 @@ const NotificationSettings = () => {
                     id={key}
                     template={value}
                     triggerGlobalSuccess={triggerGlobalSuccess}
+                    updateTemplate={updateTemplate}
                   />
                 </div>
               </div>
             ))
           ) : (
-            <p style={{ padding: '1rem' }}>No notifications match “{searchTerm}”.</p>
+            <p style={{ padding: '1rem' }}>No notifications match "{searchTerm}".</p>
           )}
         </div>
       </div>
