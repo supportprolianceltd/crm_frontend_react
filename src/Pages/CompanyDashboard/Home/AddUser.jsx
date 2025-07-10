@@ -123,6 +123,7 @@ const AddUser = () => {
     accountType: '',
     firstName: '',
     lastName: '',
+    companyAgency: '', // Added Company/Agency field
     email: '',
     phone: '',
     gender: '',
@@ -427,6 +428,7 @@ const AddUser = () => {
       ...prev,
       accountType: type,
       dashboard: '', // Reset dashboard when account type changes
+      companyAgency: '', // Reset companyAgency when account type changes
     }));
     setFieldErrors({});
     setErrorMessage(null);
@@ -464,11 +466,7 @@ const AddUser = () => {
       accountType: '',
       firstName: '',
       lastName: '',
-      dashboard: '',
-      username: '',
-      password: '',
-      status: '',
-      twoFactor: '',
+      companyAgency: '',
       email: '',
       phone: '',
       gender: '',
@@ -477,6 +475,11 @@ const AddUser = () => {
       city: '',
       state: '',
       zip: '',
+      username: '',
+      password: '',
+      status: '',
+      twoFactor: '',
+      dashboard: '',
       rightToWorkUK: '',
       proofRightToWork: null,
       photoID: null,
@@ -800,6 +803,14 @@ const AddUser = () => {
             <motion.li key="lastName" variants={itemVariants}>
               <span>Last Name</span>
               <p>{formData.lastName}</p>
+            </motion.li>
+          );
+        }
+        if (formData.companyAgency) {
+          children.push(
+            <motion.li key="companyAgency" variants={itemVariants}>
+              <span>Company/Agency</span>
+              <p>{formData.companyAgency}</p>
             </motion.li>
           );
         }
@@ -1340,6 +1351,7 @@ const AddUser = () => {
                       )}
                     </div>
                   </div>
+
                   <div className="GHuh-Form-Input">
                     <label>Email</label>
                     <input
@@ -1392,6 +1404,20 @@ const AddUser = () => {
                       <p className="erro-message-Txt">{fieldErrors.dob}</p>
                     )}
                   </div>
+
+               {formData.accountType === 'Client' && (
+                    <div className="GHuh-Form-Input">
+                      <label>Company/Agency (Optional)</label>
+                      <input
+                        type="text"
+                        name="companyAgency"
+                        placeholder="Enter company or agency name"
+                        value={formData.companyAgency}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                  )}
+
                   <div className="GHuh-Form-Input">
                     <label>Street</label>
                     <input
