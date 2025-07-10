@@ -1,0 +1,215 @@
+/* Staff-Dashboard */
+.Staff-Dashboard .SideNavBar{
+    background-color: #1b1340 !important;
+    color: #fff;
+    padding-top: 0px !important;
+}
+
+
+.Staff-Dashboard .LeftnavBr-Icons li.active p, 
+.Staff-Dashboard .LeftnavBr-Icons li.active a{
+    color: #fff !important;
+}
+
+.Staff-Dashboard .LeftnavBr-Icons li.active p .LefB-Icon, 
+.Staff-Dashboard .LeftnavBr-Icons li.active a .LefB-Icon {
+    background-color: transparent !important;
+}
+
+.Staff-Dashboard .LeftnavBr-Icons li.active p, 
+.Staff-Dashboard .LeftnavBr-Icons li.active a{
+    background-color: #291d58 !important;
+}
+
+.Staff-Dashboard .LeftnavBr-Icons li.active p .LefB-Icon, 
+.Staff-Dashboard .LeftnavBr-Icons li.active a .LefB-Icon{
+    color: #fff !important;
+}
+
+
+.Staff-Dashboard .LeftnavBr-Icons li p:hover, 
+.Staff-Dashboard .LeftnavBr-Icons li a:hover{
+    background-color: #291d58 !important;
+    color: #fff !important;
+}
+
+.Staff-Dashboard .LeftnavBr-Icons li p .LefB-Icon, 
+.Staff-Dashboard .LeftnavBr-Icons li a .LefB-Icon {
+    background-color: transparent !important;
+    width: auto !important;
+    height: auto !important;
+    color: #b3a3f5 !important;
+}
+
+.Staff-Dashboard .ShrinkNav .SideNavBar .LeftnavBr-Icons li p .LefB-Icon,
+.Staff-Dashboard .ShrinkNav .SideNavBar .LeftnavBr-Icons li a .LefB-Icon{
+    width: 30px !important;
+    height: 30px !important;
+}
+.Staff-Dashboard .ShrinkNav .SideNavBar .LeftnavBr-Icons li p .LefB-Icon:hover,
+.Staff-Dashboard .ShrinkNav .SideNavBar .LeftnavBr-Icons li a .LefB-Icon:hover{
+     background-color: #291d58 !important;
+}
+
+.Staff-Dashboard .ShrinkNav .SideNavBar .LeftnavBr-Icons li.active p .LefB-Icon,
+.Staff-Dashboard .ShrinkNav .SideNavBar .LeftnavBr-Icons li.active a .LefB-Icon{
+     background-color: #7226FF !important;
+}
+
+.Staff-Dashboard .ShrinkNav .SideNavBar .LeftnavBr-Icons li p,
+.Staff-Dashboard .ShrinkNav .SideNavBar .LeftnavBr-Icons li a{
+   background-color: transparent !important;
+}
+
+
+.Staff-Dashboard .LeftnavBr-Title {
+    color:#b3a3f5 !important;
+}
+
+.Staff-Dashboard .LeftnavBr-Icons{
+    gap: 5px !important;
+}
+.Staff-Dashboard .ShrinkNav .SideNavBar .LeftnavBr-Icons{
+    gap: 0px !important;
+}
+.Staff-Dashboard .LeftnavBr-Title .shrinkToggle{
+    color:#b3a3f5 !important;
+}
+.Staff-Dashboard .LeftnavBr-Title .shrinkToggle:hover{
+      background-color: #291d58 !important;
+    color: #fff !important;
+}
+
+.Side-Logogos{
+    position: relative;
+    padding:0px 20px;
+    border-bottom: 1px solid #413085 !important;
+    height: 55px !important;
+    display: flex;
+    align-items: center;
+}
+
+.Side-Logogos .Nav-Brand span{
+    color:#b3a3f5 !important;
+    font-size: 14px !important;
+    height: 12px !important;
+    padding-left: 8px !important;
+}
+.Side-Logogos .Nav-Brand{
+    gap: 8px !important;
+}
+
+.Side-Logogos .Nav-Brand img{
+    max-width: 60px !important;
+}
+
+.Staff-Dashboard .LeftnavBr-Icons li.special-clock-in a{
+    background-color: #7226FF !important;
+    padding-top: 14px !important;
+    padding-bottom: 14px !important;
+}
+
+.Staff-Dashboard .LeftnavBr-Icons li.special-clock-in{
+    margin-bottom: 10px !important;
+}
+
+.Staff-Dashboard .LeftnavBr-Icons li.special-clock-in a p{
+    width: auto !important;
+    padding: 2px 5px !important;
+    display: inline-flex !important;
+    font-size: 10px !important;
+    font-weight: 400 !important;
+    border-radius: 5px !important;
+}
+
+.Staff-Dashboard .LeftnavBr-Icons li.special-clock-in a .LefB-Icon{
+    color: #fff !important;
+}
+
+
+.animate-spin-fast {
+  animation: spinFast 1s linear infinite;
+  -webkit-animation: spinFast 1s linear infinite;
+  -moz-animation: spinFast 1s linear infinite;
+}
+
+@keyframes spinFast {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+@-webkit-keyframes spinFast {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+@-moz-keyframes spinFast {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.Staff-Dashboard  .sppen-sppart{
+    width: 14px !important;
+}
+
+.notification-badge{
+    background-color: #8a6eff !important;
+    width: auto;
+    height: 15px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 10px;
+    padding: 0px 6px;
+    border-radius: 3px;
+    line-height: 100% !important;
+}
+
+
+.Staff-Dashboard  .Top-NaV{
+    background: transparent !important;
+    padding: 0px !important;
+    padding-left: 220px !important;
+    z-index: 1000 !important;
+    color: #372580 !important;
+    justify-content: flex-end !important;
+}
+
+.oikaj-PPl{
+    text-align: right !important;
+}
+
+
+.Staff-Dashboard .NaV-2-Prof-2 h4 {
+    max-width: 100% !important;
+}
+
+.Staff-Dashboard .NaV-2-Prof-1 span{
+    border:1px solid #d0c7ec !important;
+    border-radius: 8px !important;
+    font-size: 12px !important;
+    width: 35px !important;
+    height: 35px !important;
+}
+
+.Staff-Dashboard .active-NavProfa{
+    background-color: transparent !important;
+    color: #372580 !important;
+}
+
+
+.kjuj-ddrop{
+    left: -130px !important;
+    min-width: 250px !important;
+}
