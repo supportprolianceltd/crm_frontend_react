@@ -426,6 +426,7 @@ const AddUser = () => {
     setFormData((prev) => ({
       ...prev,
       accountType: type,
+      dashboard: '', // Reset dashboard when account type changes
     }));
     setFieldErrors({});
     setErrorMessage(null);
@@ -606,12 +607,17 @@ const AddUser = () => {
 
   const validateLoginCredentialsStep = () => {
     const requiredFields = {
-      dashboard: 'Dashboard selection is required',
       username: 'Username is required',
       password: 'Password is required',
       status: 'Status is required',
       twoFactor: 'Two-Factor Auth selection is required',
     };
+
+    // Only validate dashboard if accountType is Staff
+    if (formData.accountType === 'Staff') {
+      requiredFields.dashboard = 'Dashboard selection is required';
+    }
+
     const errors = {};
     let isValid = true;
 
@@ -1941,23 +1947,24 @@ const AddUser = () => {
                     )}
                   </div>
                   <div className="Grga-INpu-Grid">
-                    <div className="GHuh-Form-Input">
-                      <label>Dashboard</label>
-                      <select
-                        name="dashboard"
-                        value={formData.dashboard}
-                        onChange={handleInputChange}
-                      >
-                        <option value="">Select dashboard</option>
-                        <option value="Client">Client</option>
-                        <option value="Staff">Staff</option>
-                        <option value="Admin">Admin</option>
-                        <option value="Sub Admin">Sub Admin</option>
-                      </select>
-                      {fieldErrors.dashboard && (
-                        <p className="erro-message-Txt">{fieldErrors.dashboard}</p>
-                      )}
-                    </div>
+                    {formData.accountType === 'Staff' && (
+                      <div className="GHuh-Form-Input">
+                        <label>Dashboard</label>
+                        <select
+                          name="dashboard"
+                          value={formData.dashboard}
+                          onChange={handleInputChange}
+                        >
+                          <option value="">Select dashboard</option>
+                          <option value="Staff">Staff</option>
+                          <option value="Admin">Admin</option>
+                          <option value="Sub Admin">Sub Admin</option>
+                        </select>
+                        {fieldErrors.dashboard && (
+                          <p className="erro-message-Txt">{fieldErrors.dashboard}</p>
+                        )}
+                      </div>
+                    )}
                     <div className="GHuh-Form-Input">
                       <label>Status</label>
                       <select
