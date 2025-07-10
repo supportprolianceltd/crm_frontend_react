@@ -1,6 +1,35 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { apiClient } from './ApiService';
+
+/* ---------- Default Templates for Fallback ---------- */
+const defaultTemplates = {
+  interviewScheduling: {
+    content: `Hello [Candidate Name],\n\nWe’re pleased to invite you to an interview for the [Position] role at [Company].\nPlease let us know your availability so we can confirm a convenient time.\n\nBest regards,\n[Your Name]`,
+    is_auto_sent: false,
+  },
+  interviewRescheduling: {
+    content: `Hello [Candidate Name],\n\nDue to unforeseen circumstances, we need to reschedule your interview originally set for [Old Date/Time]. Kindly share a few alternative slots that work for you.\n\nThanks for your understanding,\n[Your Name]`,
+    is_auto_sent: false,
+  },
+  interviewRejection: {
+    content: `Hello [Candidate Name],\n\nThank you for taking the time to interview. After careful consideration, we have decided not to move forward.\n\nBest wishes,\n[Your Name]`,
+    is_auto_sent: false,
+  },
+  interviewAcceptance: {
+    content: `Hello [Candidate Name],\n\nCongratulations! We are moving you to the next stage. We’ll follow up with next steps.\n\nLooking forward,\n[Your Name]`,
+    is_auto_sent: false,
+  },
+  jobRejection: {
+    content: `Hello [Candidate Name],\n\nThank you for applying. Unfortunately, we’ve chosen another candidate at this time.\n\nKind regards,\n[Your Name]`,
+    is_auto_sent: false,
+  },
+  jobAcceptance: {
+    content: `Hello [Candidate Name],\n\nWe’re excited to offer you the [Position] role at [Company]! Please find the offer letter attached.\n\nWelcome aboard!\n[Your Name]`,
+    is_auto_sent: false,
+  },
+};
 
 /* ---------- Floating Success Alert ---------- */
 const SuccessAlert = ({ message, show }) => (
@@ -33,45 +62,57 @@ const SuccessAlert = ({ message, show }) => (
 );
 
 /* ---------- Reusable Template Editor ---------- */
-const EmailTemplateEditor = ({ id, defaultValue, triggerGlobalSuccess }) => {
-  const [value, setValue] = useState(defaultValue);
+const EmailTemplateEditor = ({ id, template, triggerGlobalSuccess }) => {
+  const [content, setContent] = useState(template.content);
+  const [isAutoSent, setIsAutoSent] = useState(template.is_auto_sent);
   const [isDirty, setIsDirty] = useState(false);
   const [focused, setFocused] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-
   const textareaRef = useRef(null);
 
-  /* autoresize on mount */
+  /* autoresize on mount and content change */
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
-  }, []);
+  }, [content]);
 
   /* autoresize while typing */
   const handleInput = (e) => {
     const el = e.target;
     el.style.height = 'auto';
     el.style.height = `${el.scrollHeight}px`;
-    setValue(el.value);
-    setIsDirty(el.value !== defaultValue);
+    setContent(el.value);
+    setIsDirty(el.value !== template.content || isAutoSent !== template.is_auto_sent);
   };
 
-  /* simulate async save */
-  const handleSave = () => {
-    setIsSaving(true);
-    setIsDirty(false);
+  /* handle automation toggle */
+  const handleAutoSendToggle = () => {
+    setIsAutoSent(!isAutoSent);
+    setIsDirty(content !== template.content || !isAutoSent !== template.is_auto_sent);
+  };
 
-    setTimeout(() => {
-      setIsSaving(false);
+  /* save template via API */
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const updatedTemplate = { [id]: { content, is_auto_sent: isAutoSent } };
+      await apiClient.patch('/api/tenant/config/', { email_templates: updatedTemplate });
+      setIsDirty(false);
       triggerGlobalSuccess(
         `"${id.replace(/([a-z])([A-Z])/g, '$1 $2')}" notification updated successfully!`
       );
-    }, 3000);
+    } catch (error) {
+      console.error('Error saving template:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to save notification. Please try again.';
+      triggerGlobalSuccess(errorMessage);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  /* slide‑down bar animation variants */
+  /* slide-down bar animation variants */
   const barVariants = {
     hidden: { opacity: 0, y: -10, height: 0, overflow: 'hidden' },
     shown: {
@@ -90,13 +131,23 @@ const EmailTemplateEditor = ({ id, defaultValue, triggerGlobalSuccess }) => {
         ref={textareaRef}
         id={id}
         className="oujka-Inpuauy OIUja-Tettxa"
-        value={value}
+        value={content}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         onInput={handleInput}
         style={{ overflow: 'hidden' }}
       />
-
+      <div className="mt-2">
+        <label className="inline-flex items-center">
+          <input
+            type="checkbox"
+            checked={isAutoSent}
+            onChange={handleAutoSendToggle}
+            className="form-checkbox h-5 w-5 text-gray-600"
+          />
+          <span className="ml-2 text-sm">Send Automatically</span>
+        </label>
+      </div>
       <AnimatePresence>
         {showBar && (
           <motion.div
@@ -138,42 +189,53 @@ const EmailTemplateEditor = ({ id, defaultValue, triggerGlobalSuccess }) => {
 
 /* ---------- Main Notification Settings ---------- */
 const NotificationSettings = () => {
-  /* global success alert state */
   const [globalSuccess, setGlobalSuccess] = useState({ show: false, message: '' });
-
-  /* search term */
   const [searchTerm, setSearchTerm] = useState('');
+  const [templates, setTemplates] = useState(defaultTemplates);
 
-  /* pseudo‑DB of templates */
-  const templates = {
-    interviewScheduling: `Hello [Candidate Name],\n\nWe’re pleased to invite you to an interview for the [Position] role at [Company].\nPlease let us know your availability so we can confirm a convenient time.\n\nBest regards,\n[Your Name]`,
-    interviewRescheduling: `Hello [Candidate Name],\n\nDue to unforeseen circumstances, we need to reschedule your interview originally set for [Old Date/Time]. Kindly share a few alternative slots that work for you.\n\nThanks for your understanding,\n[Your Name]`,
-    interviewRejection: `Hello [Candidate Name],\n\nThank you for taking the time to interview. After careful consideration, we have decided not to move forward.\n\nBest wishes,\n[Your Name]`,
-    interviewAcceptance: `Hello [Candidate Name],\n\nCongratulations! We are moving you to the next stage. We’ll follow up with next steps.\n\nLooking forward,\n[Your Name]`,
-    jobRejection: `Hello [Candidate Name],\n\nThank you for applying. Unfortunately, we’ve chosen another candidate at this time.\n\nKind regards,\n[Your Name]`,
-    jobAcceptance: `Hello [Candidate Name],\n\nWe’re excited to offer you the [Position] role at [Company]! Please find the offer letter attached.\n\nWelcome aboard!\n[Your Name]`,
-  };
+  /* fetch or create templates on mount */
+  useEffect(() => {
+    const fetchOrCreateTemplates = async () => {
+      try {
+        const response = await apiClient.get('/api/tenant/config/');
+        const fetchedTemplates = response.data.email_templates || {};
+        // Merge fetched templates with defaults
+        const mergedTemplates = { ...defaultTemplates };
+        Object.keys(defaultTemplates).forEach((key) => {
+          mergedTemplates[key] = {
+            content: fetchedTemplates[key]?.content || defaultTemplates[key].content,
+            is_auto_sent: fetchedTemplates[key]?.is_auto_sent ?? defaultTemplates[key].is_auto_sent,
+          };
+        });
+        setTemplates(mergedTemplates);
+      } catch (error) {
+        console.error('Error fetching tenant config:', error);
+        setGlobalSuccess({ show: true, message: 'Failed to load tenant configuration. Using defaults.' });
+        setTimeout(() => setGlobalSuccess({ show: false, message: '' }), 2000);
+        setTemplates(defaultTemplates);
+      }
+    };
+    fetchOrCreateTemplates();
+  }, []);
 
   const triggerGlobalSuccess = (msg) => {
     setGlobalSuccess({ show: true, message: msg });
     setTimeout(() => setGlobalSuccess({ show: false, message: '' }), 2000);
   };
 
-  /* ------------------ SEARCH FILTER ------------------ */
+  /* search filter */
   const filteredTemplates = Object.entries(templates).filter(([key, value]) => {
     if (!searchTerm.trim()) return true;
-
     const readableKey = key.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase();
     return (
       readableKey.includes(searchTerm.toLowerCase()) ||
-      value.toLowerCase().includes(searchTerm.toLowerCase())
+      value.content.toLowerCase().includes(searchTerm.toLowerCase())
     );
   });
 
   return (
     <>
       <SuccessAlert message={globalSuccess.message} show={globalSuccess.show} />
-
       <div className="EmailNotifications">
         {/* ---------- Top Bar ---------- */}
         <div className="Dash-OO-Boas OOOP-LOa">
@@ -181,7 +243,6 @@ const NotificationSettings = () => {
             <div className="Dash-OO-Boas-Top-1">
               <h3>Notification Settings</h3>
             </div>
-
             <div className="Dash-OO-Boas-Top-2">
               <div className="genn-Drop-Search">
                 <span>
@@ -192,12 +253,12 @@ const NotificationSettings = () => {
                   placeholder="Search for notification(s)"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
+                  className="oujka-Inpuauy"
                 />
               </div>
             </div>
           </div>
         </div>
-
         {/* ---------- Templates List ---------- */}
         <div className="Dash-OO-Boas Gen-Boxshadow">
           {filteredTemplates.length ? (
@@ -209,7 +270,7 @@ const NotificationSettings = () => {
                 <div className="EmailNotifications-Partss-2">
                   <EmailTemplateEditor
                     id={key}
-                    defaultValue={value}
+                    template={value}
                     triggerGlobalSuccess={triggerGlobalSuccess}
                   />
                 </div>
