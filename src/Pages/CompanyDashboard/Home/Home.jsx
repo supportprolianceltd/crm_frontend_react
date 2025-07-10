@@ -1055,7 +1055,7 @@ const Home = () => {
         </a>
         <a href="#" className="Synnc-Card Simp-Boxshadow">
           <h4>
-            Customer Count <span>All Branches</span>
+            Client Count <span>All Branches</span>
           </h4>
           <h3>
             <span>20K+</span>
