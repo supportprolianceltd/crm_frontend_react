@@ -12,15 +12,18 @@ import {
 import DefaulUser from '../../../assets/Img/memberIcon.png';
 import pdfIcon from '../../../assets/icons/pdf.png';
 import { motion, useInView } from 'framer-motion';
-import AccountSelctClient from '../../../assets/img/account-selct-client.svg';
-import AccountSelctStaff from '../../../assets/img/account-selct-staff.svg';
+import AccountSelctClient from './img/accountselctclient.png';
+import AccountSelctStaff from './img/accountselctstaff.png';
 
-const steps = [
+// Base steps array (without Permissions by default)
+const baseSteps = [
   { key: 'Account Selection', title: 'Account Selection' },
   { key: 'Details', title: 'Details' },
-  { key: 'Permissions', title: 'Permissions' },
   { key: 'Set Login Credentials', title: 'Set Login Credentials' },
 ];
+
+// Permissions step to be added conditionally for Staff
+const permissionsStep = { key: 'Permissions', title: 'Permissions' };
 
 // Framer Motion animation variants for list items
 const listVariants = {
@@ -120,6 +123,7 @@ const AddUser = () => {
     accountType: '',
     firstName: '',
     lastName: '',
+    companyAgency: '', // Added Company/Agency field
     email: '',
     phone: '',
     gender: '',
@@ -178,6 +182,11 @@ const AddUser = () => {
       fileName: '',
     },
   ]);
+
+  // Dynamically set steps based on accountType
+  const steps = formData.accountType === 'Staff'
+    ? [...baseSteps.slice(0, 2), permissionsStep, baseSteps[2]]
+    : baseSteps;
 
   const isDragging = useRef(false);
   const startY = useRef(0);
@@ -386,7 +395,6 @@ const AddUser = () => {
         ...prev,
         [name]: value,
       };
-      // Clear associated file if selecting "No" for specific fields
       if (name === 'rightToWorkUK' && value === 'No') {
         updatedFormData.proofRightToWork = null;
       }
@@ -419,29 +427,34 @@ const AddUser = () => {
     setFormData((prev) => ({
       ...prev,
       accountType: type,
+      dashboard: '', // Reset dashboard when account type changes
+      companyAgency: '', // Reset companyAgency when account type changes
     }));
     setFieldErrors({});
     setErrorMessage(null);
     const currentIndex = steps.findIndex((step) => step.key === activeKey);
-    if (currentIndex < steps.length - 1) {
-      const nextKey = steps[currentIndex + 1].key;
-      setActiveKey(nextKey);
-      if (containerRef.current) {
-        containerRef.current.scrollIntoView({
+    const nextIndex = currentIndex + 1;
+    let targetKey = steps[nextIndex]?.key || 'Details';
+    // If Client is selected, skip Permissions
+    if (type === 'Client' && targetKey === 'Permissions') {
+      targetKey = 'Set Login Credentials';
+    }
+    setActiveKey(targetKey);
+    if (containerRef.current) {
+      containerRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    }
+    setTimeout(() => {
+      const el = sectionRefs[targetKey]?.current;
+      if (el && mainContentRef.current) {
+        mainContentRef.current.scrollTo({
+          top: el.offsetTop,
           behavior: 'smooth',
-          block: 'start',
         });
       }
-      setTimeout(() => {
-        const el = sectionRefs[nextKey]?.current;
-        if (el && mainContentRef.current) {
-          mainContentRef.current.scrollTo({
-            top: el.offsetTop,
-            behavior: 'smooth',
-          });
-        }
-      }, 300);
-    }
+    }, 300);
   };
 
   const togglePasswordVisibility = () => {
@@ -453,11 +466,7 @@ const AddUser = () => {
       accountType: '',
       firstName: '',
       lastName: '',
-      dashboard: '',
-      username: '',
-      password: '',
-      status: '',
-      twoFactor: '',
+      companyAgency: '',
       email: '',
       phone: '',
       gender: '',
@@ -466,6 +475,11 @@ const AddUser = () => {
       city: '',
       state: '',
       zip: '',
+      username: '',
+      password: '',
+      status: '',
+      twoFactor: '',
+      dashboard: '',
       rightToWorkUK: '',
       proofRightToWork: null,
       photoID: null,
@@ -509,6 +523,7 @@ const AddUser = () => {
     });
     setShowPassword(false);
     setFieldErrors({});
+    setActiveKey('Account Selection');
     Object.values(fileInputRefs.current).forEach((input) => {
       if (input) input.value = '';
     });
@@ -552,7 +567,6 @@ const AddUser = () => {
       careCertificate: 'Care certificate status is required',
       professionalRegistration: 'Professional registration status is required',
     };
-    // Conditionally add file upload requirements based on Yes/No selections
     if (formData.rightToWorkUK === 'Yes') {
       staffRequiredFields.proofRightToWork = 'Proof of right to work is required';
     }
@@ -596,12 +610,17 @@ const AddUser = () => {
 
   const validateLoginCredentialsStep = () => {
     const requiredFields = {
-      dashboard: 'Dashboard selection is required',
       username: 'Username is required',
       password: 'Password is required',
       status: 'Status is required',
       twoFactor: 'Two-Factor Auth selection is required',
     };
+
+    // Only validate dashboard if accountType is Staff
+    if (formData.accountType === 'Staff') {
+      requiredFields.dashboard = 'Dashboard selection is required';
+    }
+
     const errors = {};
     let isValid = true;
 
@@ -650,13 +669,16 @@ const AddUser = () => {
       setIsLoading(true);
       setTimeout(() => {
         setIsLoading(false);
-        setSuccessMessage('User successfully created!');
+        setSuccessMessage(
+          formData.accountType === 'Client'
+            ? 'Client account created successfully!'
+            : 'Staff account created successfully!'
+        );
         resetForm();
         handleStepClick(steps[0].key);
       }, 3000);
     }
   };
-
 
   const handleGoBack = () => {
     const currentIndex = steps.findIndex((step) => step.key === activeKey);
@@ -766,6 +788,7 @@ const AddUser = () => {
           );
         }
         return <SectionList>{children}</SectionList>;
+
       case 'Details':
         if (formData.firstName) {
           children.push(
@@ -780,6 +803,14 @@ const AddUser = () => {
             <motion.li key="lastName" variants={itemVariants}>
               <span>Last Name</span>
               <p>{formData.lastName}</p>
+            </motion.li>
+          );
+        }
+        if (formData.companyAgency) {
+          children.push(
+            <motion.li key="companyAgency" variants={itemVariants}>
+              <span>Company/Agency</span>
+              <p>{formData.companyAgency}</p>
             </motion.li>
           );
         }
@@ -1028,15 +1059,18 @@ const AddUser = () => {
         return <SectionList>{children}</SectionList>;
 
       case 'Permissions':
-        Object.keys(permissions).forEach((permission) => {
-          children.push(
-            <motion.li key={permission} variants={itemVariants}>
-              <span>{permission.replace('Access ', '')}</span>
-              <p>{permissions[permission] ? 'Yes' : 'No'}</p>
-            </motion.li>
-          );
-        });
-        return <SectionList>{children}</SectionList>;
+        if (formData.accountType === 'Staff') {
+          Object.keys(permissions).forEach((permission) => {
+            children.push(
+              <motion.li key={permission} variants={itemVariants}>
+                <span>{permission.replace('Access ', '')}</span>
+                <p>{permissions[permission] ? 'Yes' : 'No'}</p>
+              </motion.li>
+            );
+          });
+          return <SectionList>{children}</SectionList>;
+        }
+        return null;
 
       case 'Set Login Credentials':
         if (formData.username) {
@@ -1055,7 +1089,6 @@ const AddUser = () => {
             </motion.li>
           );
         }
-      
         if (formData.twoFactor) {
           children.push(
             <motion.li key="twoFactor" variants={itemVariants}>
@@ -1072,7 +1105,7 @@ const AddUser = () => {
             </motion.li>
           );
         }
-          if (formData.status) {
+        if (formData.status) {
           children.push(
             <motion.li key="status" variants={itemVariants}>
               <span>Status</span>
@@ -1255,7 +1288,7 @@ const AddUser = () => {
                       }`}
                       onClick={() => handleAccountTypeSelect('Client')}
                     >
-                      <img src={AccountSelctClient} />
+                      <img src={AccountSelctClient} alt="Client Account" />
                       Client Account
                     </button>
                     <button
@@ -1264,7 +1297,7 @@ const AddUser = () => {
                       }`}
                       onClick={() => handleAccountTypeSelect('Staff')}
                     >
-                       <img src={AccountSelctStaff} />
+                      <img src={AccountSelctStaff} alt="Staff Account" />
                       Staff Account
                     </button>
                   </div>
@@ -1272,7 +1305,6 @@ const AddUser = () => {
                     <p className="erro-message-Txt ook-rra">{fieldErrors.accountType}</p>
                   )}
                 </div>
-                
               </div>
             </motion.div>
 
@@ -1319,6 +1351,7 @@ const AddUser = () => {
                       )}
                     </div>
                   </div>
+
                   <div className="GHuh-Form-Input">
                     <label>Email</label>
                     <input
@@ -1371,6 +1404,20 @@ const AddUser = () => {
                       <p className="erro-message-Txt">{fieldErrors.dob}</p>
                     )}
                   </div>
+
+               {formData.accountType === 'Client' && (
+                    <div className="GHuh-Form-Input">
+                      <label>Company/Agency (Optional)</label>
+                      <input
+                        type="text"
+                        name="companyAgency"
+                        placeholder="Enter company or agency name"
+                        value={formData.companyAgency}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                  )}
+
                   <div className="GHuh-Form-Input">
                     <label>Street</label>
                     <input
@@ -1926,23 +1973,24 @@ const AddUser = () => {
                     )}
                   </div>
                   <div className="Grga-INpu-Grid">
-                    <div className="GHuh-Form-Input">
-                      <label>Dashboard</label>
-                      <select
-                        name="dashboard"
-                        value={formData.dashboard}
-                        onChange={handleInputChange}
-                      >
-                        <option value="">Select dashboard</option>
-                        <option value="Client">Client</option>
-                        <option value="Staff">Staff</option>
-                        <option value="Admin">Admin</option>
-                        <option value="Sub Admin">Sub Admin</option>
-                      </select>
-                      {fieldErrors.dashboard && (
-                        <p className="erro-message-Txt">{fieldErrors.dashboard}</p>
-                      )}
-                    </div>
+                    {formData.accountType === 'Staff' && (
+                      <div className="GHuh-Form-Input">
+                        <label>Dashboard</label>
+                        <select
+                          name="dashboard"
+                          value={formData.dashboard}
+                          onChange={handleInputChange}
+                        >
+                          <option value="">Select dashboard</option>
+                          <option value="Staff">Staff</option>
+                          <option value="Admin">Admin</option>
+                          <option value="Sub Admin">Sub Admin</option>
+                        </select>
+                        {fieldErrors.dashboard && (
+                          <p className="erro-message-Txt">{fieldErrors.dashboard}</p>
+                        )}
+                      </div>
+                    )}
                     <div className="GHuh-Form-Input">
                       <label>Status</label>
                       <select

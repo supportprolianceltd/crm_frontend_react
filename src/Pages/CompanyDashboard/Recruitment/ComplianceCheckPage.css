@@ -52,7 +52,14 @@
     height: 35px !important;
 }
 
+.jjjh-filak .filter-select {
+  width: 100% !important; 
+  max-width: 100% !important;
+}
 
+.jjjh-filak .ComplianceCheckPage-TOop-2 h4{
+    white-space: nowrap;
+}
 /* Uijauj-UUplao */
 
 .Uijauj-UUplao{
@@ -116,9 +123,8 @@
     justify-content: center;
     padding: 8px 15px;
     border-radius: 30px;
-    border: 1px solid #7226FF;
-    color: #7226FF;
-    background-color: transparent;
+    background: linear-gradient(135deg, #450CD5 0%, #7226FF 50%, #F042FF 100%);
+    color: #fff;
     font-size: 11px;
     white-space: nowrap;
     gap: 5px;
@@ -126,8 +132,9 @@
     cursor: pointer;
 }
 
+
 .Deecc-NNBYna:hover{
-    background-color: #decdfd;
+   background: linear-gradient(135deg, #F042FF 0%, #7226FF 50%, #450CD5 100%);
 }
 
 .Deecc-NNBYna svg{
@@ -1500,3 +1507,6 @@
         .olail-PPOla svg{
             width: 14px;
         }
+
+
+        

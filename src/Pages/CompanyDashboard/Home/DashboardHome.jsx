@@ -6,7 +6,7 @@ import About from './About';
 import AddUser from './AddUser';
 import './DashboardHome.css';
 
-const Company = () => {
+const DashboardHome = () => {
   const [shrinkNav, setShrinkNav] = useState(false);
 
   return (
@@ -25,7 +25,7 @@ const Company = () => {
   );
 };
 
-export default Company;
+export default DashboardHome;
 
 
 
