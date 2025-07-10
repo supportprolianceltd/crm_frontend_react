@@ -120,8 +120,8 @@ const SideNavBar = ({ setShrinkNav }) => {
             )}
           </span>
 
-          <span className="LefB-label flex-1 flex items-center justify-between">
-            <span>
+          <span className="LefB-label">
+            <span className='fffin-OOlka'>
               {label}
               {isClockIn && (
                 <p className="clock-time">0:00 AM</p>

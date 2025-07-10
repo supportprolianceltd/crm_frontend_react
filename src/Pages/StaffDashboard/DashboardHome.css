@@ -120,6 +120,7 @@
     font-size: 10px !important;
     font-weight: 400 !important;
     border-radius: 5px !important;
+    background-color: transparent !important;
 }
 
 .Staff-Dashboard .LeftnavBr-Icons li.special-clock-in a .LefB-Icon{
@@ -213,3 +214,12 @@
     left: -130px !important;
     min-width: 250px !important;
 }
+
+
+.fffin-OOlka{
+    display: inline-flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+}
+
