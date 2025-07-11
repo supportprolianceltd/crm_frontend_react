@@ -499,44 +499,30 @@ export const updateApplicantComplianceStatus = async (jobApplicationId, itemId, 
 };
 
 
-
-
 export const deleteComplianceItem = async (jobRequisitionId, itemId) => {
-    try {
-        const response =  await apiClient.delete(
-            `/api/talent-engine/requisitions/${jobRequisitionId}/compliance-items/${itemId}/`,
-            {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-                },
-            }
-        );
-        return response.data; // Should be empty for 204 No Content
-    } catch (error) {
-        console.error('Error deleting compliance item:', error);
-        throw error;
-    }
+  try {
+    const response = await apiClient.delete(
+      `/api/talent-engine/requisitions/${jobRequisitionId}/compliance-items/${itemId}/`
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting compliance item:', error);
+    throw error;
+  }
 };
 
 export const updateComplianceItem = async (jobRequisitionId, itemId, data) => {
-    try {
-        const response =  await apiClient.put(
-            `/api/talent-engine/requisitions/${jobRequisitionId}/compliance-items/${itemId}/`,
-            data,
-            {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-                },
-            }
-        );
-        return response.data; // Expecting { id, name, description, required, status, checked_by, checked_at }
-    } catch (error) {
-        console.error('Error updating compliance item:', error);
-        throw error;
-    }
+  try {
+    const response = await apiClient.put(
+      `/api/talent-engine/requisitions/${jobRequisitionId}/compliance-items/${itemId}/`,
+      data
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error updating compliance item:', error);
+    throw error;
+  }
 };
-
-
 
 export const fetchTenantEmailConfig = async () => {
   try {
@@ -559,6 +545,23 @@ export const updateTenantEmailConfig = async (configData) => {
   }
 };
 
+export const fetchBranches = async () => {
+  try {
+    const response = await apiClient.get('/api/tenant/branches/');
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.detail || 'Failed to fetch branches.');
+  }
+};
+
+export const createBranch = async (branchData) => {
+  try {
+    const response = await apiClient.post('/api/tenant/branches/', branchData);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.detail || 'Failed to create branch.');
+  }
+};
 
 // Add this line to export apiClient
 export { apiClient };
