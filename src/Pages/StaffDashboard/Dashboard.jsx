@@ -13,13 +13,13 @@ const Dashboard = () => {
 
   return (
     <div className='Dashboard-Page Staff-Dashboard'>
-       <DashboardNavBar />
+       {/* <DashboardNavBar /> */}
       <div className='Main_Dashboard_Page'>
         <Routes>
-          <Route path="/*" element={<DashboardHome />} />
+          {/* <Route path="/*" element={<DashboardHome />} /> */}
         </Routes>
       </div>
-       <DashFooter />
+       {/* <DashFooter /> */}
     </div>
   );
 };

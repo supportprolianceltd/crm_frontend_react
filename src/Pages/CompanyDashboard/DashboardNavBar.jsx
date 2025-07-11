@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -27,13 +26,13 @@ import RosteringIcon from '../../assets/Img/CRMPack/Rostering.svg';
 import HRIcon from '../../assets/Img/CRMPack/HR.svg';
 import PayrollIcon from '../../assets/Img/CRMPack/Payroll.svg';
 
-
 const DashboardNavBar = () => {
   const navigate = useNavigate();
   const [showFeaturesDropdown, setShowFeaturesDropdown] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [activeButton, setActiveButton] = useState(null);
   const [user, setUser] = useState(null);
+  const [notificationCount, setNotificationCount] = useState(0); // State for notification count
 
   const dropdownRef = useRef(null);
   const buttonRef = useRef(null);
@@ -52,6 +51,24 @@ const DashboardNavBar = () => {
         setUser(null);
       }
     }
+  }, []);
+
+  // Simulate fetching notification count (replace with actual API call or data source)
+  useEffect(() => {
+    // Example: Fetch notification count from an API or localStorage
+    // For demonstration, setting a static value; replace with real data
+    const fetchNotifications = async () => {
+      try {
+        // Replace with actual API call
+        // const response = await fetch('/api/notifications');
+        // const data = await response.json();
+        // setNotificationCount(data.count);
+        setNotificationCount(3); // Example value; replace with actual logic
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+      }
+    };
+    fetchNotifications();
   }, []);
 
   // Handle click outside to close dropdowns
@@ -95,7 +112,7 @@ const DashboardNavBar = () => {
   // Handle logout
   const handleLogout = () => {
     localStorage.removeItem('user');
-    localStorage.removeItem('accessToken'); // Clear token if used
+    localStorage.removeItem('accessToken');
     closeProfileDropdown();
     navigate('/login');
   };
@@ -110,34 +127,32 @@ const DashboardNavBar = () => {
     { name: 'Payroll', icon: PayrollIcon, path: '/company/payroll' },
   ];
 
-const getInitials = (user) => {
-  if (!user || typeof user !== 'object') return 'N/A';
-  if (user.first_name && user.last_name) {
-    return `${user.first_name[0]}${user.last_name[0]}`.toUpperCase();
-  }
-  if (user.email) {
-    return user.email.slice(0, 2).toUpperCase();
-  }
-  return 'N/A';
-};
+  const getInitials = (user) => {
+    if (!user || typeof user !== 'object') return 'N/A';
+    if (user.first_name && user.last_name) {
+      return `${user.first_name[0]}${user.last_name[0]}`.toUpperCase();
+    }
+    if (user.email) {
+      return user.email.slice(0, 2).toUpperCase();
+    }
+    return 'N/A';
+  };
 
-// Get full name from user data
-const getFullName = (user) => {
-  if (!user || typeof user !== 'object') return 'Unknown';
-  if (user.first_name && user.last_name) {
-    return `${user.first_name} ${user.last_name}`;
-  }
-  return user.email || 'Unknown';
-};
+  const getFullName = (user) => {
+    if (!user || typeof user !== 'object') return 'Unknown';
+    if (user.first_name && user.last_name) {
+      return `${user.first_name} ${user.last_name}`;
+    }
+    return user.email || 'Unknown';
+  };
 
-const getPosition = (user) => {
-  if (!user || typeof user !== 'object') return 'Unknown';
-  if (user.job_role) {
-    return `${user.job_role}`;
-  }
-  return  'staff';
-};
-
+  const getPosition = (user) => {
+    if (!user || typeof user !== 'object') return 'Unknown';
+    if (user.job_role) {
+      return `${user.job_role}`;
+    }
+    return 'staff';
+  };
 
   return (
     <div className="DashboardNavBar">
@@ -217,6 +232,7 @@ const getPosition = (user) => {
             </span>
 
             <Link to="/company/notifications" title="Notifications">
+              {notificationCount > 0 && <i className="nottti-Inddi GenNot"></i>}
               <BellIconOutline className="h-6 w-6" />
             </Link>
 
@@ -257,7 +273,7 @@ const getPosition = (user) => {
                       <span>{getInitials(user)}</span>
                     </div>
                     <div className="All-TTo-Nagbs-2 oujah-osi">
-                       <p>{getFullName(user)}</p>
+                      <p>{getFullName(user)}</p>
                       <span>{getPosition(user)}</span>
                     </div>
                     <div className="All-TTo-Nagbs-3 ouajjs-sua">
@@ -268,10 +284,10 @@ const getPosition = (user) => {
                     <UserIcon /> Profile
                   </Link>
                   <Link to="/company/add-user" onClick={closeProfileDropdown}>
-                    <PlusIcon /> Add  User
+                    <PlusIcon /> Add User
                   </Link>
-                   <Link to="/company/create-branch" onClick={closeProfileDropdown}>
-                    <PencilIcon/> Create  Branch
+                  <Link to="/company/create-branch" onClick={closeProfileDropdown}>
+                    <PencilIcon /> Create Branch
                   </Link>
                   <button className="logout-btn btn-primary-bg" onClick={handleLogout}>
                     Logout

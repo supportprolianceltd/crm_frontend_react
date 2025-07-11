@@ -148,14 +148,14 @@ const EmailTemplateEditor = ({ id, template, triggerGlobalSuccess, updateTemplat
         style={{ overflow: 'hidden', whiteSpace: 'pre-wrap' }}
       />
       <div className="mt-2">
-        <label className="inline-flex items-center">
+        <label className="ssend-Auuto-SPann">
           <input
             type="checkbox"
             checked={isAutoSent}
             onChange={handleAutoSendToggle}
             className="form-checkbox h-5 w-5 text-gray-600"
           />
-          <span className="ml-2 text-sm">Send Automatically</span>
+          <span>Send Automatically</span>
         </label>
       </div>
       <AnimatePresence>

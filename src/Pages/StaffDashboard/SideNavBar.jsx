@@ -17,6 +17,10 @@ import {
   ArrowPathIcon,
   ArrowLongRightIcon,
   Squares2X2Icon,
+  DocumentTextIcon, // for Attendance
+  PaperAirplaneIcon as PaperAirplaneOutline, // for Request
+  ChevronDownIcon,
+  ChevronUpIcon,
 } from '@heroicons/react/24/outline';
 
 import {
@@ -30,65 +34,60 @@ import {
   Cog6ToothIcon as SettingsSolid,
   InboxIcon as InboxSolid,
   UserCircleIcon as UserCircleSolid,
+  DocumentTextIcon as DocumentTextSolid,
+  PaperAirplaneIcon as PaperAirplaneSolid,
 } from '@heroicons/react/24/solid';
+
+import { useClock } from '../../context/ClockContext';
 
 const iconClass = 'w-5 h-5';
 const basePath = '/staff';
 
 const SideNavBar = ({ setShrinkNav }) => {
   const location = useLocation();
-
-  // Hardcoded notification count (replace with real data)
-  const notificationCount = 0;
-
-  let relativePath = location.pathname.startsWith(basePath)
-    ? location.pathname.slice(basePath.length)
-    : location.pathname;
-  if (relativePath.startsWith('/')) relativePath = relativePath.slice(1);
-
-  const initialActive = relativePath === '' ? 'dashboard' : relativePath.split('/')[0];
-  const [active, setActive] = useState(initialActive);
+  const { isClockedIn, clockInTime, clockOutTime } = useClock();
+  const [active, setActive] = useState('dashboard');
   const [menuToggled, setMenuToggled] = useState(false);
-  const [showOtherMenu, setShowOtherMenu] = useState(false);
   const [rosterRefreshing, setRosterRefreshing] = useState(false);
-
+  const [viewMore, setViewMore] = useState(false);
   const rosterTimerRef = useRef(null);
+  const notificationCount = 3;
 
   useEffect(() => {
-    let relPath = location.pathname.startsWith(basePath)
-      ? location.pathname.slice(basePath.length)
-      : location.pathname;
-    if (relPath.startsWith('/')) relPath = relPath.slice(1);
-    const current = relPath === '' ? 'dashboard' : relPath.split('/')[0];
-    if (current !== 'clock-in') setActive(current);
+    const relPath = location.pathname.replace(basePath, '').replace(/^\//, '');
+    setActive(relPath === '' ? 'dashboard' : relPath.split('/')[0]);
   }, [location]);
 
-  // Clear timer on unmount to avoid memory leaks
-  useEffect(() => {
-    return () => {
-      if (rosterTimerRef.current) clearTimeout(rosterTimerRef.current);
-    };
-  }, []);
+  const formatTime = (date) =>
+    date
+      ? new Intl.DateTimeFormat(undefined, {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true,
+        }).format(date)
+      : '--:--';
 
-  const renderIcon = (name, OutlineIcon, SolidIcon) =>
-    active === name ? (
-      <SolidIcon className={iconClass} />
-    ) : (
-      <OutlineIcon className={iconClass} />
-    );
+  const renderIcon = (name, Outline, Solid) =>
+    active === name ? <Solid className={iconClass} /> : <Outline className={iconClass} />;
 
   const MenuItem = ({ name, label, OutlineIcon, SolidIcon, to, onClick, badge }) => {
-    const isClockIn = name === 'clock-in';
+    const isClockInItem = name === 'clock-in';
     const isRoster = name === 'roster';
-    const specialClass = isClockIn ? 'special-clock-in' : '';
-    const isActive = !isClockIn && active === name;
+
+    let displayLabel = label;
+    let timeLabel = null;
+
+    if (isClockInItem) {
+      displayLabel = isClockedIn ? 'Clocked In' : 'Clocked Out';
+      timeLabel = isClockedIn ? formatTime(clockInTime) : formatTime(clockOutTime);
+    }
 
     return (
-      <li className={`${isActive ? 'active' : ''} ${specialClass}`} >
+      <li className={`${active === name ? 'active' : ''} ${isClockInItem ? 'special-clock-in' : ''}`}>
         <Link
           to={to}
           className="flex items-center justify-between"
-          title={menuToggled ? label : undefined}
+          title={displayLabel}
           onClick={(e) => {
             if (onClick) {
               e.preventDefault();
@@ -97,23 +96,15 @@ const SideNavBar = ({ setShrinkNav }) => {
             if (isRoster) {
               if (rosterTimerRef.current) clearTimeout(rosterTimerRef.current);
               setRosterRefreshing(true);
-              rosterTimerRef.current = setTimeout(() => {
-                setRosterRefreshing(false);
-                rosterTimerRef.current = null;
-              }, 1000);
+              rosterTimerRef.current = setTimeout(() => setRosterRefreshing(false), 1000);
               setActive(name);
             } else {
-              if (rosterTimerRef.current) {
-                clearTimeout(rosterTimerRef.current);
-                rosterTimerRef.current = null;
-              }
-              setRosterRefreshing(false);
-              if (!isClockIn) setActive(name);
+              setActive(isClockInItem ? '' : name);
             }
           }}
         >
           <span className="LefB-Icon">
-            {isClockIn ? (
+            {isClockInItem ? (
               <ClockSolid className={iconClass} />
             ) : (
               renderIcon(name, OutlineIcon, SolidIcon)
@@ -121,32 +112,112 @@ const SideNavBar = ({ setShrinkNav }) => {
           </span>
 
           <span className="LefB-label">
-            <span className='fffin-OOlka'>
-              {label}
-              {isClockIn && (
-                <p className="clock-time">0:00 AM</p>
-              )}
+            <span className="fffin-OOlka">
+              {displayLabel}
+              {isClockInItem && <p className="clock-time">{timeLabel}</p>}
             </span>
 
             {isRoster && (
-              <ArrowPathIcon
-                className={`sppen-sppart ${
-                  rosterRefreshing ? 'animate-spin-fast' : ''
-                }`}
-              />
+              <ArrowPathIcon className={`sppen-sppart ${rosterRefreshing ? 'animate-spin-fast' : ''}`} />
             )}
 
-            {/* Notification badge */}
-            {badge !== undefined && badge > 0 && (
-              <span className="notification-badge ml-2">
-                {badge}
-              </span>
-            )}
+            {badge > 0 && <span className="notification-badge ml-2">{badge}</span>}
           </span>
         </Link>
       </li>
     );
   };
+
+  // All nav items centralized
+  const navItems = [
+    {
+      name: 'clock-in',
+      label: 'Clock-In',
+      OutlineIcon: ClockOutline,
+      SolidIcon: ClockSolid,
+      to: `${basePath}/clock-history`,
+    },
+    {
+      name: 'dashboard',
+      label: 'Dashboard',
+      OutlineIcon: HomeOutline,
+      SolidIcon: HomeSolid,
+      to: `${basePath}/`,
+    },
+    {
+      name: 'my-tasks',
+      label: 'My Tasks',
+      OutlineIcon: ClipboardOutline,
+      SolidIcon: ClipboardSolid,
+      to: `${basePath}/my-tasks`,
+    },
+    {
+      name: 'roster',
+      label: 'Roster',
+      OutlineIcon: UserGroupOutline,
+      SolidIcon: UserGroupSolid,
+      to: `${basePath}/roster`,
+    },
+    {
+      name: 'attendance',
+      label: 'Attendance',
+      OutlineIcon: DocumentTextIcon,
+      SolidIcon: DocumentTextSolid,
+      to: `${basePath}/attendance`,
+    },
+    {
+      name: 'messages',
+      label: 'Messages',
+      OutlineIcon: InboxIcon,
+      SolidIcon: InboxSolid,
+      to: `${basePath}/messages`,
+    },
+    {
+      name: 'calendar',
+      label: 'Calendar',
+      OutlineIcon: CalendarOutline,
+      SolidIcon: CalendarSolid,
+      to: `${basePath}/calendar`,
+    },
+    {
+      name: 'notifications',
+      label: 'Notifications',
+      OutlineIcon: BellOutline,
+      SolidIcon: BellSolid,
+      to: `${basePath}/notifications`,
+      badge: notificationCount,
+    },
+    {
+      name: 'team',
+      label: 'Team',
+      OutlineIcon: UsersOutline,
+      SolidIcon: UsersSolid,
+      to: `${basePath}/team`,
+    },
+    {
+      name: 'request',
+      label: 'Request',
+      OutlineIcon: PaperAirplaneOutline,
+      SolidIcon: PaperAirplaneSolid,
+      to: `${basePath}/request`,
+    },
+    {
+      name: 'profile',
+      label: 'Profile',
+      OutlineIcon: UserCircleIcon,
+      SolidIcon: UserCircleSolid,
+      to: `${basePath}/profile`,
+    },
+    {
+      name: 'settings',
+      label: 'Settings',
+      OutlineIcon: SettingsOutline,
+      SolidIcon: SettingsSolid,
+      to: `${basePath}/settings`,
+    },
+  ];
+
+  const itemsToShow = viewMore ? navItems : navItems.slice(0, 10);
 
   return (
     <motion.div
@@ -156,7 +227,7 @@ const SideNavBar = ({ setShrinkNav }) => {
       transition={{ duration: 0.2 }}
     >
       <div className="SideNavBar-Main custom-scroll-bar">
-        <div className='Side-Logogos'>
+        <div className="Side-Logogos">
           <Link to="/" className="Nav-Brand">
             <img src={LOGO} alt="logo" />
             <span>crm</span>
@@ -168,10 +239,9 @@ const SideNavBar = ({ setShrinkNav }) => {
           <span
             onClick={() => {
               setMenuToggled(!menuToggled);
-              setShrinkNav(!menuToggled);
+              setShrinkNav?.(!menuToggled);
             }}
             className="shrinkToggle"
-            title={menuToggled ? 'Expand Menu' : 'Collapse Menu'}
           >
             {menuToggled ? (
               <ArrowLongRightIcon className="w-6 h-6 text-gray-700" />
@@ -182,81 +252,44 @@ const SideNavBar = ({ setShrinkNav }) => {
         </p>
 
         <ul className="LeftnavBr-Icons">
-          <MenuItem
-            name="clock-in"
-            label="Clock-In"
-            OutlineIcon={ClockOutline}
-            SolidIcon={ClockSolid}
-            to={`${basePath}/clock-in`}
-          />
-          <MenuItem
-            name="dashboard"
-            label="Dashboard"
-            OutlineIcon={HomeOutline}
-            SolidIcon={HomeSolid}
-            to={`${basePath}/`}
-          />
-          <MenuItem
-            name="my-tasks"
-            label="My Tasks"
-            OutlineIcon={ClipboardOutline}
-            SolidIcon={ClipboardSolid}
-            to={`${basePath}/my-tasks`}
-          />
-          <MenuItem
-            name="roster"
-            label="Roster"
-            OutlineIcon={UserGroupOutline}
-            SolidIcon={UserGroupSolid}
-            to={`${basePath}/roster`}
-          />
-          <MenuItem
-            name="messages"
-            label="Messages"
-            OutlineIcon={InboxIcon}
-            SolidIcon={InboxSolid}
-            to={`${basePath}/messages`}
-          />
-          <MenuItem
-            name="calendar"
-            label="Calendar"
-            OutlineIcon={CalendarOutline}
-            SolidIcon={CalendarSolid}
-            to={`${basePath}/calendar`}
-          />
-          <MenuItem
-            name="notifications"
-            label="Notifications"
-            OutlineIcon={BellOutline}
-            SolidIcon={BellSolid}
-            to={`${basePath}/notifications`}
-            badge={notificationCount}
-          />
-          <MenuItem
-            name="team"
-            label="Team"
-            OutlineIcon={UsersOutline}
-            SolidIcon={UsersSolid}
-            to={`${basePath}/team`}
-          />
-          <MenuItem
-            name="profile"
-            label="Profile"
-            OutlineIcon={UserCircleIcon}
-            SolidIcon={UserCircleSolid}
-            to={`${basePath}/profile`}
-          />
-          <MenuItem
-            name="settings"
-            label="Settings"
-            OutlineIcon={SettingsOutline}
-            SolidIcon={SettingsSolid}
-            to={`${basePath}/settings`}
-          />
+          {itemsToShow.map(({ name, label, OutlineIcon, SolidIcon, to, onClick, badge }) => (
+            <MenuItem
+              key={name}
+              name={name}
+              label={label}
+              OutlineIcon={OutlineIcon}
+              SolidIcon={SolidIcon}
+              to={to}
+              onClick={onClick}
+              badge={badge}
+            />
+          ))}
         </ul>
+
+        {/* View More / View Less Button */}
+        {navItems.length > 10 && (
+          <button
+            className="MMk-Vieww-Mahns spaciila-BNtna"
+            onClick={() => setViewMore((prev) => !prev)}
+          >
+            {viewMore ? (
+              <div>
+                <span>View Less Menu</span>
+                <ChevronUpIcon className="w-4 h-4" />
+              </div>
+            ) : (
+              <div>
+                <span>View More Menu</span>
+                <ChevronDownIcon className="w-4 h-4" />
+              </div>
+            )}
+          </button>
+        )}
       </div>
     </motion.div>
   );
 };
 
 export default SideNavBar;
+
+
