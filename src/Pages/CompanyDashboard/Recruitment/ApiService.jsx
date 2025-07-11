@@ -90,7 +90,7 @@ export const fetchRequisition = async (id) => {
 
 export const bulkDeleteRequisitions = async (ids) => {
   try {
-    console.log('Sending bulk soft delete request for requisitions:', { ids, url: '/api/talent-engine/requisitions/bulk-delete/' });
+    //console.log('Sending bulk soft delete request for requisitions:', { ids, url: '/api/talent-engine/requisitions/bulk/bulk-delete/' });
     if (!ids.every(id => typeof id === 'string' && id.match(/^PRO-\d{4}$/))) {
       throw new Error('Invalid IDs provided. All IDs must be in the format PRO-XXXX.');
     }
@@ -99,9 +99,9 @@ export const bulkDeleteRequisitions = async (ids) => {
         Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
       },
     };
-    console.log('Request config:', config);
-    const response = await apiClient.post('/api/talent-engine/requisitions/bulk-delete/', { ids }, config);
-    console.log('Bulk soft delete response:', response.data);
+    //console.log('Request config:', config);
+    const response = await apiClient.post('/api/talent-engine/requisitions/bulk/bulk-delete/', { ids }, config);
+    //console.log('Bulk soft delete response:', response.data);
     return response.data;
   } catch (error) {
     console.error('Bulk soft delete error:', {
