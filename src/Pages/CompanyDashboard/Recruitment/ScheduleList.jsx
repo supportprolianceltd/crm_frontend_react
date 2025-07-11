@@ -17,6 +17,7 @@ import {
 } from '@heroicons/react/24/outline';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import { DateTime } from 'luxon';
 import {
   fetchSchedules,
   updateSchedule,
@@ -25,6 +26,7 @@ import {
   bulkDeleteSchedules,
   fetchSoftDeletedSchedules,
   recoverSchedules,
+  fetchTimezoneChoices, // Import the new API function
 } from './ApiService';
 
 const Modal = ({ title, message, onConfirm, onCancel, confirmText = 'Confirm', cancelText = 'Cancel' }) => (
@@ -124,14 +126,12 @@ const SuccessModal = ({ title, message, onClose }) => (
         >
           OK
         </button>
-
-
       </div>
     </motion.div>
   </AnimatePresence>
 );
 
-const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReject }) => {
+const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReject, timezoneChoices }) => {
   const [meetingMode, setMeetingMode] = useState(schedule.meeting_mode || 'Virtual');
   const [meetingLink, setMeetingLink] = useState(schedule.meeting_link || '');
   const [interviewAddress, setInterviewAddress] = useState(schedule.interview_address || '');
@@ -141,6 +141,7 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
     new Date(new Date(schedule.interview_date_time).getTime() + 30 * 60000)
   );
   const [message, setMessage] = useState(schedule.message || '');
+  const [timezone, setTimezone] = useState(schedule.timezone || 'UTC');
   const [timeSelectionMode, setTimeSelectionMode] = useState('start');
   const [modalShowTimeDropdown, setModalShowTimeDropdown] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -178,9 +179,8 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
     let hours = date.getHours();
     let minutes = date.getMinutes();
     const ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12;
-    hours = hours ? hours : 12;
-    minutes = minutes < 10 ? '0' + minutes : minutes;
+    hours = hours % 12 || 12;
+    minutes = minutes < 10 ? `0${minutes}` : minutes;
     return `${hours}:${minutes} ${ampm}`;
   };
 
@@ -189,8 +189,7 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
     for (let hour = 0; hour < 24; hour++) {
       for (let minute = 0; minute < 60; minute += 30) {
         const time = new Date();
-        time.setHours(hour);
-        time.setMinutes(minute);
+        time.setHours(hour, minute, 0, 0);
         times.push(time);
       }
     }
@@ -259,6 +258,12 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
       return;
     }
 
+    if (!timezone) {
+      setErrorMessage('Please select a timezone.');
+      setTimeout(() => setErrorMessage(''), 3000);
+      return;
+    }
+
     setIsSaving(true);
 
     try {
@@ -273,6 +278,7 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
         meeting_link: meetingMode === 'Virtual' ? meetingLink : '',
         interview_address: meetingMode === 'Physical' ? interviewAddress : '',
         message,
+        timezone,
       };
       await onSave(schedule.id, scheduleData);
       setIsSaving(false);
@@ -473,6 +479,26 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
               )}
 
               <div className="GGtg-DDDVa">
+                <h4>Timezone:</h4>
+                <select
+                  value={timezone}
+                  onChange={(e) => setTimezone(e.target.value)}
+                  className="oujka-Inpuauy"
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem',
+                    borderRadius: '4px',
+                    border: '1px solid #ccc',
+                  }}
+                  disabled={!isEditable}
+                >
+                  {timezoneChoices.map((tz) => (
+                    <option key={tz.value} value={tz.value}>{tz.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="GGtg-DDDVa">
                 <h4>Meeting Mode:</h4>
                 <select
                   value={meetingMode}
@@ -567,7 +593,7 @@ const EditScheduleModal = ({ schedule, onClose, onSave, onComplete, onCancelReje
                     <ClockIcon className="inline-block w-5 h-5 mr-2" />
                     Time:
                   </span>{' '}
-                  {formatTime(tempStartTime)} - {formatTime(tempEndTime)}
+                  {formatTime(tempStartTime)} - {formatTime(tempEndTime)} ({timezoneChoices.find(tz => tz.value === timezone)?.label || timezone})
                 </p>
 
                 {!isEditable && schedule.status === 'cancelled' && schedule.cancellation_reason && (
@@ -757,6 +783,8 @@ const ScheduleList = () => {
   const [schedules, setSchedules] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+  const [userTimezone, setUserTimezone] = useState(DateTime.local().zoneName || 'UTC');
+  const [timezoneChoices, setTimezoneChoices] = useState([]); // State for dynamic timezone choices
   const masterCheckboxRef = useRef(null);
   const navigate = useNavigate();
 
@@ -767,15 +795,18 @@ const ScheduleList = () => {
       try {
         setIsLoading(true);
         const params = statusFilter !== 'All' ? { status: statusFilter } : {};
-        const data = await fetchSchedules(params);
-        setSchedules(data);
-        console.log(data);
+        const [scheduleData, timezoneData] = await Promise.all([
+          fetchSchedules(params),
+          fetchTimezoneChoices(),
+        ]);
+        setSchedules(scheduleData);
+        setTimezoneChoices(timezoneData);
         setIsLoading(false);
       } catch (error) {
-        setErrorMessage(error.message || 'Failed to load schedules.');
+        setErrorMessage(error.message || 'Failed to load data.');
         setIsLoading(false);
         setTimeout(() => setErrorMessage(''), 3000);
-        console.error('Error fetching schedules:', error);
+        console.error('Error fetching data:', error);
       }
     };
     fetchData();
@@ -891,6 +922,14 @@ const ScheduleList = () => {
     setSelectedIds([]);
   }, [currentPage, rowsPerPage]);
 
+  // Function to format date/time with timezone conversion
+  const formatInterviewDateTime = (interviewDateTime, scheduleTimezone) => {
+    const dt = DateTime.fromISO(interviewDateTime, { zone: scheduleTimezone || 'UTC' });
+    const localDt = dt.setZone(userTimezone);
+    const scheduleTzLabel = timezoneChoices.find(tz => tz.value === scheduleTimezone)?.label || scheduleTimezone || 'UTC';
+    return `${localDt.toFormat('dd LLL yyyy, h:mm a')} (${scheduleTzLabel})`;
+  };
+
   return (
     <div className="ScheduleList-sec">
       <AnimatePresence>
@@ -1003,7 +1042,7 @@ const ScheduleList = () => {
             </thead>
             <tbody>
               {isLoading ? (
-               <tr>
+                <tr>
                   <td colSpan={9} style={{ textAlign: 'center', padding: '20px', fontStyle: 'italic' }}>
                     <ul className="tab-Loadding-AniMMA">
                       <li></li>
@@ -1037,25 +1076,11 @@ const ScheduleList = () => {
                     <td>{item.id}</td>
                     <td>{item.job_requisition_title}</td>
                     <td>{item.candidate_name}</td>
+                    <td>{formatInterviewDateTime(item.interview_date_time, item.timezone)}</td>
                     <td>
-                      {new Date(item.interview_date_time).toLocaleString('en-GB', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric',
-                        hour: 'numeric',
-                        minute: '2-digit',
-                        hour12: true,
-                      })}
-                    </td>
-                    <td>
-                      {new Date(item.updated_at).toLocaleString('en-GB', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric',
-                        hour: 'numeric',
-                        minute: '2-digit',
-                        hour12: true,
-                      })}
+                      {DateTime.fromISO(item.updated_at, { zone: 'UTC' })
+                        .setZone(userTimezone)
+                        .toFormat('dd LLL yyyy, h:mm a')}
                     </td>
                     <td>
                       <span
@@ -1190,6 +1215,7 @@ const ScheduleList = () => {
             onSave={handleSaveSchedule}
             onComplete={handleCompleteSchedule}
             onCancelReject={handleCancelReject}
+            timezoneChoices={timezoneChoices} // Pass timezone choices to modal
           />
         )}
       </AnimatePresence>

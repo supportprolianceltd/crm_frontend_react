@@ -30,12 +30,23 @@ const Schedule = () => {
   const [isFetching, setIsFetching] = useState(true);
   const [emailTemplate, setEmailTemplate] = useState(null);
   const [emailMessages, setEmailMessages] = useState({});
+  const [timezone, setTimezone] = useState('UTC'); // New state for timezone
   const timeDropdownRef = useRef(null);
   const modalTimeDropdownRef = useRef(null);
   const modalContentRef = useRef(null);
   const navigate = useNavigate();
 
   const WEB_PAGE_URL = config.WEB_PAGE__URL;
+
+  // Timezone options matching the Schedule model
+  const timezones = [
+    { value: 'UTC', label: 'UTC' },
+    { value: 'America/New_York', label: 'Eastern Time (US)' },
+    { value: 'America/Chicago', label: 'Central Time (US)' },
+    { value: 'America/Los_Angeles', label: 'Pacific Time (US)' },
+    { value: 'Europe/London', label: 'London' },
+    { value: 'Asia/Tokyo', label: 'Tokyo' },
+  ];
 
   // Fetch jobs and tenant config with retry
   const fetchData = async (retryCount = 3, delay = 1000) => {
@@ -82,7 +93,7 @@ const Schedule = () => {
                   hour: 'numeric',
                   minute: '2-digit',
                   hour12: true,
-                })} | ${app.schedules[0].meeting_mode === 'Virtual' ? app.schedules[0].meeting_link : app.schedules[0].interview_address}`
+                })} | ${app.schedules[0].meeting_mode === 'Virtual' ? app.schedules[0].meeting_link : app.schedules[0].interview_address} | ${app.schedules[0].timezone || 'UTC'}`
               : '',
             hasSchedule: !!app.schedules?.[0],
             scheduleId: app.schedules?.[0]?.tenant_unique_id || null,
@@ -144,7 +155,7 @@ const Schedule = () => {
       });
       setEmailMessages(newMessages);
     }
-  }, [showModal, tempSelectedApplicants, activeJob]);
+  }, [showModal, tempSelectedApplicants, activeJob, timezone, tempSelectedDate, tempStartTime, meetingMode, meetingLink, interviewAddress]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -342,13 +353,13 @@ const Schedule = () => {
       '\\[Your Name\\]': localStorage.getItem('userName') || 'Hiring Team',
       '\\[your.email@proliance.com\\]': localStorage.getItem('tenantEmail') || 'no-reply@proliance.com',
       '\\[Dashboard Link\\]': dashboardLink,
+      '\\[Timezone\\]': timezones.find((tz) => tz.value === timezone)?.label || timezone,
     };
 
     let renderedTemplate = emailTemplate;
     for (const [key, value] of Object.entries(placeholders)) {
       renderedTemplate = renderedTemplate.replace(new RegExp(key, 'g'), value || 'N/A');
     }
-    // Append dashboard link if not present in template
     if (!renderedTemplate.includes(dashboardLink)) {
       renderedTemplate += `\n\nPlease check your application dashboard for further details: ${dashboardLink}`;
     }
@@ -368,6 +379,11 @@ const Schedule = () => {
     if (!emailTemplate) {
       setErrorMessage('Interview scheduling template not loaded. Please configure it in Notification Settings.');
       setTimeout(() => setErrorMessage(''), 5000);
+      return;
+    }
+    if (!timezone) {
+      setErrorMessage('Please select a timezone.');
+      setTimeout(() => setErrorMessage(''), 3000);
       return;
     }
 
@@ -405,6 +421,11 @@ const Schedule = () => {
       setTimeout(() => setErrorMessage(''), 3000);
       return;
     }
+    if (!timezone) {
+      setErrorMessage('Please select a timezone.');
+      setTimeout(() => setErrorMessage(''), 3000);
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -421,6 +442,7 @@ const Schedule = () => {
           meeting_link: meetingMode === 'Virtual' ? meetingLink : '',
           interview_address: meetingMode === 'Physical' ? interviewAddress : '',
           message: emailMessages[applicantId],
+          timezone: timezone, // Include timezone in schedule data
         };
         await createSchedule(scheduleData);
       }
@@ -653,7 +675,7 @@ const Schedule = () => {
                             <div>
                               <h5>{formatFullDate(selectedDate)}</h5>
                               <h6>
-                                {formatTime(startTime)} - {formatTime(endTime)}
+                                {formatTime(startTime)} - {formatTime(endTime)} ({timezone})
                               </h6>
                             </div>
                           </div>
@@ -665,6 +687,28 @@ const Schedule = () => {
                           onChange={(date) => handleDateChange(date, false)}
                           inline
                         />
+                      </div>
+                      <div className="GGtg-DDDVa">
+                        <h4>Timezone:</h4>
+                        <select
+                          value={timezone}
+                          onChange={(e) => {
+                            setTimezone(e.target.value);
+                            const newMessages = {};
+                            tempSelectedApplicants.forEach((applicantId) => {
+                              const applicant = currentApplicants.find((app) => app.id === applicantId);
+                              if (applicant && activeJob) {
+                                newMessages[applicantId] = renderEmailTemplate(applicant);
+                              }
+                            });
+                            setEmailMessages(newMessages);
+                          }}
+                          className="oujka-Inpuauy"
+                        >
+                          {timezones.map((tz) => (
+                            <option key={tz.value} value={tz.value}>{tz.label}</option>
+                          ))}
+                        </select>
                       </div>
                     </div>
                   </div>
@@ -704,6 +748,29 @@ const Schedule = () => {
               style={{ maxHeight: '80vh', overflowY: 'auto', maxWidth: '600px', width: '100%', padding: '20px', background: '#fff', borderRadius: '8px' }}
             >
               <h3>Confirm Schedule Details</h3>
+
+              <div className="GGtg-DDDVa">
+                <h4>Timezone:</h4>
+                <select
+                  value={timezone}
+                  onChange={(e) => {
+                    setTimezone(e.target.value);
+                    const newMessages = {};
+                    tempSelectedApplicants.forEach((applicantId) => {
+                      const applicant = currentApplicants.find((app) => app.id === applicantId);
+                      if (applicant && activeJob) {
+                        newMessages[applicantId] = renderEmailTemplate(applicant);
+                      }
+                    });
+                    setEmailMessages(newMessages);
+                  }}
+                  className="oujka-Inpuauy"
+                >
+                  {timezones.map((tz) => (
+                    <option key={tz.value} value={tz.value}>{tz.label}</option>
+                  ))}
+                </select>
+              </div>
 
               <div className="GGtg-DDDVa">
                 <h4>Meeting Mode:</h4>
@@ -903,7 +970,7 @@ const Schedule = () => {
                     <ClockIcon style={{ width: '20px', height: '20px', marginRight: '0.5rem', verticalAlign: 'middle' }} />
                     Time:
                   </span>{' '}
-                  {formatTime(tempStartTime)} - {formatTime(tempEndTime)}
+                  {formatTime(tempStartTime)} - {formatTime(tempEndTime)} ({timezone})
                 </p>
                 <div className="ppol-Btns" style={{ marginTop: '1rem' }}>
                   <div className="time-select-container" ref={modalTimeDropdownRef}>

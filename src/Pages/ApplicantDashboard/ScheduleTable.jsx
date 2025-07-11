@@ -1,184 +1,6 @@
-// import React, { useState, useEffect } from 'react';
-// import { motion } from 'framer-motion';
-// import './ScheduleTable.css';
-
-// const getTopOffset = (startHour) => {
-//   const slotHeight = 60;
-//   return (startHour - 6) * slotHeight;
-// };
-
-// const getCurrentTimeInfo = () => {
-//   const now = new Date();
-//   const hours = now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
-//   const timeString = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-//   return { hours, timeString };
-// };
-
-// // Helper to parse time string (e.g., "10:30 AM" or "10:30 am") to hours
-// const parseTimeToHours = (timeString) => {
-//   try {
-//     const cleanedTimeString = timeString.trim().replace(/\s+/g, ' ');
-//     const [time, period] = cleanedTimeString.split(' ');
-//     const [hours, minutes] = time.split(':').map(Number);
-//     const normalizedPeriod = period.toUpperCase(); // Normalize to uppercase
-//     if (isNaN(hours) || isNaN(minutes) || !['AM', 'PM'].includes(normalizedPeriod)) {
-//       throw new Error('Invalid time format');
-//     }
-//     let hours24 = hours;
-//     if (normalizedPeriod === 'PM' && hours !== 12) hours24 += 12;
-//     if (normalizedPeriod === 'AM' && hours === 12) hours24 = 0;
-//     return hours24 + (minutes || 0) / 60;
-//   } catch (error) {
-//     throw new Error('Invalid time format. Use HH:MM AM/PM');
-//   }
-// };
-
-// export default function DailySchedule() {
-//   // Initialize with 6:30 AM (6.5 hours in 24-hour format)
-//   const [currentTimeInfo, setCurrentTimeInfo] = useState({
-//     hours: 6.5,
-//     timeString: '6:30 AM',
-//   });
-//   const [appointments, setAppointments] = useState([
-//     {
-//       name: 'Virtual Interview',
-//       time: '6:30 AM',
-//       role: 'Zoom meeting',
-//       start: 6.5,
-//       duration: 1,
-//     },
-//   ]);
-//   const [timeInput, setTimeInput] = useState('6:30 AM');
-//   const [useCurrentTime, setUseCurrentTime] = useState(false); // Start with real-time updates off
-//   const slotHeight = 60;
-//   const startHour = 6;
-//   const endHour = 19;
-//   const hours = endHour - startHour + 1;
-
-//   useEffect(() => {
-//     let interval;
-//     if (useCurrentTime) {
-//       const updateTime = () => {
-//         const newTimeInfo = getCurrentTimeInfo();
-//         setCurrentTimeInfo(newTimeInfo);
-//         setAppointments([
-//           {
-//             name: 'James Williams',
-//             time: newTimeInfo.timeString,
-//             role: 'Kitchen Staff Local',
-//             start: newTimeInfo.hours,
-//             duration: 1,
-//           },
-//         ]);
-//         setTimeInput(newTimeInfo.timeString);
-//       };
-
-//       updateTime(); // Initial update
-//       interval = setInterval(updateTime, 1000); // Update every second
-//     }
-
-//     return () => clearInterval(interval); // Cleanup on unmount
-//   }, [useCurrentTime]);
-
-//   // Handle UI input change
-// // Handle UI input change
-// const handleTimeChange = (e) => {
-//   const newTime = e.target.value;
-//   setTimeInput(newTime);
-//   try {
-//     const hours = parseTimeToHours(newTime);
-//     // Check if the time is within the valid range (6 AM to 7 PM)
-//     if (hours < 6 || hours > 19) {
-//       console.warn('Time is outside the schedule range (6 AM to 7 PM).');
-//       return; // Do not update if time is out of range
-//     }
-//     setUseCurrentTime(false); // Stop real-time updates
-//     setCurrentTimeInfo({ hours, timeString: newTime }); // Update current time line to input time
-//     setAppointments([
-//       {
-//         name: 'James Williams',
-//         time: newTime,
-//         role: 'Kitchen Staff Local',
-//         start: hours,
-//         duration: 1,
-//       },
-//     ]);
-//   } catch (error) {
-//     console.error(error.message);
-//   }
-// };
-//   return (
-//     <div className="schedule-container">
-//        <h2 className="schedule-header">
-//         June 26, Thursday <span className="year">2025</span>
-//       </h2>
-//       <div className="time-input-container">
-//         <input
-//           id="timeInput"
-//           type="text"
-//           value={timeInput}
-//           onChange={handleTimeChange}
-//           placeholder="e.g., 10:30 AM"
-//           className="time-input"
-//         />
-//       </div>
-//       <div className="schedule-body" style={{ height: `${hours * slotHeight}px` }}>
-//         {/* Time slots */}
-//         {Array.from({ length: hours }, (_, i) => {
-//           const hour = startHour + i;
-//           return (
-//             <div key={i} className="time-slot" style={{ top: `${i * slotHeight}px` }}>
-//               <div className="time-label">
-//                 {hour === 0
-//                   ? '12am'
-//                   : hour < 12
-//                   ? `${hour}am`
-//                   : hour === 12
-//                   ? '12pm'
-//                   : `${hour - 12}pm`}
-//               </div>
-//               <div className="time-line" />
-//             </div>
-//           );
-//         })}
-
-//         {/* Current Time Line with Framer Motion */}
-//         <motion.div
-//           className="current-line"
-//           style={{ top: getTopOffset(currentTimeInfo.hours) }}
-//           animate={{ top: getTopOffset(currentTimeInfo.hours) }}
-//           transition={{ type: 'spring', stiffness: 120, damping: 20 }}
-//         >
-//           <div className="dot" />
-//           {/* <div className="current-time-label">{currentTimeInfo.timeString}</div> */}
-//         </motion.div>
-
-//         {/* Appointments */}
-//         {appointments.map((appt, idx) => (
-//           <motion.div
-//             key={idx}
-//             className="appointment"
-//             style={{
-//               top: `${getTopOffset(appt.start)}px`,
-//               height: `${appt.duration * slotHeight}px`,
-//             }}
-//             initial={{ opacity: 0, x: -20 }}
-//             animate={{ opacity: 1, x: 0, top: getTopOffset(appt.start) }}
-//             transition={{ type: 'spring', stiffness: 100, damping: 15 }}
-//           >
-//             <h3 className='aaa-Heada'>{appt.name}</h3>
-//             <div className="details">
-//               {appt.time} · {appt.role}
-//             </div>
-//           </motion.div>
-//         ))}
-//       </div>
-//     </div>
-//   );
-// }
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { DateTime } from 'luxon';
 import './ScheduleTable.css';
 
 const getTopOffset = (start) => {
@@ -186,34 +8,48 @@ const getTopOffset = (start) => {
   return start * slotHeight;
 };
 
-const parseTimeToHours = (dateTime) => {
-  const date = new Date(dateTime);
-  return date.getHours() + date.getMinutes() / 60;
+const parseTimeToHours = (dateTime, timeZone) => {
+  try {
+    const dt = DateTime.fromISO(dateTime, { zone: 'UTC' }).setZone(timeZone);
+    if (!dt.isValid) throw new Error('Invalid timezone');
+    return dt.hour + dt.minute / 60;
+  } catch (error) {
+    console.error(`Invalid timezone ${timeZone} for ${dateTime}:`, error);
+    return DateTime.fromISO(dateTime, { zone: 'UTC' }).hour + DateTime.fromISO(dateTime, { zone: 'UTC' }).minute / 60;
+  }
 };
 
 const formatTime = (dateTime, timeZone) => {
-  return new Intl.DateTimeFormat('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-    timeZone,
-  }).format(new Date(dateTime));
+  try {
+    const dt = DateTime.fromISO(dateTime, { zone: 'UTC' }).setZone(timeZone);
+    if (!dt.isValid) throw new Error('Invalid timezone');
+    return dt.toFormat('h:mm a');
+  } catch (error) {
+    console.error(`Invalid timezone ${timeZone} for ${dateTime}:`, error);
+    return DateTime.fromISO(dateTime, { zone: 'UTC' }).toFormat('h:mm a');
+  }
 };
 
 const formatHeaderDate = (dateTime, timeZone) => {
-  const date = new Date(dateTime);
-  return new Intl.DateTimeFormat('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-    timeZone,
-  }).format(date);
+  try {
+    const dt = DateTime.fromISO(dateTime, { zone: 'UTC' }).setZone(timeZone);
+    if (!dt.isValid) throw new Error('Invalid timezone');
+    return dt.toFormat('cccc, LLLL d');
+  } catch (error) {
+    console.error(`Invalid timezone ${timeZone} for ${dateTime}:`, error);
+    return DateTime.fromISO(dateTime, { zone: 'UTC' }).toFormat('cccc, LLLL d');
+  }
 };
 
 const DailySchedule = ({ schedules = [] }) => {
-  const [appointments, setAppointments] = useState([]);
-  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  console.log("schedules")
+  console.log(schedules)
+  console.log("schedules")
+
+  
+  const [appointmentsByDate, setAppointmentsByDate] = useState({});
+  const currentTime = DateTime.fromISO('2025-07-11T11:09:00+01:00', { zone: 'Africa/Lagos' }); // 11:09 AM WAT
 
   const slotHeight = 60;
   const startHour = 0;
@@ -221,88 +57,108 @@ const DailySchedule = ({ schedules = [] }) => {
   const hours = endHour - startHour;
 
   useEffect(() => {
-    const formatted = schedules.map((sch) => {
-      const localDate = new Date(sch.interview_date_time);
-      const localHours = localDate.getHours() + localDate.getMinutes() / 60;
-
-      return {
+    const groupedByDate = schedules.reduce((acc, sch) => {
+      const date = DateTime.fromISO(sch.interview_date_time, { zone: 'UTC' })
+        .setZone(sch.timezone)
+        .toFormat('yyyy-MM-dd');
+      acc[date] = acc[date] || [];
+      acc[date].push({
+        ...sch,
+        start: parseTimeToHours(sch.interview_date_time, sch.timezone),
+        time: formatTime(sch.interview_date_time, sch.timezone),
         name: 'Virtual Interview',
-        time: formatTime(sch.interview_date_time, userTimeZone),
         role: sch.meeting_mode,
-        start: localHours,
         duration: 1,
-      };
-    });
-    setAppointments(formatted);
-  }, [schedules, userTimeZone]);
+      });
+      return acc;
+    }, {});
+    setAppointmentsByDate(groupedByDate);
+  }, [schedules]);
+
+  const renderCurrentTimeLine = (timezone, scheduleDate) => {
+    const currentInTimezone = currentTime.setZone(timezone);
+    const scheduleDt = DateTime.fromISO(scheduleDate, { zone: 'UTC' }).setZone(timezone);
+    if (currentInTimezone.toFormat('yyyy-MM-dd') !== scheduleDt.toFormat('yyyy-MM-dd')) {
+      return null; // Only show current time line if it's the same date
+    }
+    const currentHours = currentInTimezone.hour + currentInTimezone.minute / 60;
+    return (
+      <div
+        className="current-line"
+        style={{ top: `${getTopOffset(currentHours)}px` }}
+      >
+        <div className="dot" />
+      </div>
+    );
+  };
 
   return (
     <div className="schedule-container">
-      <h2 className="schedule-header">
-        {schedules.length ? (
-          <>
-            {formatHeaderDate(schedules[0].interview_date_time, userTimeZone).replace(
-              /, \d{4}$/,
-              ''
-            )}
-            {' '}
-            <span className="year">
-              {new Date(schedules[0].interview_date_time).getFullYear()}
-            </span>
-          </>
-        ) : (
-          'No Scheduled Interviews'
-        )}
-      </h2>
-
-      {schedules.length > 0 && (
-        <div
-          className="schedule-body"
-          style={{ height: `${hours * slotHeight}px` }}
-        >
-          {Array.from({ length: hours }, (_, i) => {
-            const hour = startHour + i;
-            return (
-              <div
-                key={hour}
-                className="time-slot"
-                style={{ top: `${i * slotHeight}px` }}
-              >
-                <div className="time-label">
-                  {hour === 0
-                    ? '12am'
-                    : hour < 12
-                    ? `${hour}am`
-                    : hour === 12
-                    ? '12pm'
-                    : hour === 24
-                    ? '12am'
-                    : `${hour - 12}pm`}
-                </div>
-                <div className="time-line" />
-              </div>
-            );
-          })}
-
-          {appointments.map((appt, idx) => (
-            <motion.div
-              key={idx}
-              className="appointment"
-              style={{
-                top: `${getTopOffset(appt.start)}px`,
-                height: `${appt.duration * slotHeight}px`,
-              }}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ type: 'spring', stiffness: 100, damping: 15 }}
+      {Object.entries(appointmentsByDate).length === 0 ? (
+        <h2 className="schedule-header">No Scheduled Interviews</h2>
+      ) : (
+        Object.entries(appointmentsByDate).map(([date, appointments]) => (
+          <div key={date}>
+            <h2 className="schedule-header">
+              {formatHeaderDate(appointments[0].interview_date_time, appointments[0].timezone)}
+              {' '}
+              <span className="year">
+                {DateTime.fromISO(appointments[0].interview_date_time, { zone: 'UTC' })
+                  .setZone(appointments[0].timezone)
+                  .toFormat('yyyy')}
+              </span>
+              {appointments.some(appt => appt.timezone !== appointments[0].timezone) && ' (Multiple Timezones)'}
+            </h2>
+            <div
+              className="schedule-body"
+              style={{ height: `${hours * slotHeight}px` }}
             >
-              <h3 className="aaa-Heada">{appt.name}</h3>
-              <div className="details">
-                {appt.time} · {appt.role}
-              </div>
-            </motion.div>
-          ))}
-        </div>
+              {Array.from({ length: hours }, (_, i) => {
+                const hour = startHour + i;
+                return (
+                  <div
+                    key={hour}
+                    className="time-slot"
+                    style={{ top: `${i * slotHeight}px` }}
+                  >
+                    <div className="time-label">
+                      {hour === 0
+                        ? '12am'
+                        : hour < 12
+                        ? `${hour}am`
+                        : hour === 12
+                        ? '12pm'
+                        : hour === 24
+                        ? '12am'
+                        : `${hour - 12}pm`}
+                    </div>
+                    <div className="time-line" />
+                  </div>
+                );
+              })}
+              {renderCurrentTimeLine(appointments[0].timezone, appointments[0].interview_date_time)}
+              {appointments.map((appt, idx) => (
+                <motion.div
+                  key={idx}
+                  className="appointment"
+                  style={{
+                    top: `${getTopOffset(appt.start)}px`,
+                    height: `${appt.duration * slotHeight}px`,
+                  }}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ type: 'spring', stiffness: 100, damping: 15 }}
+                  title={`Candidate: ${appt.candidate_name}\nRole: ${appt.job_requisition_title}`}
+                >
+                  <h3 className="aaa-Heada">{appt.name}</h3>
+                  <div className="details">
+                    {appt.time} · {appt.role} · {appt.timezone}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        ))
       )}
     </div>
   );

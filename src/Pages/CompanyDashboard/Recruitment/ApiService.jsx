@@ -277,6 +277,18 @@ export const screenResumes = async (jobRequisitionId, data) => {
   }
 };
 
+export const resendRejectionEmails = async (jobRequisitionId, applicationIds) => {
+  try {
+    const response = await apiClient.post(
+      `/api/talent-engine-job-applications/requisitions/${jobRequisitionId}/resend-rejection-emails/`,
+      { application_ids: applicationIds }
+    );
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.detail || 'Failed to resend rejection emails.');
+  }
+};
+
 // API function to fetch published requisitions with shortlisted applications
 export const fetchPublishedRequisitionsWithShortlisted = async () => {
   try {
@@ -408,6 +420,22 @@ export const permanentDeleteSchedules = async (ids) => {
   }
 };
 
+export const fetchTimezoneChoices = async () => {
+  try {
+    const response = await apiClient.get('/api/talent-engine-job-applications/schedules/api/timezone-choices/');
+    const data = response.data.data || response.data;
+
+    // Validate that the response is an array of objects with value and label
+    if (!Array.isArray(data) || !data.every(tz => typeof tz === 'object' && 'value' in tz && 'label' in tz)) {
+      throw new Error('Invalid timezone choices format');
+    }
+
+    return data;
+  } catch (error) {
+    const errorMessage = error.response?.data?.detail || 'Failed to fetch timezone choices';
+    throw new Error(errorMessage);
+  }
+};
 // API function to fetch tenant email configuration
 export const fetchTenantConfig = async () => {
   try {

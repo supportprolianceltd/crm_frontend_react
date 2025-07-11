@@ -15,10 +15,12 @@
   font-weight: 400;
 }
 
+
+
 .schedule-body {
   position: relative;
   border-left: 2px solid #e2e8f0;
-  height: 480px;
+  height: 1440px; /* 24 hours * 60px */
   margin-left: 40px;
   margin-top: 10px;
 }
