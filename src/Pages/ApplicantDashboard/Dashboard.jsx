@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, Link } from 'react-router-dom';
+import { DateTime } from 'luxon'; // Import luxon
 import axios from 'axios';
 import CountUp from 'react-countup';
 import usePageTitle from '../../hooks/useMainPageTitle';
@@ -109,7 +110,6 @@ const Dashboard = () => {
   const [error, setError] = useState(null);
   const [showAlert, setShowAlert] = useState(false);
 
-
   // Calculate step percentages based on data
   const getStepPercentages = (data) => {
     if (!data) return [0, 0, 0, 0, 0];
@@ -133,10 +133,6 @@ const Dashboard = () => {
           `${config.API_BASE_URL}/api/talent-engine-job-applications/applications/code/${job_application_code}/email/${email}/with-schedules/schedules/?unique_link=${unique_link}`
         );
         setData(response.data);
-
-        // console.log("response.data")
-        // console.log(response.data.application.id)
-        // console.log("response.data")
         setLoading(false);
       } catch (err) {
         setError(err.response?.data?.detail || 'Failed to fetch application data');
@@ -154,6 +150,18 @@ const Dashboard = () => {
     if (nameParts.length === 0) return 'NA';
     if (nameParts.length === 1) return nameParts[0][0]?.toUpperCase() || 'NA';
     return `${nameParts[0][0]?.toUpperCase() || ''}${nameParts[nameParts.length - 1][0]?.toUpperCase() || ''}` || 'NA';
+  };
+
+  // Format interview date and time using Luxon
+  const formatInterviewDateTime = (interviewDateTime, timeZone) => {
+    try {
+      const dt = DateTime.fromISO(interviewDateTime, { zone: 'UTC' }).setZone(timeZone);
+      if (!dt.isValid) throw new Error(`Invalid timezone: ${timeZone}`);
+      return `${dt.toFormat('M/d/yyyy, h:mm:ss a')} (${dt.zoneName})`;
+    } catch (error) {
+      console.error(`Invalid timezone ${timeZone} for ${interviewDateTime}:`, error);
+      return `${DateTime.fromISO(interviewDateTime, { zone: 'UTC' }).toFormat('M/d/yyyy, h:mm:ss a')} (UTC)`;
+    }
   };
 
   const handleCardClick = (cardNumber) => {
@@ -179,10 +187,10 @@ const Dashboard = () => {
           zIndex: 9999,
         }}
       >
-         <div className="Alll_OOo_LODer">
-        <div className="loader"></div>
+        <div className="Alll_OOo_LODer">
+          <div className="loader"></div>
           <p>Loading job details...</p>
-      </div>
+        </div>
       </div>
     );
   }
@@ -296,7 +304,6 @@ const Dashboard = () => {
                 {data.job_requisition.title} role.
               </p>
             </div>
-
             <div className="OL-Boxas-Body">
               <div className="Ol-Boxxx-Forms">
                 <div className="Gr or-INpu-Grid">
@@ -307,9 +314,7 @@ const Dashboard = () => {
                         Checked <CheckIcon className="w-4 h-4 ml-1" />
                       </span>
                     </label>
-                    <input type="text" name="fullName"
-
- value={data.job_application.full_name} readOnly />
+                    <input type="text" name="fullName" value={data.job_application.full_name} readOnly />
                   </div>
                   <div className="GHuh-Form-Input">
                     <label>
@@ -437,7 +442,7 @@ const Dashboard = () => {
                   {data.job_application.documents.map((doc, index) => (
                     <tr key={doc.id || index}>
                       <td>{index + 1}</td>
-                      <td>{doc.documentEc_type}</td>
+                      <td>{doc.document_type}</td>
                       <td>{doc.file_url.split('/').pop()}</td>
                       <td>{new Date(doc.uploaded_at).toLocaleDateString()}</td>
                       <td>{doc.file_url.split('.').pop().toUpperCase()}</td>
@@ -473,7 +478,7 @@ const Dashboard = () => {
           >
             <div className="OL-Boxas-Top">
               <h3>
-                Interview{' '} 
+                Interview{' '}
                 <span>
                   Progress: {stepPercentages[2]}%{' '}
                   <b className={stepPercentages[2] === 50 ? 'pending' : 'not-started'}>
@@ -484,7 +489,7 @@ const Dashboard = () => {
               </h3>
               <p>
                 {data.schedules.length > 0
-                  ? `You are invited to interview for the ${data.job_requisition.title} role at ${data.job_requisition.company_name} — Scheduled for ${new Date(data.schedules[0].interview_date_time).toLocaleString()}.`
+                  ? `You are invited to interview for the ${data.job_requisition.title} role at ${data.job_requisition.company_name} — Scheduled for ${formatInterviewDateTime(data.schedules[0].interview_date_time, data.schedules[0].timezone)}.`
                   : `No interview has been scheduled yet for the ${data.job_requisition.title} role.`}
               </p>
             </div>
@@ -500,7 +505,7 @@ const Dashboard = () => {
                         <h3>Scheduled for this day:</h3>
                         <div className="OUauj-Biaoo-ManD">
                           <h4>Date and Time</h4>
-                          <p>{new Date(data.schedules[0].interview_date_time).toLocaleString()}</p>
+                          <p>{formatInterviewDateTime(data.schedules[0].interview_date_time, data.schedules[0].timezone)}</p>
                         </div>
                         <div className="OUauj-Biaoo-ManD">
                           <h4>
@@ -562,7 +567,7 @@ const Dashboard = () => {
               </p>
             </div>
             <div className="OL-Boxas-Body">
-              <ComplianceCheckTable complianceChecklist={data.job_requisition.compliance_checklist}  jobApplicationId ={data} />
+              <ComplianceCheckTable complianceChecklist={data.job_requisition.compliance_checklist} jobApplicationId={data} />
             </div>
           </motion.div>
         )}

@@ -11,7 +11,7 @@ const getTopOffset = (start) => {
 const parseTimeToHours = (dateTime, timeZone) => {
   try {
     const dt = DateTime.fromISO(dateTime, { zone: 'UTC' }).setZone(timeZone);
-    if (!dt.isValid) throw new Error('Invalid timezone');
+    if (!dt.isValid) throw new Error(`Invalid timezone: ${timeZone}`);
     return dt.hour + dt.minute / 60;
   } catch (error) {
     console.error(`Invalid timezone ${timeZone} for ${dateTime}:`, error);
@@ -22,7 +22,7 @@ const parseTimeToHours = (dateTime, timeZone) => {
 const formatTime = (dateTime, timeZone) => {
   try {
     const dt = DateTime.fromISO(dateTime, { zone: 'UTC' }).setZone(timeZone);
-    if (!dt.isValid) throw new Error('Invalid timezone');
+    if (!dt.isValid) throw new Error(`Invalid timezone: ${timeZone}`);
     return dt.toFormat('h:mm a');
   } catch (error) {
     console.error(`Invalid timezone ${timeZone} for ${dateTime}:`, error);
@@ -33,7 +33,7 @@ const formatTime = (dateTime, timeZone) => {
 const formatHeaderDate = (dateTime, timeZone) => {
   try {
     const dt = DateTime.fromISO(dateTime, { zone: 'UTC' }).setZone(timeZone);
-    if (!dt.isValid) throw new Error('Invalid timezone');
+    if (!dt.isValid) throw new Error(`Invalid timezone: ${timeZone}`);
     return dt.toFormat('cccc, LLLL d');
   } catch (error) {
     console.error(`Invalid timezone ${timeZone} for ${dateTime}:`, error);
@@ -41,15 +41,20 @@ const formatHeaderDate = (dateTime, timeZone) => {
   }
 };
 
+const getTimezoneLabel = (timeZone) => {
+  try {
+    const dt = DateTime.now().setZone(timeZone);
+    if (!dt.isValid) throw new Error(`Invalid timezone: ${timeZone}`);
+    return dt.zoneName; // e.g., "Europe/London" or "BST"
+  } catch (error) {
+    console.error(`Invalid timezone ${timeZone}:`, error);
+    return 'UTC';
+  }
+};
+
 const DailySchedule = ({ schedules = [] }) => {
-
-  console.log("schedules")
-  console.log(schedules)
-  console.log("schedules")
-
-  
   const [appointmentsByDate, setAppointmentsByDate] = useState({});
-  const currentTime = DateTime.fromISO('2025-07-11T11:09:00+01:00', { zone: 'Africa/Lagos' }); // 11:09 AM WAT
+  const currentTime = DateTime.fromISO('2025-07-11T11:50:00+01:00', { zone: 'Africa/Lagos' }); // 11:50 AM WAT
 
   const slotHeight = 60;
   const startHour = 0;
@@ -69,6 +74,7 @@ const DailySchedule = ({ schedules = [] }) => {
         name: 'Virtual Interview',
         role: sch.meeting_mode,
         duration: 1,
+        timezoneLabel: getTimezoneLabel(sch.timezone),
       });
       return acc;
     }, {});
@@ -76,20 +82,25 @@ const DailySchedule = ({ schedules = [] }) => {
   }, [schedules]);
 
   const renderCurrentTimeLine = (timezone, scheduleDate) => {
-    const currentInTimezone = currentTime.setZone(timezone);
-    const scheduleDt = DateTime.fromISO(scheduleDate, { zone: 'UTC' }).setZone(timezone);
-    if (currentInTimezone.toFormat('yyyy-MM-dd') !== scheduleDt.toFormat('yyyy-MM-dd')) {
-      return null; // Only show current time line if it's the same date
+    try {
+      const currentInTimezone = currentTime.setZone(timezone);
+      const scheduleDt = DateTime.fromISO(scheduleDate, { zone: 'UTC' }).setZone(timezone);
+      if (currentInTimezone.toFormat('yyyy-MM-dd') !== scheduleDt.toFormat('yyyy-MM-dd')) {
+        return null; // Only show current time line if it's the same date
+      }
+      const currentHours = currentInTimezone.hour + currentInTimezone.minute / 60;
+      return (
+        <div
+          className="current-line"
+          style={{ top: `${getTopOffset(currentHours)}px` }}
+        >
+          <div className="dot" />
+        </div>
+      );
+    } catch (error) {
+      console.error(`Error rendering current time line for timezone ${timezone}:`, error);
+      return null;
     }
-    const currentHours = currentInTimezone.hour + currentInTimezone.minute / 60;
-    return (
-      <div
-        className="current-line"
-        style={{ top: `${getTopOffset(currentHours)}px` }}
-      >
-        <div className="dot" />
-      </div>
-    );
   };
 
   return (
@@ -152,7 +163,7 @@ const DailySchedule = ({ schedules = [] }) => {
                 >
                   <h3 className="aaa-Heada">{appt.name}</h3>
                   <div className="details">
-                    {appt.time} · {appt.role} · {appt.timezone}
+                    {appt.time} · {appt.role} · {appt.timezoneLabel}
                   </div>
                 </motion.div>
               ))}
