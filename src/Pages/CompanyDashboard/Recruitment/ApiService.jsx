@@ -90,7 +90,7 @@ export const fetchRequisition = async (id) => {
 
 export const bulkDeleteRequisitions = async (ids) => {
   try {
-    console.log('Sending bulk soft delete request for requisitions:', { ids, url: '/api/talent-engine/requisitions/bulk-delete/' });
+    //console.log('Sending bulk soft delete request for requisitions:', { ids, url: '/api/talent-engine/requisitions/bulk/bulk-delete/' });
     if (!ids.every(id => typeof id === 'string' && id.match(/^PRO-\d{4}$/))) {
       throw new Error('Invalid IDs provided. All IDs must be in the format PRO-XXXX.');
     }
@@ -99,9 +99,9 @@ export const bulkDeleteRequisitions = async (ids) => {
         Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
       },
     };
-    console.log('Request config:', config);
-    const response = await apiClient.post('/api/talent-engine/requisitions/bulk-delete/', { ids }, config);
-    console.log('Bulk soft delete response:', response.data);
+    //console.log('Request config:', config);
+    const response = await apiClient.post('/api/talent-engine/requisitions/bulk/bulk-delete/', { ids }, config);
+    //console.log('Bulk soft delete response:', response.data);
     return response.data;
   } catch (error) {
     console.error('Bulk soft delete error:', {
@@ -287,31 +287,14 @@ export const fetchPublishedRequisitionsWithShortlisted = async () => {
   }
 };
 
-// export const createSchedule = async (scheduleData) => {
-//   try {
-//     const response = await apiClient.post('/api/talent-engine-job-applications/schedules/', scheduleData);
-//     return response.data;
-//   } catch (error) {
-//     const errorDetails = error.response?.data || {};
-//     if (errorDetails.meeting_link) {
-//       throw new Error(errorDetails.meeting_link[0] || 'Invalid meeting link provided.');
-//     } else if (errorDetails.non_field_errors) {
-//       throw new Error(errorDetails.non_field_errors[0] || 'Invalid schedule data.');
-//     } else if (errorDetails.detail) {
-//       throw new Error(errorDetails.detail);
-//     }
-//     throw new Error('Failed to create schedule.');
-//   }
-// };
-
 export const createSchedule = async (scheduleData) => {
   try {
     const response = await apiClient.post('/api/talent-engine-job-applications/schedules/', scheduleData);
     return response.data;
   } catch (error) {
     const errorDetails = error.response?.data || {};
-    if (errorDetails.detail && errorDetails.detail.includes('EMAIL_USE_TLS/EMAIL_USE_SSL')) {
-      throw new Error('Email configuration error: EMAIL_USE_TLS and EMAIL_USE_SSL cannot both be enabled. Contact your administrator.');
+    if (errorDetails.detail && errorDetails.detail.includes('Failed to send email')) {
+      throw new Error('Failed to create schedule: Unable to send confirmation email. Please check email settings or try again later.');
     } else if (errorDetails.meeting_link) {
       throw new Error(errorDetails.meeting_link[0] || 'Invalid meeting link provided.');
     } else if (errorDetails.non_field_errors) {
@@ -524,6 +507,30 @@ export const updateComplianceItem = async (jobRequisitionId, itemId, data) => {
         throw error;
     }
 };
+
+
+
+export const fetchTenantEmailConfig = async () => {
+  try {
+    const response = await apiClient.get('/api/tenant/config/?t=' + new Date().getTime());
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.detail || 'Failed to fetch tenant configuration.');
+  }
+};
+
+
+
+
+export const updateTenantEmailConfig = async (configData) => {
+  try {
+    const response = await apiClient.patch('/api/tenant/config/', configData);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.detail || 'Failed to update tenant configuration.');
+  }
+};
+
 
 // Add this line to export apiClient
 export { apiClient };

@@ -19,9 +19,9 @@ import { updateApplicantComplianceStatus } from './ApiService';
 
 const ApplicantDocumentCheck = ({ applicant, complianceChecklist, onHide, onComplianceStatusChange }) => {
 
-  console.log("complianceChecklist")
-  console.log(complianceChecklist)
-  console.log("complianceChecklist")
+  // console.log("complianceChecklist")
+  // console.log(complianceChecklist)
+  // console.log("complianceChecklist")
 
   const [activeChecks, setActiveChecks] = useState([]);
   const [showVerificationForm, setShowVerificationForm] = useState(false);
@@ -563,7 +563,7 @@ const handleSaveChanges = async () => {
   }, [pdfUrl]);
 
 const prepareComplianceData = () => {
-  console.log('Preparing compliance data with applicant:', applicant);
+  //console.log('Preparing compliance data with applicant:', applicant);
   return applicant?.documents?.map((doc, index) => {
     const fileUrl = doc.file_url;
     const extension = fileUrl.split('.').pop().toLowerCase();
@@ -582,11 +582,11 @@ const prepareComplianceData = () => {
       (item) => item.title === title || item.document_type === doc.document_type
     );
 
-    alert("Ekene-onwon")
+ 
 
-    console.log("applicant doc", applicant);
-    console.log("complianceStatus", complianceStatus);
-    console.log("checklistItem", checklistItem);
+    // console.log("applicant doc", applicant);
+    // console.log("complianceStatus", complianceStatus);
+    // console.log("checklistItem", checklistItem);
 
     return {
       id: checklistItem?.id || `temp_${index}_${Date.now()}`, // Use ID from complianceChecklist

@@ -769,6 +769,7 @@ const ScheduleList = () => {
         const params = statusFilter !== 'All' ? { status: statusFilter } : {};
         const data = await fetchSchedules(params);
         setSchedules(data);
+        console.log(data);
         setIsLoading(false);
       } catch (error) {
         setErrorMessage(error.message || 'Failed to load schedules.');
