@@ -4046,3 +4046,26 @@ background: linear-gradient(135deg, #FF6FD8 0%, #FF42A1 50%, #FF9770 100%) !impo
 .address-suggestions ul li{
     font-size: 11px;
 }
+
+
+
+
+
+/* ssend-Auuto-SPann */
+
+.ssend-Auuto-SPann{
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 7px;
+    font-size: 12px;
+    user-select: none;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    color: #8779be !important;
+}
+
+.ssend-Auuto-SPann:hover{
+    opacity: 0.7;
+}
